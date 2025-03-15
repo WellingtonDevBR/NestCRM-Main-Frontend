@@ -57,7 +57,7 @@ serve(async (req) => {
       console.log(`Development/preview URL detected: ${hostname}`);
       
       // If there's a subdomain parameter, look it up
-      if (subdomain && subdomain !== '') {
+      if (subdomain && subdomain !== '' && !MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
         console.log(`Looking up organization with subdomain parameter: ${subdomain}`);
       } else {
         // Return as main domain for empty subdomain in development

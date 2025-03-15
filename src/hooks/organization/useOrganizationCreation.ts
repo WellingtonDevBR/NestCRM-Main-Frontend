@@ -22,6 +22,12 @@ export function useOrganizationCreation({
 }: UseOrganizationCreationProps) {
   
   const isValidSubdomain = async (subdomain: string): Promise<boolean> => {
+    // Basic validation before making API call
+    if (!subdomain || subdomain.length < 3) {
+      return false;
+    }
+    
+    // Server-side availability check
     return await checkSubdomainAvailability(subdomain);
   };
   
@@ -32,14 +38,20 @@ export function useOrganizationCreation({
     }
 
     try {
-      const isAvailable = await isValidSubdomain(subdomain);
+      // Clean the subdomain first to ensure it's valid format
+      const cleanSubdomain = subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '');
+      
+      // Check if the subdomain is available
+      const isAvailable = await isValidSubdomain(cleanSubdomain);
       if (!isAvailable) {
-        toast.error('This subdomain is already taken');
+        toast.error('This subdomain is already taken or invalid');
         return null;
       }
 
-      const newOrg = await createNewOrganization(name, subdomain, userId);
+      // Create the organization
+      const newOrg = await createNewOrganization(name, cleanSubdomain, userId);
       
+      // Update local state
       setOrganizations(prev => [...prev, newOrg]);
       setCurrentOrganization(newOrg);
       

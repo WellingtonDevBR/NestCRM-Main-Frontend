@@ -52,7 +52,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     window.location.href = url;
   };
 
-  // Check if user has organizations and redirect if on main domain
+  // Check if user has organizations and redirect if on main domain - but ONLY if authenticated
   useEffect(() => {
     const checkUserOrganizations = async () => {
       // Skip if already redirected, not authenticated, still loading, or not on main domain
@@ -63,7 +63,9 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         !user?.id ||
         !isMainDomain(getSubdomainFromUrl()) ||
         location.pathname === '/onboarding' ||
-        location.pathname === '/create-organization'
+        location.pathname === '/create-organization' ||
+        location.pathname === '/login' ||
+        location.pathname === '/signup'
       ) {
         console.log('🔍 Organizations: Skipping organization check due to conditions not met:', {
           hasRedirected,
@@ -142,17 +144,16 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
     const checkTenant = async () => {
       try {
-        // Always render the index page immediately
-        if (location.pathname === '/' && !isAuthenticated) {
-          console.log('🔍 Routing: Root path detected for unauthenticated user - bypassing tenant checks');
+        // Always render the index page immediately for all users
+        if (location.pathname === '/' || location.pathname === '/index.html') {
+          console.log('🔍 Routing: Root path detected - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
         
-        // Check if this is the main index page or another public page
-        const isIndexPage = initializeIndexPageOrganization();
-        if (isIndexPage && !isAuthenticated) {
-          console.log('🔍 Routing: Index page detected for unauthenticated user - bypassing tenant checks');
+        // Always render public paths immediately
+        if (location.pathname === '/login' || location.pathname === '/signup') {
+          console.log('🔍 Routing: Public authentication path detected - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
@@ -173,7 +174,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         // Determine if we're on the main domain or a development environment
         const isOnMainDomain = isMainDomain(subdomain);
         const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
-        const isPublicPath = location.pathname === '/' || isAuthPath;
+        const isPublicPath = location.pathname === '/' || location.pathname === '/index.html' || isAuthPath;
         const isDevelopmentDomain = hostname.includes('localhost') || 
                                     hostname.includes('127.0.0.1') || 
                                     hostname.includes('lovableproject.com') ||
@@ -276,6 +277,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
   // Don't show loading spinner for public pages or when organization is initialized
   const isPublicPage = location.pathname === '/' || 
+                       location.pathname === '/index.html' || 
                        location.pathname === '/login' || 
                        location.pathname === '/signup';
                        

@@ -67,13 +67,22 @@ export function useOrganizationInitialization({
         // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
           console.log(`Fetching organization by subdomain: ${subdomain}`);
-          // Use the utility function
-          const org = await fetchOrganizationBySubdomain(subdomain);
-          if (org) {
-            setCurrentOrganization(org);
-            console.log('Successfully set current organization:', org.name);
+          
+          // Only fetch and set organization if user is authenticated
+          if (isAuthenticated) {
+            const org = await fetchOrganizationBySubdomain(subdomain);
+            if (org) {
+              setCurrentOrganization(org);
+              console.log('Successfully set current organization:', org.name);
+            } else {
+              console.log('No organization found for subdomain:', subdomain);
+              // If no organization is found for this subdomain, don't set any organization
+              setCurrentOrganization(null);
+            }
           } else {
-            console.log('No organization found for subdomain:', subdomain);
+            // Not authenticated, don't set current organization
+            console.log('User not authenticated, not setting organization for subdomain');
+            setCurrentOrganization(null);
           }
         } else {
           console.log('On main domain, not fetching by subdomain');
