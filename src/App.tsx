@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,8 +26,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Base URL check to ensure all assets load correctly
-// This helps with domain and subdomain hosting
+// Check if we're on the main domain in production
 if (import.meta.env.PROD) {
   console.log(`Running in production on: ${window.location.hostname}`);
   
