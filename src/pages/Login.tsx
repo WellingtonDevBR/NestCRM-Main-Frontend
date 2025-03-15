@@ -1,6 +1,6 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useLoginForm } from "@/hooks/useLoginForm";
 import LoginHeader from "@/components/auth/LoginHeader";
 import LoginForm from "@/components/auth/LoginForm";
@@ -10,6 +10,9 @@ import { getSubdomainFromUrl, isMainDomain } from "@/utils/domainUtils";
 import { toast } from "sonner";
 
 const Login = () => {
+  const [searchParams] = useSearchParams();
+  const [targetTenant, setTargetTenant] = useState<string | null>(null);
+  
   const {
     email,
     setEmail,
@@ -28,16 +31,35 @@ const Login = () => {
   
   const navigate = useNavigate();
   
+  // Capture target tenant from URL if present
+  useEffect(() => {
+    const tenantParam = searchParams.get('tenant');
+    if (tenantParam) {
+      console.log('🔍 Login: Target tenant subdomain detected:', tenantParam);
+      setTargetTenant(tenantParam);
+    }
+  }, [searchParams]);
+  
   // Check if we're on a subdomain - redirect to main domain
   useEffect(() => {
     const subdomain = getSubdomainFromUrl();
     if (subdomain && !isMainDomain(subdomain)) {
       console.log('🔒 Security: Login page accessed on subdomain, redirecting to main domain');
       toast.info("Redirecting to main site login...");
-      window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
+      
+      // Pass the current subdomain as a parameter to remember where to return
+      const mainDomain = import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173';
+      window.location.href = `${window.location.protocol}//${mainDomain}/login?tenant=${subdomain}`;
       return;
     }
   }, []);
+  
+  // Custom submit handler that passes the target tenant
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Pass the target tenant to the handleSubmit function
+    handleSubmit(e, targetTenant);
+  };
   
   // Log authentication state on component mount
   useEffect(() => {
@@ -70,7 +92,7 @@ const Login = () => {
                 showPassword={showPassword}
                 togglePasswordVisibility={togglePasswordVisibility}
                 isLoading={isLoading}
-                handleSubmit={handleSubmit}
+                handleSubmit={handleLoginSubmit}
                 errors={errors}
                 handleBlur={handleBlur}
                 touched={touched}
@@ -88,6 +110,12 @@ const Login = () => {
               </div>
 
               <SocialLoginButtons disabled={isLoading} />
+              
+              {targetTenant && (
+                <div className="text-sm text-center text-muted-foreground">
+                  You'll be redirected to <span className="font-medium">{targetTenant}.nestcrm.com.au</span> after login
+                </div>
+              )}
             </div>
           </div>
         </div>

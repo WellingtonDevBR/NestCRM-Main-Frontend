@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -7,7 +6,7 @@ import { MAIN_DOMAIN } from '@/utils/domainUtils';
 /**
  * Signs in a user with email and password
  */
-export const signIn = async (email: string, password: string): Promise<void> => {
+export const signIn = async (email: string, password: string, targetTenant?: string | null): Promise<void> => {
   try {
     console.log('🔑 Authentication: Starting sign in process for:', email);
     
@@ -16,8 +15,6 @@ export const signIn = async (email: string, password: string): Promise<void> => 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      // Note: expiresIn is not supported in the options type
-      // We'll need to handle session duration differently
     });
 
     if (error) throw error;
@@ -49,15 +46,45 @@ export const signIn = async (email: string, password: string): Promise<void> => 
 
     console.log('🔍 Organizations: Memberships found:', memberships?.length || 0, memberships);
 
-    // If user has organizations, redirect to the first one
+    // If user has organizations, redirect to the appropriate one
     if (memberships && memberships.length > 0) {
-      const organizationId = memberships[0].organization_id;
-      console.log('🔍 Organizations: User has organizations, redirecting to first one:', organizationId);
+      let targetOrgId = memberships[0].organization_id;
+      let targetSubdomain = targetTenant;
       
+      // If we have a specific target tenant specified, find matching organization
+      if (targetTenant) {
+        console.log('🔍 Login: Looking for organization with subdomain:', targetTenant);
+        
+        // Query for specific organization by subdomain
+        const { data: specificOrg, error: specificOrgError } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('subdomain', targetTenant)
+          .maybeSingle();
+          
+        if (specificOrgError) {
+          console.error('🔍 Organizations: Error fetching target organization:', specificOrgError);
+        } else if (specificOrg) {
+          // Check if the user is a member of this target organization
+          const isMember = memberships.some(m => m.organization_id === specificOrg.id);
+          
+          if (isMember) {
+            console.log('🔍 Organizations: User is a member of target organization:', specificOrg.name);
+            targetOrgId = specificOrg.id;
+            targetSubdomain = specificOrg.subdomain;
+          } else {
+            console.log('🔍 Organizations: User is NOT a member of target organization');
+            toast.warning("You don't have access to that organization");
+            // Continue with their first organization instead
+          }
+        }
+      }
+      
+      // Now get details for the target organization
       const { data: orgData, error: orgDetailsError } = await supabase
         .from('organizations')
         .select('*')
-        .eq('id', organizationId)
+        .eq('id', targetOrgId)
         .maybeSingle();
 
       if (orgDetailsError) {
@@ -206,7 +233,7 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
     console.log('🚀 Cross-domain auth: Preparing redirect to:', targetUrl);
     
     try {
-      // Force set the session with proper cookies
+      // Explicitly set session to refresh cookie
       const { error: sessionError } = await supabase.auth.setSession({
         access_token: currentSession.access_token,
         refresh_token: currentSession.refresh_token,
@@ -216,51 +243,67 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
         console.error('❌ Error setting session:', sessionError);
       }
       
-      // Explicitly set a cookie with the root domain to ensure subdomain access
-      // This is a backup in case Supabase isn't setting the cookies correctly
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 7); // 7 days expiry
+      // Set cookies with max age and matching domain properties
+      const maxAge = 7 * 24 * 60 * 60; // 7 days in seconds
+      const secure = window.location.protocol === 'https:';
+      const rootDomain = MAIN_DOMAIN;
       
-      // Set a session indicator cookie with the root domain
-      document.cookie = `sb-auth=true; expires=${expiryDate.toUTCString()}; path=/; domain=.${MAIN_DOMAIN}; secure`;
+      // Set cookies at root domain level to allow subdomain access
+      document.cookie = `sb-auth-token=${currentSession.access_token}; max-age=${maxAge}; path=/; domain=.${rootDomain}; ${secure ? 'secure;' : ''} SameSite=Lax`;
+      document.cookie = `sb-refresh-token=${currentSession.refresh_token}; max-age=${maxAge}; path=/; domain=.${rootDomain}; ${secure ? 'secure;' : ''} SameSite=Lax`;
+      document.cookie = `sb-last-auth=${Date.now()}; max-age=${maxAge}; path=/; domain=.${rootDomain}; ${secure ? 'secure;' : ''} SameSite=Lax`;
       
-      // Also set a cookie that indicates this is a cross-domain redirect
-      document.cookie = `auth_redirect=true; path=/; domain=.${MAIN_DOMAIN}; secure`;
+      console.log('🔑 Cross-domain auth: Set auth cookies at domain level:', rootDomain);
       
-      // Set auth-related cookies directly at the root domain level
-      document.cookie = `sb-access-token=${currentSession.access_token}; expires=${expiryDate.toUTCString()}; path=/; domain=.${MAIN_DOMAIN}; secure; SameSite=Lax`;
-      document.cookie = `sb-refresh-token=${currentSession.refresh_token}; expires=${expiryDate.toUTCString()}; path=/; domain=.${MAIN_DOMAIN}; secure; SameSite=Lax`;
+      // Add a small delay to ensure cookies are properly set
+      await new Promise(resolve => setTimeout(resolve, 300));
       
-      console.log('🔑 Cross-domain auth: Successfully prepared session for subdomain access');
+      // Explicit ping check to the subdomain (fetch with no-cors)
+      try {
+        const pingEndpoint = `${protocol}//${targetSubdomain}/ping.txt`;
+        console.log('Pinging subdomain to check availability:', pingEndpoint);
+        
+        const pingResponse = await fetch(pingEndpoint, {
+          method: 'GET',
+          mode: 'no-cors',
+          cache: 'no-cache',
+        });
+        
+        console.log('Subdomain ping successful, domain is available');
+      } catch (pingError) {
+        console.warn('Subdomain ping failed, may not be available:', pingError);
+        toast.warning('Subdomain may not be available yet', {
+          description: 'Redirecting to organizations page instead'
+        });
+        window.location.href = '/organizations';
+        return;
+      }
+      
+      // Now attempt to refresh the session once more for good measure
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.warn('Failed to refresh session before redirect, but proceeding anyway:', refreshError);
+      } else {
+        console.log('Successfully refreshed session before redirect');
+      }
+      
+      // Add auth_redirect parameter to signal the target domain
+      const finalUrl = `${targetUrl}?auth_redirect=true&org_id=${org.id}`;
+      console.log('🚀 Cross-domain auth: Redirecting to:', finalUrl);
+      
+      // Use a small delay to ensure the browser has processed all our cookie operations
+      setTimeout(() => {
+        window.location.href = finalUrl;
+      }, 200);
     } catch (error) {
       console.error('❌ Error setting cross-domain session:', error);
-    }
-    
-    // Add organization ID and access token to the URL as temporary parameters
-    // These will be used to restore the session if cookies fail
-    const urlWithAuth = `${targetUrl}?auth_redirect=true&org_id=${org.id}`;
-    
-    // Add a fallback mechanism for when the subdomain isn't available yet
-    // This checks if the subdomain is reachable first
-    try {
-      const checkSubdomainResponse = await fetch(`${protocol}//${targetSubdomain}/ping.txt`, { 
-        method: 'HEAD',
-        mode: 'no-cors' // This allows us to check existence without CORS issues
+      toast.error('Authentication error', {
+        description: 'Could not set up cross-domain authentication'
       });
       
-      console.log('Subdomain check result:', checkSubdomainResponse.status);
-    } catch (error) {
-      console.warn('Subdomain may not be available yet, redirecting to organizations page instead');
-      // If the subdomain ping fails, redirect to organizations page instead
+      // Fallback to organizations page
       window.location.href = '/organizations';
-      return;
     }
-    
-    // Use a small timeout to ensure the auth state is properly set
-    setTimeout(() => {
-      console.log('🚀 Cross-domain auth: Executing redirect to subdomain:', urlWithAuth);
-      window.location.href = urlWithAuth;
-    }, 1000); // Slightly longer timeout to ensure cookies are properly set
   } catch (error) {
     console.error('❌ Error during organization subdomain redirect:', error);
     toast.error('Redirect error', {

@@ -11,7 +11,7 @@ import { getSubdomainFromUrl, isMainDomain } from "@/utils/domainUtils";
 import { toast } from "sonner";
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
   // Check if on tenant subdomain and redirect
@@ -29,9 +29,12 @@ const Index = () => {
         navigate("/dashboard", { replace: true });
       } else {
         // If not authenticated, redirect to main domain for login
+        // Store the subdomain in the URL as a parameter for the login page to use
         console.log("Unauthenticated user on tenant subdomain index - redirecting to main domain for login");
-        toast.info("Redirecting to main site to login...");
-        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
+        toast.info("Redirecting to login...");
+        
+        const mainDomain = import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173';
+        window.location.href = `${window.location.protocol}//${mainDomain}/login?tenant=${subdomain}`;
       }
       return;
     }
