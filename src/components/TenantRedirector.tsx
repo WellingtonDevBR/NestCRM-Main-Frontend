@@ -16,6 +16,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(true);
+  const [hasShownMessage, setHasShownMessage] = useState(false);
 
   useEffect(() => {
     const checkTenant = async () => {
@@ -47,14 +48,20 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       }
       
       // On a subdomain but the organization doesn't exist or user doesn't have access
-      if (subdomain && !currentOrganization) {
+      if (subdomain && !currentOrganization && isAuthenticated && !hasShownMessage) {
         console.log('Invalid tenant or no access for subdomain:', subdomain);
-        if (isAuthenticated) {
-          // If authenticated but no access, probably needs to be added to the org
+        
+        // Check if the user has any organizations
+        if (organizations.length > 0) {
+          // Only show the access error if we've confirmed the user has organizations
+          // but doesn't have access to this specific one
           toast.error('You do not have access to this organization');
+          setHasShownMessage(true);
+        } else {
+          // If user has no organizations yet, don't show the error message
+          // They might be in the process of creating their first one
+          console.log('User has no organizations yet, not showing access error');
         }
-        // Even if we can't load the org data, we'll still render the page
-        // since some pages like login/signup should work on any subdomain
       }
 
       // Refresh organizations with retry logic if authenticated and no organizations loaded
@@ -76,7 +83,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     location.pathname, 
     isAuthenticated, 
     organizations.length,
-    currentOrganization
+    currentOrganization,
+    hasShownMessage
   ]);
 
   if (isChecking) {
