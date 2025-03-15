@@ -11,7 +11,7 @@ const Footer = () => {
               to="/"
               className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-4 inline-block"
             >
-              ChurnWatcher
+              NESTCRM
             </Link>
             <p className="text-foreground/70 mb-4 max-w-md">
               AI-powered customer retention platform that helps businesses predict and prevent churn before it happens.
@@ -76,7 +76,7 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <p className="text-foreground/60 text-sm mb-4 md:mb-0">
-            © {new Date().getFullYear()} ChurnWatcher. All rights reserved.
+            © {new Date().getFullYear()} NESTCRM. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <a href="#" className="text-foreground/60 hover:text-primary transition-colors text-sm">Privacy</a>

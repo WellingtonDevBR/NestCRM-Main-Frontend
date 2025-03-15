@@ -68,7 +68,7 @@ const Hero = () => {
             <div className="relative">
               <div className="relative z-10 glass-card p-2 md:p-4 max-w-lg">
                 <img
-                  src="https://cdn.builder.io/api/v1/image/assets%2F32a952c18c1642faae593395bd7dd4bb%2Ffb89ec93f80a465f9a939a3e88df6d8d"
+                  src="/lovable-uploads/d2a27e06-ee04-4629-8408-2e4572a01d62.png"
                   alt="NESTCRM Dashboard"
                   className="w-full h-auto rounded-lg shadow-sm"
                 />
