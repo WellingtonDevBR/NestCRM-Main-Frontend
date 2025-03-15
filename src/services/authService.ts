@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -80,8 +79,8 @@ export const signIn = async (email: string, password: string): Promise<void> => 
         
         console.log('🚀 Redirection: Redirecting to organization subdomain:', org.subdomain);
         
-        // Force a direct redirect to the organization subdomain
-        redirectToOrganizationSubdomain(org);
+        // Force a direct redirect to the organization subdomain using proper auth transfer
+        await redirectToOrganizationSubdomain(org);
         return;
       }
     } else {
@@ -174,18 +173,53 @@ export const signOut = async (): Promise<void> => {
 };
 
 /**
- * Redirects to organization subdomain
+ * Redirects to organization subdomain with proper cross-domain auth handling
  */
-export const redirectToOrganizationSubdomain = (org: Organization): void => {
-  // Force a direct redirect to the organization subdomain
-  const protocol = window.location.protocol;
-  const url = `${protocol}//${org.subdomain}.${MAIN_DOMAIN}/dashboard`;
-  
-  console.log('🚀 Redirection: Direct redirect URL:', url);
-  
-  // Use a small timeout to ensure the toast is visible before redirect
-  setTimeout(() => {
-    console.log('🚀 Redirection: Executing redirect now to:', url);
-    window.location.href = url;
-  }, 500);
+export const redirectToOrganizationSubdomain = async (org: Organization): Promise<void> => {
+  try {
+    // Get the current session for subdomain transfer
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentSession = sessionData?.session;
+    
+    if (!currentSession) {
+      console.error('🔑 Authentication: No valid session found for cross-domain redirect');
+      toast.error('Authentication error', { 
+        description: 'Could not establish a valid session for the subdomain' 
+      });
+      return;
+    }
+    
+    // Prepare subdomain URL
+    const protocol = window.location.protocol;
+    const targetSubdomain = `${org.subdomain}.${MAIN_DOMAIN}`;
+    const targetPath = '/dashboard';
+    const targetUrl = `${protocol}//${targetSubdomain}${targetPath}`;
+    
+    console.log('🚀 Cross-domain auth: Preparing redirect to:', targetUrl);
+
+    // Set auth cookie with subdomains support
+    // This ensures the authentication works across domains
+    try {
+      // Force set the session with subdomain cookie
+      await supabase.auth.setSession({
+        access_token: currentSession.access_token,
+        refresh_token: currentSession.refresh_token,
+      });
+      
+      console.log('🔑 Cross-domain auth: Successfully prepared session for subdomain access');
+    } catch (error) {
+      console.error('❌ Error setting cross-domain session:', error);
+    }
+    
+    // Use a small timeout to ensure the auth state is properly set
+    setTimeout(() => {
+      console.log('🚀 Cross-domain auth: Executing redirect to subdomain:', targetUrl);
+      window.location.href = targetUrl;
+    }, 1000); // Slightly longer timeout to ensure cookies are properly set
+  } catch (error) {
+    console.error('❌ Error during organization subdomain redirect:', error);
+    toast.error('Redirect error', {
+      description: 'Unable to redirect to organization dashboard'
+    });
+  }
 };

@@ -21,6 +21,14 @@
           window.history.replaceState(null, '', window.location.pathname);
         }
       }
+      
+      // Special handling for cross-domain authentication
+      // This helps with Supabase auth cookie issues when redirecting between domains
+      const hasAuthParam = window.location.search.includes('auth_redirect');
+      if (hasAuthParam) {
+        console.log('Detected cross-domain auth redirect, initializing auth state...');
+        // Will be handled by AuthContext initialization
+      }
     })();
   </script>
 </head>

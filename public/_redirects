@@ -2,3 +2,5 @@
 # Redirects for SPA - all routes should go to index.html
 /*  /index.html  200
 
+# Special handling for the dashboard path
+/dashboard/*  /index.html  200

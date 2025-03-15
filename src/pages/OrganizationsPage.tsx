@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,7 +15,8 @@ import { Building, ArrowRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Organization } from "@/types/supabase";
-import { MAIN_DOMAIN, buildSubdomainUrl } from "@/utils/domainUtils";
+import { MAIN_DOMAIN } from "@/utils/domainUtils";
+import { redirectToOrganizationSubdomain } from "@/services/authService";
 
 const OrganizationsPage = () => {
   const { isAuthenticated, loading: authLoading, user } = useAuth();
@@ -108,24 +108,8 @@ const OrganizationsPage = () => {
           description: `Redirecting to ${selectedOrg.subdomain}.nestcrm.com.au...`
         });
         
-        // Detect if we're in a production environment
-        const isProduction = 
-          !window.location.hostname.includes('localhost') && 
-          !window.location.hostname.includes('127.0.0.1') &&
-          !window.location.hostname.includes('lovableproject.com') &&
-          !window.location.hostname.includes('netlify.app') &&
-          !window.location.hostname.includes('vercel.app');
-        
-        console.log('Production environment detected, redirecting to subdomain');
-        
-        // Build the full URL with subdomain
-        const redirectUrl = buildSubdomainUrl(selectedOrg.subdomain, '/dashboard');
-        console.log('Redirecting to:', redirectUrl);
-        
-        // Use location.href for a full page redirect to the subdomain
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 500);
+        // Use improved cross-domain authentication for redirect
+        await redirectToOrganizationSubdomain(selectedOrg);
       } else {
         // Fallback if org not found - just navigate to dashboard on current domain
         navigate('/dashboard');
