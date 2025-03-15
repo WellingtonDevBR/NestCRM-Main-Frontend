@@ -49,14 +49,17 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setOrganizations(orgs);
       
       const subdomain = getSubdomainFromUrl();
-      if (subdomain) {
+      if (subdomain && !isMainDomain(subdomain)) {
+        // We're on a specific organization subdomain - find the matching org
         const subdomainOrg = orgs.find(org => org.subdomain === subdomain);
         if (subdomainOrg) {
           setCurrentOrganization(subdomainOrg);
         } else if (orgs.length > 0) {
+          // User doesn't have access to this subdomain org, but has other orgs
           setCurrentOrganization(orgs[0]);
         }
       } else if (orgs.length > 0) {
+        // We're on the main domain - set the first org as current
         setCurrentOrganization(orgs[0]);
       }
     } catch (error: any) {
@@ -142,6 +145,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         const subdomain = getSubdomainFromUrl();
         console.log(`Initializing organization with subdomain: ${subdomain || 'none'}`);
         
+        // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
           const org = await fetchOrganizationBySubdomain(subdomain);
           if (org) {
@@ -150,15 +154,16 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
           } else {
             console.log('No organization found for subdomain:', subdomain);
           }
-          
-          if (isAuthenticated) {
-            await fetchOrganizations();
-          }
-        } else if (isAuthenticated) {
+        }
+        
+        // If authenticated, always fetch the user's organizations
+        if (isAuthenticated) {
           await fetchOrganizations();
         } else {
           setOrganizations([]);
-          setCurrentOrganization(null);
+          if (isMainDomain(subdomain)) {
+            setCurrentOrganization(null);
+          }
         }
       } catch (error) {
         console.error('Error initializing organization:', error);

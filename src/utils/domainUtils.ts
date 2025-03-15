@@ -3,6 +3,10 @@
  * Utilities for handling domain and subdomain logic
  */
 
+// Main domain constants
+const MAIN_DOMAIN = 'nestcrm.com.au';
+const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
+
 /**
  * Extracts the subdomain from the current URL
  * @returns The subdomain string or null if on the main domain
@@ -10,8 +14,9 @@
 export const getSubdomainFromUrl = (): string | null => {
   const hostname = window.location.hostname;
   
+  // For localhost development, check URL format
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    // For localhost development, check URL format
+    // Check for subdomain param in URL for local development
     const urlSearchParams = new URLSearchParams(window.location.search);
     const subdomainParam = urlSearchParams.get('subdomain');
     if (subdomainParam) {
@@ -20,7 +25,7 @@ export const getSubdomainFromUrl = (): string | null => {
     
     // Alternative: check for subdomain.localhost pattern
     const parts = hostname.split('.');
-    if (parts.length > 1 && parts[0] !== 'www') {
+    if (parts.length > 1 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
       return parts[0];
     }
     return null;
@@ -34,13 +39,18 @@ export const getSubdomainFromUrl = (): string | null => {
     }
   }
   
-  // Production subdomain handling
-  // For domain.nestcrm.com.au, extract "domain" as the subdomain
-  if (hostname.endsWith('nestcrm.com.au') && hostname !== 'nestcrm.com.au' && hostname !== 'www.nestcrm.com.au') {
-    const parts = hostname.split('.');
-    // If hostname is subdomain.nestcrm.com.au
-    if (parts.length === 4) {
-      return parts[0];
+  // Production domain handling
+  // Explicitly handle the nestcrm.com.au domain as the main domain
+  if (hostname === MAIN_DOMAIN || hostname === 'www.' + MAIN_DOMAIN) {
+    return null;
+  }
+  
+  // For other subdomains under nestcrm.com.au
+  if (hostname.endsWith(MAIN_DOMAIN)) {
+    const subdomain = hostname.replace('.' + MAIN_DOMAIN, '');
+    // Only return if it's not www or nestcrm
+    if (!MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
+      return subdomain;
     }
   }
   
@@ -55,7 +65,7 @@ export const getSubdomainFromUrl = (): string | null => {
 export const isValidSubdomainFormat = (subdomain: string): boolean => {
   // Check subdomain format
   const subdomainRegex = /^[a-z0-9-]+$/;
-  return subdomainRegex.test(subdomain) && subdomain.length >= 3;
+  return subdomainRegex.test(subdomain) && subdomain.length >= 3 && !MAIN_DOMAIN_IDENTIFIERS.includes(subdomain);
 };
 
 /**
@@ -64,7 +74,7 @@ export const isValidSubdomainFormat = (subdomain: string): boolean => {
  * @returns Boolean indicating if this is the main domain
  */
 export const isMainDomain = (subdomain: string | null): boolean => {
-  return !subdomain || subdomain === 'nestcrm' || subdomain === 'www';
+  return !subdomain || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain);
 };
 
 /**
@@ -83,11 +93,15 @@ export const buildSubdomainUrl = (subdomain: string, path: string = '/dashboard'
   }
   
   // In production, generate subdomain URL
-  const domainParts = host.split('.');
+  if (host === MAIN_DOMAIN || host === 'www.' + MAIN_DOMAIN || MAIN_DOMAIN_IDENTIFIERS.includes(host)) {
+    return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
+  }
   
-  // If we're on nestcrm.com.au or www.nestcrm.com.au, navigate to subdomain.nestcrm.com.au
+  // If we're already on a subdomain 
+  const domainParts = host.split('.');
   if (domainParts.length >= 2) {
-    const baseDomain = domainParts.length > 2 ? domainParts.slice(1).join('.') : domainParts.join('.');
+    // For domain.nestcrm.com.au to newdomain.nestcrm.com.au
+    const baseDomain = domainParts.slice(1).join('.');
     return `${protocol}//${subdomain}.${baseDomain}${path}`;
   }
   

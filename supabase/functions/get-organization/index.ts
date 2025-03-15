@@ -13,6 +13,7 @@ interface GetOrganizationRequest {
 
 // Main domain constants
 const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
+const MAIN_DOMAIN = 'nestcrm.com.au';
 
 serve(async (req) => {
   // Handle CORS preflight request
@@ -38,7 +39,7 @@ serve(async (req) => {
     }
 
     // Check if this is a main domain request
-    if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
+    if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain) || subdomain === MAIN_DOMAIN) {
       return new Response(
         JSON.stringify({ error: "This is the main domain, not a tenant subdomain" }),
         { 
