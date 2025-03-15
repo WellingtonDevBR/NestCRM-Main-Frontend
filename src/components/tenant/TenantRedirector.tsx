@@ -24,7 +24,10 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   // Apply all our custom hooks
   const { isChecking, checkAttempts } = useTenantChecker();
   useSubdomainValidation();
-  useSubdomainRedirect();
+  
+  // We're no longer redirecting subdomain users from index page automatically
+  // Instead, we'll show a return to dashboard button in the Index component
+  useSubdomainRedirect({ skipIndexRedirect: true });
   useCrossDomainAuth();
 
   // Don't show loading spinner for public pages or when organization is initialized

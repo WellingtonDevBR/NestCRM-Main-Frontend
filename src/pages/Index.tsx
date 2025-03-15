@@ -5,16 +5,47 @@ import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useOrganization } from "@/hooks/useOrganization";
+import { getSubdomainFromUrl } from "@/utils/domainUtils";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const { isAuthenticated } = useAuth();
+  const { currentOrganization } = useOrganization();
+  const subdomain = getSubdomainFromUrl();
+  const navigate = useNavigate();
+
   useEffect(() => {
     // Scroll to top when page loads
     window.scrollTo(0, 0);
   }, []);
 
+  const handleReturnToDashboard = () => {
+    navigate('/dashboard');
+  };
+
+  // Check if we're on a customer subdomain and user is logged in
+  const isCustomerOnSubdomain = isAuthenticated && subdomain && currentOrganization;
+
   return (
     <div className="min-h-screen">
       <Navbar />
+      
+      {isCustomerOnSubdomain && (
+        <div className="bg-primary/10 p-4 flex justify-center">
+          <div className="container-custom flex items-center justify-between">
+            <p className="text-primary">
+              Welcome back to {currentOrganization?.name || 'your organization'}!
+            </p>
+            <Button onClick={handleReturnToDashboard}>
+              Return to Dashboard
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <Hero />
       <Features />
       <Testimonials />
