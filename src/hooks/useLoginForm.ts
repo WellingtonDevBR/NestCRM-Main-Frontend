@@ -1,9 +1,6 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { getSubdomainFromUrl } from "@/utils/domainUtils";
-import { useOrganization } from "@/hooks/useOrganization";
 import { z } from "zod";
 import { toast } from "sonner";
 
@@ -23,15 +20,12 @@ export type LoginFormErrors = {
 
 export function useLoginForm() {
   const { signIn, isAuthenticated } = useAuth();
-  const { organizations } = useOrganization();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  
-  const navigate = useNavigate();
   
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
@@ -88,7 +82,8 @@ export function useLoginForm() {
     
     try {
       await signIn(email, password);
-      // Navigation will be handled by the signIn method
+      // The redirection is now handled directly in the signIn method
+      // within authService.ts to ensure a more reliable flow
     } catch (error: any) {
       const errorMessage = error?.message || "Failed to sign in. Please try again.";
       setErrors((prev) => ({ ...prev, form: errorMessage }));
@@ -99,21 +94,10 @@ export function useLoginForm() {
     }
   };
 
+  // This function is kept for compatibility with components that use it
+  // But redirection is now primarily handled in authService.ts
   const determineRedirectPath = () => {
-    const subdomain = getSubdomainFromUrl();
-    
-    // If on a subdomain, go to dashboard
-    if (subdomain) {
-      return '/dashboard';
-    } 
-    // If on main domain and has organizations, go to organizations page
-    else if (organizations.length > 0) {
-      return '/organizations';
-    }
-    // If no organizations, go to onboarding
-    else {
-      return '/onboarding';
-    }
+    return '/organizations';
   };
 
   return {

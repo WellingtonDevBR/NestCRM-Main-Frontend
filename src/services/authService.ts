@@ -18,24 +18,25 @@ export const signIn = async (email: string, password: string): Promise<void> => 
     toast.success('Signed in successfully!');
 
     // Get current user ID
-    const userId = (await supabase.auth.getUser()).data.user?.id;
-
-    if (!userId) {
-      console.error('No user ID found after login');
-      return;
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError || !user) {
+      console.error('Error getting user after login:', userError);
+      throw new Error('Unable to get user details');
     }
-
+    
+    const userId = user.id;
     console.log('Fetching organizations for user:', userId);
     
     // Fetch user's organizations
     const { data: memberships, error: membershipError } = await supabase
       .from('organization_members')
-      .select('organization_id')
+      .select('organization_id, role')
       .eq('user_id', userId);
 
     if (membershipError) {
       console.error('Error fetching user organization memberships:', membershipError);
-      return;
+      throw new Error('Failed to fetch your organizations');
     }
 
     console.log('Organization memberships found:', memberships?.length || 0, memberships);
@@ -49,11 +50,11 @@ export const signIn = async (email: string, password: string): Promise<void> => 
         .from('organizations')
         .select('*')
         .eq('id', organizationId)
-        .single();
+        .maybeSingle();
 
       if (orgDetailsError) {
         console.error('Error fetching organization details:', orgDetailsError);
-        return;
+        throw new Error('Failed to fetch organization details');
       }
 
       if (orgData) {
@@ -86,6 +87,7 @@ export const signIn = async (email: string, password: string): Promise<void> => 
       return;
     }
   } catch (error: any) {
+    console.error('Error during sign in:', error);
     toast.error('Error signing in', {
       description: error.message,
     });
