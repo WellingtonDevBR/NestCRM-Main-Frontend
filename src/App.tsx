@@ -31,10 +31,13 @@ const queryClient = new QueryClient({
 // This helps with domain and subdomain hosting
 if (import.meta.env.PROD) {
   console.log(`Running in production on: ${window.location.hostname}`);
+  
   // Detect if we're on the main domain
   if (window.location.hostname === 'nestcrm.com.au' || 
       window.location.hostname === 'www.nestcrm.com.au') {
     console.log('Main domain detected - optimizing for root domain experience');
+    // Force immediate rendering for main domain
+    window.__MAIN_DOMAIN_DETECTED = true;
   }
 }
 
@@ -65,5 +68,12 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
+
+// Add TypeScript declaration for window property
+declare global {
+  interface Window {
+    __MAIN_DOMAIN_DETECTED?: boolean;
+  }
+}
 
 export default App;

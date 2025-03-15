@@ -129,6 +129,12 @@ export const getUserOrganizationRole = async (
  * Used specifically to ensure the landing page loads correctly regardless of domain
  */
 export const initializeIndexPageOrganization = (): boolean => {
+  // Fast path for main domain detection from global flag
+  if (window.__MAIN_DOMAIN_DETECTED) {
+    console.log('Main domain fast path detected during initialization');
+    return true;
+  }
+  
   // Get the current pathname
   const pathname = window.location.pathname;
   const hostname = window.location.hostname;

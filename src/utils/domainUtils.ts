@@ -16,6 +16,12 @@ export const getSubdomainFromUrl = (): string | null => {
   
   console.log(`Current hostname: "${hostname}"`);
   
+  // Force main domain detection from global flag if set
+  if (window.__MAIN_DOMAIN_DETECTED) {
+    console.log('Main domain detected via global flag');
+    return null;
+  }
+  
   // For localhost/staging development, check URL query params
   if (hostname === 'localhost' || 
       hostname === '127.0.0.1' || 
@@ -97,6 +103,11 @@ export const isValidSubdomainFormat = (subdomain: string): boolean => {
  * @returns Boolean indicating if this is the main domain
  */
 export const isMainDomain = (subdomain: string | null): boolean => {
+  // Force main domain detection from global flag if set
+  if (window.__MAIN_DOMAIN_DETECTED) {
+    return true;
+  }
+  
   // If on the main hostname, always return true
   const hostname = window.location.hostname;
   if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
@@ -143,3 +154,10 @@ export const buildSubdomainUrl = (subdomain: string, path: string = '/dashboard'
   // Fallback
   return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
 };
+
+// Add TypeScript declaration to ensure window property is available
+declare global {
+  interface Window {
+    __MAIN_DOMAIN_DETECTED?: boolean;
+  }
+}

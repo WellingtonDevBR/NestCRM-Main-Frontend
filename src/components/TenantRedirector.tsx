@@ -31,6 +31,14 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const [checkAttempts, setCheckAttempts] = useState(0);
 
   useEffect(() => {
+    // Early exit for main domain optimization
+    // This ensures immediate rendering on the main domain
+    if (window.__MAIN_DOMAIN_DETECTED && location.pathname === '/') {
+      console.log('Main domain fast path detected - bypassing all tenant checks');
+      setIsChecking(false);
+      return;
+    }
+    
     // Prevent running checks too frequently
     const now = Date.now();
     if (now - lastCheckTime < 1000) {
@@ -175,6 +183,12 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const isPublicPage = location.pathname === '/' || 
                        location.pathname === '/login' || 
                        location.pathname === '/signup';
+                       
+  // Fast path for main domain - show content immediately
+  if (window.__MAIN_DOMAIN_DETECTED && location.pathname === '/') {
+    console.log("Main domain fast path - rendering children immediately");
+    return <>{children}</>;
+  }
                        
   if (isChecking && !isPublicPage && checkAttempts < 3 && !orgInitialized) {
     console.log(`Showing loading spinner while checking tenant... (attempt ${checkAttempts + 1})`);

@@ -21,14 +21,19 @@ import {
 interface UseOrganizationStateProps {
   userId: string | undefined;
   isAuthenticated: boolean;
+  skipInitialization?: boolean;
 }
 
-export function useOrganizationState({ userId, isAuthenticated }: UseOrganizationStateProps) {
+export function useOrganizationState({ 
+  userId, 
+  isAuthenticated, 
+  skipInitialization = false 
+}: UseOrganizationStateProps) {
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(!skipInitialization);
   const [initializationAttempts, setInitializationAttempts] = useState(0);
-  const [initialized, setInitialized] = useState(false);
+  const [initialized, setInitialized] = useState(skipInitialization);
 
   const isValidSubdomain = async (subdomain: string): Promise<boolean> => {
     return await checkSubdomainAvailability(subdomain);
@@ -143,6 +148,14 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
   };
 
   useEffect(() => {
+    // Skip initialization if requested (for main domain optimization)
+    if (skipInitialization) {
+      console.log('Skipping organization initialization due to skipInitialization flag');
+      setInitialized(true);
+      setLoading(false);
+      return;
+    }
+    
     const initializeOrganization = async () => {
       // Check if this is the main index page - if so, it's okay to have no organization
       const isIndexPage = initializeIndexPageOrganization();
@@ -206,7 +219,7 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
       
       return () => clearTimeout(retryTimeout);
     }
-  }, [isAuthenticated, userId, initializationAttempts]);
+  }, [isAuthenticated, userId, initializationAttempts, skipInitialization]);
 
   return {
     currentOrganization,

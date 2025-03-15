@@ -24,13 +24,23 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   // Note: We're maintaining a consistent hook order by initializing all hooks first
   const { user, isAuthenticated } = useAuth();
   
+  // Fast path for main domain to avoid unnecessary organization loading
+  const [skipOrgLoading, setSkipOrgLoading] = useState(() => {
+    if (window.__MAIN_DOMAIN_DETECTED && window.location.pathname === '/') {
+      console.log('Main domain fast path for org provider - bypassing organization loading');
+      return true;
+    }
+    return false;
+  });
+  
   // Handle initialization state in the provider
-  const [localInitialized, setLocalInitialized] = useState(false);
+  const [localInitialized, setLocalInitialized] = useState(skipOrgLoading);
   
   // Then use the state hook with proper dependencies
   const organizationState = useOrganizationState({
     userId: user?.id,
-    isAuthenticated
+    isAuthenticated,
+    skipInitialization: skipOrgLoading
   });
   
   // Effect to ensure we mark local initialization
@@ -45,8 +55,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       value={{
         currentOrganization: organizationState.currentOrganization,
         organizations: organizationState.organizations,
-        loading: organizationState.loading,
-        initialized: localInitialized || organizationState.initialized,
+        loading: skipOrgLoading ? false : organizationState.loading,
+        initialized: skipOrgLoading ? true : (localInitialized || organizationState.initialized),
         createOrganization: organizationState.createOrganization,
         switchOrganization: organizationState.switchOrganization,
         updateOrganization: organizationState.updateOrganization,
