@@ -47,7 +47,7 @@ const SignUp = () => {
               to="/"
               className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
             >
-              ChurnWatcher
+              NESTCRM
             </Link>
             <h2 className="mt-6 text-3xl font-bold tracking-tight">
               Create your account
@@ -214,7 +214,7 @@ const SignUp = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/20 mix-blend-multiply"></div>
         <div className="absolute inset-0 flex flex-col justify-center p-20">
           <div className="max-w-md text-white">
-            <span className="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1 rounded-full">Join thousands of businesses</span>
+            <span className="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1 rounded-full">Join modern businesses</span>
             <h2 className="text-3xl font-bold mt-6 mb-4">Retain customers like never before with AI-powered insights</h2>
             <p className="text-white/80 mb-8">
               Our AI analyzes customer behavior to predict churn before it happens, giving you the opportunity to take action and retain your valuable customers.
@@ -226,7 +226,7 @@ const SignUp = () => {
                 ))}
               </div>
               <p className="text-sm text-white/90">
-                Join <span className="font-semibold">2,000+</span> businesses already using ChurnWatcher
+                Early access available now
               </p>
             </div>
           </div>

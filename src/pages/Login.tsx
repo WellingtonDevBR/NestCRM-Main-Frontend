@@ -22,7 +22,7 @@ const Login = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast.success("Login successful!", {
-        description: "Welcome back to ChurnWatcher.",
+        description: "Welcome back to NESTCRM.",
       });
       
       setTimeout(() => {
@@ -47,7 +47,7 @@ const Login = () => {
               to="/"
               className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
             >
-              ChurnWatcher
+              NESTCRM
             </Link>
             <h2 className="mt-6 text-3xl font-bold tracking-tight">
               Welcome back
@@ -184,11 +184,11 @@ const Login = () => {
                 </div>
               </div>
               <p className="italic text-white/90">
-                "ChurnWatcher has completely transformed how we approach customer retention. We identified at-risk accounts weeks before they would have cancelled, saving over $300K in annual revenue."
+                "NESTCRM has completely transformed how we approach customer retention. We identified at-risk accounts weeks before they would have cancelled, saving over $300K in annual revenue."
               </p>
             </div>
             <p className="text-sm text-white/80">
-              Join thousands of businesses improving their customer retention with ChurnWatcher
+              Join businesses improving their customer retention with NESTCRM
             </p>
           </div>
         </div>

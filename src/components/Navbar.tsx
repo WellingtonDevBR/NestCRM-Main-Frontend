@@ -37,7 +37,7 @@ const Navbar = () => {
             to="/"
             className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
           >
-            ChurnWatcher
+            NESTCRM
           </Link>
 
           <nav className="hidden md:flex items-center space-x-8">

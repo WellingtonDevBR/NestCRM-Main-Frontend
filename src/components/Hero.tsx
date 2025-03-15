@@ -30,7 +30,7 @@ const Hero = () => {
               </h1>
               
               <p className="text-lg md:text-xl text-foreground/80 mb-8 max-w-xl mx-auto lg:mx-0">
-                ChurnWatcher uses advanced AI to identify at-risk customers before they leave, helping you take action when it matters most.
+                NESTCRM uses advanced AI to identify at-risk customers before they leave, helping you take action when it matters most.
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
@@ -69,7 +69,7 @@ const Hero = () => {
               <div className="relative z-10 glass-card p-2 md:p-4 max-w-lg">
                 <img
                   src="https://cdn.builder.io/api/v1/image/assets%2F32a952c18c1642faae593395bd7dd4bb%2Ffb89ec93f80a465f9a939a3e88df6d8d"
-                  alt="ChurnWatcher Dashboard"
+                  alt="NESTCRM Dashboard"
                   className="w-full h-auto rounded-lg shadow-sm"
                 />
               </div>
@@ -77,19 +77,6 @@ const Hero = () => {
               <div className="absolute -top-2 -right-16 w-24 h-24 bg-primary/30 rounded-full blur-2xl"></div>
               <div className="absolute -bottom-2 -left-10 w-20 h-20 bg-accent/30 rounded-full blur-2xl"></div>
             </div>
-          </div>
-        </div>
-        
-        <div className="mt-20 pt-10 border-t border-border">
-          <div className="text-center mb-8">
-            <p className="text-foreground/60 text-sm font-medium">TRUSTED BY COMPANIES WORLDWIDE</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-8 md:gap-12">
-            {["Acme Inc.", "GlobalTech", "FutureCorp", "Innovate AI", "DataFlow"].map((company, i) => (
-              <div key={i} className="text-foreground/40 font-semibold text-xl">
-                {company}
-              </div>
-            ))}
           </div>
         </div>
       </div>
