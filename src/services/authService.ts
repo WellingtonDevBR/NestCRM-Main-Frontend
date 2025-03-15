@@ -17,8 +17,6 @@ export const signIn = async (email: string, password: string): Promise<void> => 
       email,
       password,
       options: {
-        // Enable cookie-based auth for cross-domain support
-        cookieSecure: true,
         // Set a relatively long session expiry for testing
         // In production, you might want to adjust this
         expiresIn: 60 * 60 * 24 * 7, // 7 days
@@ -120,8 +118,6 @@ export const signUp = async (email: string, password: string, userData: any): Pr
       password,
       options: {
         data: userData,
-        // Enable cookie-based auth for cross-domain support
-        cookieSecure: true,
       },
     });
 
