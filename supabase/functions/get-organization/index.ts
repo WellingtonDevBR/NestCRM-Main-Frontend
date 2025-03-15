@@ -47,6 +47,36 @@ serve(async (req) => {
       );
     }
 
+    // Handle development/preview URLs as main domain
+    if (hostname?.includes('localhost') || 
+        hostname?.includes('127.0.0.1') || 
+        hostname?.includes('lovableproject.com') ||
+        hostname?.includes('netlify.app') || 
+        hostname?.includes('vercel.app')) {
+      
+      console.log(`Development/preview URL detected: ${hostname}`);
+      
+      // If there's a subdomain parameter, look it up
+      if (subdomain && subdomain !== '') {
+        console.log(`Looking up organization with subdomain parameter: ${subdomain}`);
+      } else {
+        // Return as main domain for empty subdomain in development
+        return new Response(
+          JSON.stringify({ 
+            isMainDomain: true,
+            message: "This is the main domain (development environment)" 
+          }),
+          { 
+            status: 200,
+            headers: { 
+              "Content-Type": "application/json",
+              ...corsHeaders
+            }
+          }
+        );
+      }
+    }
+
     // Empty subdomain or main domain identifiers are always treated as main domain
     if (!subdomain || subdomain === '' || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
       console.log(`Empty subdomain or main domain identifier: ${subdomain}`);

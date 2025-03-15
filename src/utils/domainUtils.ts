@@ -3,9 +3,9 @@
  * Utilities for handling domain and subdomain logic
  */
 
-// Main domain constants
-const MAIN_DOMAIN = 'nestcrm.com.au';
-const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
+// Export main domain constants
+export const MAIN_DOMAIN = 'nestcrm.com.au';
+export const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
 
 /**
  * Extracts the subdomain from the current URL

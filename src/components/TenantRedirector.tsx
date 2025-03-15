@@ -10,6 +10,9 @@ interface TenantRedirectorProps {
   children: React.ReactNode;
 }
 
+// Import main domain constant from utils
+import { MAIN_DOMAIN } from '@/utils/domainUtils';
+
 export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { organizations, currentOrganization, loading: orgLoading, fetchOrganizations } = useOrganization();
