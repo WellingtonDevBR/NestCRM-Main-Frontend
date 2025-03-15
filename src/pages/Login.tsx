@@ -18,7 +18,10 @@ const Login = () => {
     isLoading,
     handleSubmit,
     isAuthenticated,
-    determineRedirectPath
+    determineRedirectPath,
+    errors,
+    handleBlur,
+    touched
   } = useLoginForm();
   
   const navigate = useNavigate();
@@ -49,9 +52,23 @@ const Login = () => {
                 togglePasswordVisibility={togglePasswordVisibility}
                 isLoading={isLoading}
                 handleSubmit={handleSubmit}
+                errors={errors}
+                handleBlur={handleBlur}
+                touched={touched}
               />
 
-              <SocialLoginButtons />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              <SocialLoginButtons disabled={isLoading} />
             </div>
           </div>
         </div>

@@ -1,9 +1,25 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { getSubdomainFromUrl } from "@/utils/domainUtils";
 import { useOrganization } from "@/hooks/useOrganization";
+import { z } from "zod";
+import { toast } from "sonner";
+
+// Form validation schema
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string()
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password must be less than 100 characters"),
+});
+
+export type LoginFormErrors = {
+  email?: string;
+  password?: string;
+  form?: string;
+};
 
 export function useLoginForm() {
   const { signIn, isAuthenticated } = useAuth();
@@ -12,20 +28,73 @@ export function useLoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<LoginFormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   
   const navigate = useNavigate();
   
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
+  // Validate field when it's touched or on submission
+  const validateField = (field: 'email' | 'password', value: string) => {
+    try {
+      const result = loginSchema.shape[field].parse(value);
+      return { valid: true, error: undefined };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return { valid: false, error: error.errors[0]?.message };
+      }
+      return { valid: false, error: "Invalid input" };
+    }
+  };
+
+  // Mark field as touched
+  const handleBlur = (field: 'email' | 'password') => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const { error } = validateField(field, field === 'email' ? email : password);
+    if (error) {
+      setErrors((prev) => ({ ...prev, [field]: error }));
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  // Validate all fields
+  const validateForm = () => {
+    const emailResult = validateField('email', email);
+    const passwordResult = validateField('password', password);
+    
+    const newErrors: LoginFormErrors = {};
+    
+    if (!emailResult.valid) newErrors.email = emailResult.error;
+    if (!passwordResult.valid) newErrors.password = passwordResult.error;
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    // Reset form error
+    setErrors((prev) => ({ ...prev, form: undefined }));
+    
+    // Validate all fields before submission
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
       await signIn(email, password);
       // Navigation will be handled by the signIn method
-    } catch (error) {
-      // Error is handled in the signIn method
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to sign in. Please try again.";
+      setErrors((prev) => ({ ...prev, form: errorMessage }));
+      toast.error("Login failed", {
+        description: errorMessage,
+      });
       setIsLoading(false);
     }
   };
@@ -57,6 +126,9 @@ export function useLoginForm() {
     isLoading,
     handleSubmit,
     isAuthenticated,
-    determineRedirectPath
+    determineRedirectPath,
+    errors,
+    handleBlur,
+    touched
   };
 }
