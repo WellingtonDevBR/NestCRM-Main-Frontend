@@ -1,14 +1,17 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganization } from "@/hooks/useOrganization";
+import { getSubdomainFromUrl } from "@/utils/domainUtils";
 
 const Login = () => {
-  const { signIn } = useAuth();
+  const { signIn, isAuthenticated } = useAuth();
+  const { organizations } = useOrganization();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -16,6 +19,26 @@ const Login = () => {
   const [password, setPassword] = useState("");
   
   const navigate = useNavigate();
+  
+  // Redirect authenticated users based on context
+  useEffect(() => {
+    if (isAuthenticated) {
+      const subdomain = getSubdomainFromUrl();
+      
+      // If on a subdomain, go to dashboard
+      if (subdomain) {
+        navigate('/dashboard');
+      } 
+      // If on main domain and has organizations, go to organizations page
+      else if (organizations.length > 0) {
+        navigate('/organizations');
+      }
+      // If no organizations, go to onboarding
+      else {
+        navigate('/onboarding');
+      }
+    }
+  }, [isAuthenticated, organizations, navigate]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,7 +46,7 @@ const Login = () => {
     
     try {
       await signIn(email, password);
-      // Navigation is handled in the signIn method
+      // Navigation is handled in the signIn method and the useEffect above
     } catch (error) {
       // Error is handled in the signIn method
       setIsLoading(false);

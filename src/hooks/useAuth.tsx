@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
+import { useOrganization } from '@/hooks/useOrganization';
+import { redirectToOrganization } from '@/utils/organizationUtils';
 
 interface AuthContextType {
   user: User | null;
@@ -76,7 +78,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       
       toast.success('Signed in successfully!');
-      navigate('/dashboard');
+      
+      // Instead of navigating directly to dashboard, navigate to organizations page
+      // The TenantRedirector will handle redirecting to the appropriate subdomain
+      navigate('/organizations');
     } catch (error: any) {
       toast.error('Error signing in', {
         description: error.message,
@@ -89,7 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      navigate('/');
+      // Navigate to the main domain after sign out
+      window.location.href = `${window.location.protocol}//${window.location.host.split('.').slice(-2).join('.')}`;
     } catch (error: any) {
       toast.error('Error signing out', {
         description: error.message,

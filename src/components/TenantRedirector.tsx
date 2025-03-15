@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { getSubdomainFromUrl, isMainDomain } from '@/utils/domainUtils';
 import { initializeIndexPageOrganization } from '@/utils/organizationUtils';
+import { redirectToOrganization } from '@/utils/organizationUtils';
 
 interface TenantRedirectorProps {
   children: React.ReactNode;
@@ -29,6 +30,43 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const [hasShownMessage, setHasShownMessage] = useState(false);
   const [lastCheckTime, setLastCheckTime] = useState(0);
   const [checkAttempts, setCheckAttempts] = useState(0);
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  useEffect(() => {
+    // Handle redirect to subdomain for authenticated users on main domain
+    const redirectAuthenticatedUserToSubdomain = async () => {
+      // Skip if already redirected or not on main domain
+      if (hasRedirected || location.pathname !== '/' || !isMainDomain(getSubdomainFromUrl())) {
+        return;
+      }
+      
+      // Proceed only if authenticated and we have organizations
+      if (isAuthenticated && !authLoading && !orgLoading && organizations.length > 0) {
+        console.log('Authenticated user on main domain - redirecting to organization subdomain');
+        
+        // Get first organization for redirection
+        const targetOrg = organizations[0];
+        if (targetOrg) {
+          setHasRedirected(true); // Prevent redirect loop
+          console.log(`Redirecting to ${targetOrg.subdomain}.${MAIN_DOMAIN}/dashboard`);
+          redirectToOrganization(targetOrg);
+        }
+      }
+    };
+
+    // Only run this check after auth and org data are loaded
+    if (!authLoading && !orgLoading && orgInitialized) {
+      redirectAuthenticatedUserToSubdomain();
+    }
+  }, [
+    isAuthenticated, 
+    authLoading, 
+    orgLoading, 
+    organizations, 
+    orgInitialized, 
+    location.pathname,
+    hasRedirected
+  ]);
 
   useEffect(() => {
     // Early exit for main domain optimization
@@ -49,16 +87,16 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     const checkTenant = async () => {
       try {
         // Always render the index page immediately
-        if (location.pathname === '/') {
-          console.log('Root path detected - bypassing tenant checks');
+        if (location.pathname === '/' && !isAuthenticated) {
+          console.log('Root path detected for unauthenticated user - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
         
         // Check if this is the main index page or another public page
         const isIndexPage = initializeIndexPageOrganization();
-        if (isIndexPage) {
-          console.log('Index page detected - bypassing tenant checks');
+        if (isIndexPage && !isAuthenticated) {
+          console.log('Index page detected for unauthenticated user - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
@@ -125,6 +163,22 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
             navigate('/onboarding');
             return;
           }
+          
+          // Redirect authenticated users on main domain to their subdomain dashboard
+          // But only if not already on a protected path
+          else if (isAuthenticated && organizations.length > 0 && 
+                  isOnMainDomain && 
+                  location.pathname !== '/organizations' && 
+                  location.pathname !== '/create-organization' &&
+                  !hasRedirected) {
+            const targetOrg = organizations[0];
+            if (targetOrg) {
+              console.log(`Redirecting authenticated user to subdomain: ${targetOrg.subdomain}`);
+              setHasRedirected(true);
+              redirectToOrganization(targetOrg);
+              return;
+            }
+          }
         } 
         // Handling for tenant subdomains
         else if (subdomain) {
@@ -176,7 +230,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     hasShownMessage,
     lastCheckTime,
     checkAttempts,
-    orgInitialized
+    orgInitialized,
+    hasRedirected
   ]);
 
   // Don't show loading spinner for public pages or when organization is initialized
