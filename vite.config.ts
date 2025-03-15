@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Add base configuration to ensure correct path resolution
+  // Make sure base path is set to root for proper asset loading
   base: '/',
   // Handle SPA routing by serving index.html for 404s
   build: {
