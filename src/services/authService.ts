@@ -154,8 +154,11 @@ export const signOut = async (): Promise<void> => {
     
     console.log('🔑 Authentication: Successfully signed out, redirecting to main domain');
     
-    // Redirect to main domain, not a subdomain
-    window.location.href = `${window.location.protocol}//${MAIN_DOMAIN}`;
+    // CRITICAL FIX: Add a force reload to clear any cached state or redux storage
+    setTimeout(() => {
+      // Force a complete page reload to clear all JS state
+      window.location.href = `${window.location.protocol}//${MAIN_DOMAIN}`;
+    }, 500); 
   } catch (error: any) {
     console.error('❌ Error: Error signing out:', error);
     toast.error('Error signing out', {
@@ -164,6 +167,7 @@ export const signOut = async (): Promise<void> => {
     
     // Force redirect to main domain even if there was an error
     setTimeout(() => {
+      // Force a complete page reload to clear all JS state
       window.location.href = `${window.location.protocol}//${MAIN_DOMAIN}`;
     }, 2000);
   }

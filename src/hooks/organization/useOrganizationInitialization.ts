@@ -114,7 +114,7 @@ export function useOrganizationInitialization({
           
           // If we're on main domain and user has orgs but no current org is set, use the first one
           if (isMainDomain(subdomain) && orgs.length > 0 && !subdomain) {
-            // Do not automatically set current organization
+            // CRITICAL FIX: Do not automatically set current organization
             console.log('User has organizations, but not setting current organization automatically');
           }
         } else {

@@ -69,6 +69,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       return;
     }
     
+    // CRITICAL FIX: Never redirect unauthenticated users to subdomains
+    if (!isAuthenticated) {
+      console.log('🔍 Security: User not authenticated, not performing tenant checks');
+      setIsChecking(false);
+      return;
+    }
+    
     // Prevent running checks too frequently
     const now = Date.now();
     if (now - lastCheckTime < 1000) {
@@ -133,6 +140,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         // Allow access on public paths
         if (isPublicPath) {
           console.log("🔍 Routing: Public path detected, allowing access");
+          setIsChecking(false);
+          return;
+        }
+        
+        // CRITICAL FIX: Never redirect from organization selection page
+        if (location.pathname === '/organizations') {
+          console.log("🔍 Routing: On organizations page, allowing access without tenant checks");
           setIsChecking(false);
           return;
         }

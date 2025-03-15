@@ -24,6 +24,10 @@
       "destination": "/index.html"
     },
     {
+      "source": "/dashboard/(.*)",
+      "destination": "/index.html"
+    },
+    {
       "source": "/organizations",
       "destination": "/index.html"
     },

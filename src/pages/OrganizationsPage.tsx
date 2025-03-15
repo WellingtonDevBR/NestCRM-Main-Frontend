@@ -69,11 +69,8 @@ const OrganizationsPage = () => {
           console.log('Retrieved organizations:', validOrgs.length);
           setUserOrganizations(validOrgs);
           
-          // If there's only one organization, redirect to it directly
-          if (validOrgs.length === 1) {
-            console.log('User has only one organization, redirecting to it:', validOrgs[0].name);
-            handleSelectOrganization(validOrgs[0].id, validOrgs[0].subdomain);
-          }
+          // CRITICAL FIX: Don't automatically redirect to the first organization
+          // Instead, let the user choose which organization to access
         } else {
           setUserOrganizations([]);
         }
