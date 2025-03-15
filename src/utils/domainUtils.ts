@@ -16,63 +16,68 @@ export const getSubdomainFromUrl = (): string | null => {
   
   console.log(`Current hostname: "${hostname}"`);
   
-  // For localhost development, check URL format
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+  // For localhost/staging development, check URL query params
+  if (hostname === 'localhost' || 
+      hostname === '127.0.0.1' || 
+      hostname.includes('lovableproject.com')) {
     // Check for subdomain param in URL for local development
     const urlSearchParams = new URLSearchParams(window.location.search);
     const subdomainParam = urlSearchParams.get('subdomain');
     if (subdomainParam) {
-      console.log(`Local development with subdomain param: ${subdomainParam}`);
+      console.log(`Development with subdomain param: ${subdomainParam}`);
       return subdomainParam;
     }
     
-    // Alternative: check for subdomain.localhost pattern
+    // For localhost.subdomain pattern
     const parts = hostname.split('.');
     if (parts.length > 1 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
-      console.log(`Local development with subdomain format: ${parts[0]}`);
+      console.log(`Development with subdomain format: ${parts[0]}`);
       return parts[0];
     }
-    console.log('Local development without subdomain');
+    
+    console.log('Development without subdomain');
     return null;
   }
   
-  // Handle Netlify/Vercel/Lovable preview URLs by returning null (no subdomain)
-  if (hostname.includes('netlify.app') || 
-      hostname.includes('vercel.app') || 
-      hostname.includes('lovableproject.com')) {
-    console.log(`Development/preview URL detected: ${hostname}`);
+  // Handle preview URLs by returning null (no subdomain)
+  if (hostname.includes('netlify.app') || hostname.includes('vercel.app')) {
+    console.log(`Preview URL detected: ${hostname}`);
     return null;
   }
   
-  // Production domain handling
-  
-  // Check if this is exactly the main domain or www.main_domain
+  // Exact match for main domain or www.main_domain
   if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
-    console.log(`Detected exact main domain: ${hostname}`);
+    console.log(`Exact main domain match: ${hostname}`);
     return null;
   }
   
-  // Special case for just "nestcrm" without domain
+  // Special case for nestcrm without domain suffix
   if (hostname === 'nestcrm') {
-    console.log('Detected nestcrm without domain suffix, treating as main domain');
+    console.log('Detected nestcrm without domain suffix');
     return null;
   }
   
-  // For other subdomains under nestcrm.com.au
+  // Check for subdomains under the main domain
   if (hostname.endsWith(`.${MAIN_DOMAIN}`)) {
     const subdomain = hostname.replace(`.${MAIN_DOMAIN}`, '');
     
     // Only return if it's not www or nestcrm
     if (!MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
-      console.log(`Detected valid subdomain: ${subdomain}`);
+      console.log(`Valid subdomain detected: ${subdomain}`);
       return subdomain;
     }
     
-    console.log(`Detected main domain identifier: ${subdomain}`);
+    console.log(`Main domain identifier detected: ${subdomain}`);
     return null;
   }
   
-  // For any other domain, assume no subdomain
+  // Handle direct access to nestcrm.com.au (not www.nestcrm.com.au)
+  if (hostname === MAIN_DOMAIN) {
+    console.log(`Direct access to main domain: ${hostname}`);
+    return null;
+  }
+  
+  // Fallback - treat unknown domains as having no subdomain
   console.log(`Unknown domain structure: ${hostname}, treating as main domain`);
   return null;
 };
@@ -83,6 +88,8 @@ export const getSubdomainFromUrl = (): string | null => {
  * @returns A regex test result
  */
 export const isValidSubdomainFormat = (subdomain: string): boolean => {
+  if (!subdomain) return false;
+  
   // Check subdomain format
   const subdomainRegex = /^[a-z0-9-]+$/;
   return subdomainRegex.test(subdomain) && 
@@ -96,7 +103,9 @@ export const isValidSubdomainFormat = (subdomain: string): boolean => {
  * @returns Boolean indicating if this is the main domain
  */
 export const isMainDomain = (subdomain: string | null): boolean => {
-  return !subdomain || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain);
+  if (!subdomain) return true;
+  if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) return true;
+  return false;
 };
 
 /**
@@ -109,32 +118,27 @@ export const buildSubdomainUrl = (subdomain: string, path: string = '/dashboard'
   const protocol = window.location.protocol;
   const hostname = window.location.hostname;
   
-  // If on localhost, just return a query param version
-  if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+  // If on development environment, use query param
+  if (hostname.includes('localhost') || 
+      hostname.includes('127.0.0.1') || 
+      hostname.includes('lovableproject.com') ||
+      hostname.includes('netlify.app') || 
+      hostname.includes('vercel.app')) {
     return `${path}?subdomain=${subdomain}`;
   }
   
-  // Handle preview/development URLs
-  if (hostname.includes('netlify.app') || 
-      hostname.includes('vercel.app') || 
-      hostname.includes('lovableproject.com')) {
-    return `${path}?subdomain=${subdomain}`;
-  }
-  
-  // In production, generate subdomain URL
-  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}` || 
-      MAIN_DOMAIN_IDENTIFIERS.includes(hostname) || hostname === 'nestcrm') {
+  // If we're on the main domain
+  if (hostname === MAIN_DOMAIN || 
+      hostname === `www.${MAIN_DOMAIN}` || 
+      MAIN_DOMAIN_IDENTIFIERS.includes(hostname)) {
     return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
   }
   
-  // If we're already on a subdomain 
-  const domainParts = hostname.split('.');
-  if (domainParts.length >= 2) {
-    // For domain.nestcrm.com.au to newdomain.nestcrm.com.au
-    const baseDomain = domainParts.slice(1).join('.');
-    return `${protocol}//${subdomain}.${baseDomain}${path}`;
+  // If we're already on a subdomain
+  if (hostname.endsWith(`.${MAIN_DOMAIN}`)) {
+    return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
   }
   
   // Fallback
-  return path;
+  return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
 };

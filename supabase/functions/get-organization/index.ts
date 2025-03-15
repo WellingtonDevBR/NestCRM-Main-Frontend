@@ -9,7 +9,7 @@ const corsHeaders = {
 
 interface GetOrganizationRequest {
   subdomain?: string;
-  hostname?: string; // Added hostname for better context
+  hostname?: string;
 }
 
 // Main domain constants
@@ -29,9 +29,9 @@ serve(async (req) => {
     
     console.log(`Edge function received: subdomain: "${subdomain}", hostname: "${hostname}"`);
 
-    // Empty subdomain or direct access to the main domain is always treated as main domain
-    if (!subdomain || subdomain === '' || hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
-      console.log(`Empty subdomain or direct main domain access: ${hostname}`);
+    // Always treat nestcrm.com.au as the main domain, regardless of subdomain
+    if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
+      console.log(`Direct access to main domain detected: ${hostname}`);
       return new Response(
         JSON.stringify({ 
           isMainDomain: true,
@@ -47,13 +47,13 @@ serve(async (req) => {
       );
     }
 
-    // Check if this is a main domain identifier
-    if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
-      console.log(`Main domain identifier detected: ${subdomain}`);
+    // Empty subdomain or main domain identifiers are always treated as main domain
+    if (!subdomain || subdomain === '' || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
+      console.log(`Empty subdomain or main domain identifier: ${subdomain}`);
       return new Response(
         JSON.stringify({ 
           isMainDomain: true,
-          message: "This is the main domain, not a tenant subdomain" 
+          message: "This is the main domain" 
         }),
         { 
           status: 200,
@@ -84,10 +84,10 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "Could not find organization",
-          isMainDomain: false 
+          isMainDomain: true // Default to main domain if no organization found
         }),
         { 
-          status: 404, 
+          status: 200, // Using 200 instead of 404 to prevent navigation errors
           headers: { 
             "Content-Type": "application/json",
             ...corsHeaders
@@ -113,10 +113,11 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Unexpected error:", error);
+    // Always default to main domain on errors for graceful fallback
     return new Response(
       JSON.stringify({ 
         error: "Internal server error",
-        isMainDomain: true  // Fallback to main domain on errors
+        isMainDomain: true
       }),
       { 
         status: 200,

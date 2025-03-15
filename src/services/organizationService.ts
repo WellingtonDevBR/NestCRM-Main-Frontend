@@ -24,7 +24,7 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
+          'Authorization': accessToken ? `Bearer ${accessToken}` : ''
         },
         body: JSON.stringify({ subdomain, hostname })
       });
@@ -34,7 +34,7 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
         console.log('Edge function response:', result);
         
         if (result.organization) {
-          console.log('Successfully fetched organization:', result.organization);
+          console.log('Successfully fetched organization:', result.organization.name);
           return result.organization as Organization;
         }
         
@@ -43,9 +43,11 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
           // No organization needed since this is the main domain
           return null;
         }
+      } else {
+        console.error(`Edge function error: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Edge function error details:', errorText);
       }
-      
-      console.error(`Edge function error: ${response.status}`);
     } catch (edgeFunctionError) {
       console.error('Edge function failed:', edgeFunctionError);
     }
@@ -61,6 +63,12 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
     if (error) {
       console.error('Error fetching organization by subdomain:', error);
       return null;
+    }
+
+    if (data) {
+      console.log('Successfully fetched organization via direct query:', data.name);
+    } else {
+      console.log('No organization found for subdomain:', subdomain);
     }
 
     return data as Organization;
@@ -80,6 +88,12 @@ export const checkSubdomainAvailability = async (subdomain: string): Promise<boo
     // Check subdomain format first
     const subdomainRegex = /^[a-z0-9-]+$/;
     if (!subdomainRegex.test(subdomain)) {
+      return false;
+    }
+    
+    // Check reserved subdomains (www, api, etc.)
+    const reservedSubdomains = ['www', 'nestcrm', 'api', 'admin', 'app'];
+    if (reservedSubdomains.includes(subdomain)) {
       return false;
     }
     
