@@ -16,7 +16,7 @@ import { Building, ArrowRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Organization } from "@/types/supabase";
-import { MAIN_DOMAIN } from "@/utils/domainUtils";
+import { MAIN_DOMAIN, buildSubdomainUrl } from "@/utils/domainUtils";
 
 const OrganizationsPage = () => {
   const { isAuthenticated, loading: authLoading, user } = useAuth();
@@ -69,6 +69,12 @@ const OrganizationsPage = () => {
           
           console.log('Retrieved organizations:', validOrgs.length);
           setUserOrganizations(validOrgs);
+          
+          // If user has only one organization, auto-redirect to it
+          if (validOrgs.length === 1) {
+            console.log('User has only one organization, redirecting to it:', validOrgs[0].name);
+            handleSelectOrganization(validOrgs[0].id);
+          }
         } else {
           setUserOrganizations([]);
         }
@@ -94,14 +100,36 @@ const OrganizationsPage = () => {
     try {
       await switchOrganization(id);
       
-      toast.success(`Organization selected`, {
-        description: "Redirecting to dashboard..."
-      });
+      // Find the selected organization to get its subdomain
+      const selectedOrg = userOrganizations.find(org => org.id === id);
       
-      // Always navigate to dashboard on the current domain
-      // No redirection to subdomain to avoid cross-domain issues
-      navigate('/dashboard');
-      
+      if (selectedOrg) {
+        toast.success(`Organization selected`, {
+          description: `Redirecting to ${selectedOrg.subdomain}.nestcrm.com.au...`
+        });
+        
+        // Detect if we're in a production environment
+        const isProduction = 
+          !window.location.hostname.includes('localhost') && 
+          !window.location.hostname.includes('127.0.0.1') &&
+          !window.location.hostname.includes('lovableproject.com') &&
+          !window.location.hostname.includes('netlify.app') &&
+          !window.location.hostname.includes('vercel.app');
+        
+        console.log('Production environment detected, redirecting to subdomain');
+        
+        // Build the full URL with subdomain
+        const redirectUrl = buildSubdomainUrl(selectedOrg.subdomain, '/dashboard');
+        console.log('Redirecting to:', redirectUrl);
+        
+        // Use location.href for a full page redirect to the subdomain
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 500);
+      } else {
+        // Fallback if org not found - just navigate to dashboard on current domain
+        navigate('/dashboard');
+      }
     } catch (error) {
       console.error("Error selecting organization:", error);
       toast.error("Failed to select organization");

@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { buildSubdomainUrl } from '@/utils/domainUtils';
 
 export function OrganizationSelector() {
   const { isAuthenticated, user } = useAuth();
@@ -120,15 +121,46 @@ export function OrganizationSelector() {
           description: `Redirecting to ${subdomain}.nestcrm.com.au...`,
         });
         
+        // Build the full URL with subdomain
+        const redirectUrl = buildSubdomainUrl(subdomain, '/dashboard');
+        console.log('Redirecting to:', redirectUrl);
+        
         setTimeout(() => {
-          window.location.href = `${window.location.protocol}//${subdomain}.nestcrm.com.au/dashboard`;
-        }, 2000);
+          window.location.href = redirectUrl;
+        }, 1000);
       }
     } catch (error) {
       console.error('Error creating organization:', error);
       toast.error('Failed to create organization');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleSwitchOrganization = async (orgId: string) => {
+    try {
+      await switchOrganization(orgId);
+      
+      // Find the selected organization
+      const selectedOrg = userOrganizations.find(org => org.id === orgId);
+      
+      if (selectedOrg) {
+        toast.success(`Switching to ${selectedOrg.name}`, {
+          description: `Redirecting to ${selectedOrg.subdomain}.nestcrm.com.au...`,
+        });
+        
+        // Build the full URL with subdomain
+        const redirectUrl = buildSubdomainUrl(selectedOrg.subdomain, window.location.pathname);
+        console.log('Redirecting to:', redirectUrl);
+        
+        // Use location.href for a full page redirect to the subdomain
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error switching organization:', error);
+      toast.error('Failed to switch organization');
     }
   };
 
@@ -147,7 +179,7 @@ export function OrganizationSelector() {
     <div className="flex items-center gap-2">
       <Select
         value={currentOrganization?.id}
-        onValueChange={(value) => switchOrganization(value)}
+        onValueChange={handleSwitchOrganization}
       >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select organization" />

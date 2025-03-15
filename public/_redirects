@@ -1,4 +1,3 @@
 
-# Redirect all paths to index.html to support SPA routing on all domains and subdomains
+# Redirects for SPA
 /*  /index.html  200
-

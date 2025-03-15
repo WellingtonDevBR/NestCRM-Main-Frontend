@@ -33,9 +33,21 @@ serve(async (req) => {
     let effectiveSubdomain = subdomain;
     if (!effectiveSubdomain && hostname && hostname.includes('.')) {
       const parts = hostname.split('.');
-      if (parts.length >= 3 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
-        effectiveSubdomain = parts[0];
-        console.log(`Extracted subdomain from hostname: ${effectiveSubdomain}`);
+      if (parts.length >= 2) {
+        // Handle different hostname patterns
+        if (hostname.includes(MAIN_DOMAIN)) {
+          // For production domain pattern: subdomain.nestcrm.com.au
+          if (parts.length >= 3 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
+            effectiveSubdomain = parts[0];
+            console.log(`Extracted subdomain from hostname: ${effectiveSubdomain}`);
+          }
+        } else {
+          // For preview/development patterns: subdomain.localhost, subdomain.netlify.app, etc.
+          if (!MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
+            effectiveSubdomain = parts[0];
+            console.log(`Extracted subdomain from development hostname: ${effectiveSubdomain}`);
+          }
+        }
       }
     }
 
@@ -131,16 +143,6 @@ serve(async (req) => {
           }
         }
       );
-    }
-
-    // Check for a subdomain in the hostname
-    if (hostname && hostname.includes('.')) {
-      const parts = hostname.split('.');
-      // If no explicit subdomain provided, try to extract it from the hostname
-      if (!effectiveSubdomain && parts.length >= 3 && parts[1] === 'nestcrm') {
-        effectiveSubdomain = parts[0];
-        console.log(`Extracted subdomain from hostname: ${effectiveSubdomain}`);
-      }
     }
 
     // Empty subdomain or main domain identifiers are always treated as main domain
