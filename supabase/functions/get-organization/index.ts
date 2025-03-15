@@ -11,6 +11,9 @@ interface GetOrganizationRequest {
   subdomain?: string;
 }
 
+// Main domain constants
+const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
+
 serve(async (req) => {
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
@@ -34,8 +37,8 @@ serve(async (req) => {
       );
     }
 
-    // nestcrm is not a subdomain, it's the main domain
-    if (subdomain === 'nestcrm' || subdomain === 'www') {
+    // Check if this is a main domain request
+    if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
       return new Response(
         JSON.stringify({ error: "This is the main domain, not a tenant subdomain" }),
         { 

@@ -4,13 +4,13 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { getSubdomainFromUrl, isMainDomain } from '@/utils/domainUtils';
 
 interface TenantRedirectorProps {
   children: React.ReactNode;
 }
 
 export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
-  const { getSubdomainFromUrl } = useOrganization();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const { organizations, currentOrganization, loading: orgLoading, fetchOrganizations } = useOrganization();
   const location = useLocation();
@@ -33,13 +33,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
       const subdomain = getSubdomainFromUrl();
       
-      // On the main domain (nestcrm.com.au), there's no subdomain or the subdomain is 'www'
-      const isMainDomain = !subdomain || subdomain === 'nestcrm' || subdomain === 'www';
+      // On the main domain (nestcrm.com.au), there's no subdomain or the subdomain is 'www' or 'nestcrm'
+      const isOnMainDomain = isMainDomain(subdomain);
       const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
       
       console.log('TenantRedirector: Checking tenant', { 
         subdomain, 
-        isMainDomain, 
+        isOnMainDomain, 
         isAuthPath, 
         isAuthenticated, 
         organizationsCount: organizations.length,
@@ -47,7 +47,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       });
       
       // On the main domain (nestcrm.com.au) and authenticated
-      if (isMainDomain && isAuthenticated) {
+      if (isOnMainDomain && isAuthenticated) {
         // If trying to access auth pages while logged in on main domain, redirect to organizations page
         if (isAuthPath) {
           navigate('/organizations');
@@ -64,7 +64,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       // 3. User is authenticated
       // 4. User has at least one organization (so they're not in the process of creating their first)
       // 5. We haven't shown the message yet
-      if (!isMainDomain && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
+      if (!isOnMainDomain && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
         console.log('User has organizations but no access to this subdomain:', subdomain);
         toast.error('You do not have access to this organization');
         setHasShownMessage(true);
