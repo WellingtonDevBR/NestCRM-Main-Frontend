@@ -4,8 +4,6 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "cleanUrls": true,
-  "trailingSlash": false,
   "routes": [
     { 
       "src": "/ping.txt",
@@ -21,8 +19,7 @@
     },
     { 
       "src": "/(.*)", 
-      "dest": "/index.html",
-      "status": 200
+      "dest": "/index.html" 
     }
   ],
   "headers": [
