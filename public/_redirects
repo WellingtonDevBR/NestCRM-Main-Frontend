@@ -11,6 +11,10 @@
 # Special handling for auth redirections with query parameters
 /dashboard?*  /index.html  200
 
+# Subdomain handling - redirect subdomains on index to dashboard
+https://*.nestcrm.com.au/  /dashboard  301!
+https://*.nestcrm.com.au/index.html  /dashboard  301!
+
 # Handle specific public routes
 /login  /index.html  200
 /signup  /index.html  200

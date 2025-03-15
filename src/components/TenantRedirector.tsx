@@ -80,6 +80,17 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     }
   }, [location.search, isAuthenticated, location.pathname, navigate, currentOrganization, organizations]);
 
+  // NEW EFFECT: Redirect customer subdomains away from index page
+  useEffect(() => {
+    const subdomain = getSubdomainFromUrl();
+    
+    // If there's a valid subdomain and we're on the index page, redirect to dashboard
+    if (subdomain && !isMainDomain(subdomain) && (location.pathname === '/' || location.pathname === '/index.html')) {
+      console.log('🔄 Subdomain on index: Redirecting subdomain to dashboard', subdomain);
+      navigate('/dashboard', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   // Check if the current subdomain is valid
   useEffect(() => {
     const checkSubdomainValidity = async () => {

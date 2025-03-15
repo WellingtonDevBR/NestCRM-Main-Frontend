@@ -45,5 +45,9 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    { "source": "/:subdomain.nestcrm.com.au/", "destination": "/:subdomain.nestcrm.com.au/dashboard", "permanent": true },
+    { "source": "/:subdomain.nestcrm.com.au/index.html", "destination": "/:subdomain.nestcrm.com.au/dashboard", "permanent": true }
   ]
 }
