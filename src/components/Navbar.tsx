@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { OrganizationRedirectButton } from "@/components/OrganizationRedirectButton";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -70,7 +71,9 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            {!isAuthenticated ? (
+            {isAuthenticated ? (
+              <OrganizationRedirectButton />
+            ) : (
               <>
                 <Link to="/login">
                   <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
@@ -79,7 +82,7 @@ const Navbar = () => {
                   <Button className="button-gradient">Sign up</Button>
                 </Link>
               </>
-            ) : null}
+            )}
           </div>
 
           <button
@@ -127,7 +130,11 @@ const Navbar = () => {
             >
               Pricing
             </a>
-            {!isAuthenticated && (
+            {isAuthenticated ? (
+              <div className="pt-2">
+                <OrganizationRedirectButton />
+              </div>
+            ) : (
               <div className="flex flex-col space-y-2 pt-2">
                 <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
                   <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">

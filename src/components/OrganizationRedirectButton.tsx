@@ -38,10 +38,11 @@ export const OrganizationRedirectButton = () => {
 
   return (
     <Button 
-      className="mt-4 sm:mt-0 flex items-center gap-2 shadow-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all" 
+      variant="default"
+      className="flex items-center gap-2 shadow-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all" 
       onClick={handleRedirect}
     >
-      Return to Dashboard
+      Dashboard
       <ArrowRight className="h-4 w-4" />
     </Button>
   );
