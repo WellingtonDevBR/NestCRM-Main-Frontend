@@ -57,9 +57,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         // since some pages like login/signup should work on any subdomain
       }
 
-      // Refresh organizations if authenticated and no organizations loaded
+      // Refresh organizations with retry logic if authenticated and no organizations loaded
       if (isAuthenticated && organizations.length === 0) {
-        await fetchOrganizations();
+        try {
+          await fetchOrganizations();
+        } catch (error) {
+          console.error('Failed to fetch organizations:', error);
+        }
       }
 
       setIsChecking(false);

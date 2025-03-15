@@ -32,6 +32,14 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     const hostname = window.location.hostname;
     
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      // For localhost development, check URL format
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      const subdomainParam = urlSearchParams.get('subdomain');
+      if (subdomainParam) {
+        return subdomainParam;
+      }
+      
+      // Alternative: check for subdomain.localhost pattern
       const parts = hostname.split('.');
       if (parts.length > 1 && parts[0] !== 'www') {
         return parts[0];
@@ -39,6 +47,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       return null;
     }
     
+    // Handle Netlify/Vercel preview URLs
     if (hostname.includes('preview--')) {
       const parts = hostname.split('--');
       if (parts.length > 1) {
@@ -46,8 +55,10 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       }
     }
     
+    // Production subdomain handling
     const hostnameSegments = hostname.split('.');
     
+    // If more than 2 segments (e.g., subdomain.example.com)
     if (hostnameSegments.length > 2) {
       return hostnameSegments[0];
     }
@@ -59,40 +70,48 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     try {
       console.log(`Fetching organization by subdomain: ${subdomain}`);
       
-      // Use the constant edge function URL instead of trying to access protected properties
-      const response = await fetch(EDGE_FUNCTION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`
-        },
-        body: JSON.stringify({ subdomain })
-      });
-      
-      if (!response.ok) {
-        console.error(`Error response from edge function: ${response.status}`);
-        const { data, error } = await supabase
-          .from('organizations')
-          .select('*')
-          .eq('subdomain', subdomain)
-          .single();
-
-        if (error) {
-          console.error('Error fetching organization by subdomain:', error);
-          return null;
+      // First try the edge function
+      try {
+        // Use the constant edge function URL instead of trying to access protected properties
+        const session = await supabase.auth.getSession();
+        const accessToken = session.data.session?.access_token;
+        
+        const response = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ subdomain })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.organization) {
+            console.log('Successfully fetched organization:', result.organization);
+            return result.organization as Organization;
+          }
         }
-
-        return data as Organization;
+        
+        console.error(`Edge function error: ${response.status}`);
+      } catch (edgeFunctionError) {
+        console.error('Edge function failed:', edgeFunctionError);
       }
       
-      const result = await response.json();
-      if (result.error) {
-        console.error('Error from edge function:', result.error);
+      // Fallback to direct database query if edge function fails
+      console.log('Falling back to direct database query');
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('subdomain', subdomain)
+        .single();
+
+      if (error) {
+        console.error('Error fetching organization by subdomain:', error);
         return null;
       }
-      
-      console.log('Successfully fetched organization:', result.organization);
-      return result.organization as Organization;
+
+      return data as Organization;
     } catch (error) {
       console.error('Error in fetchOrganizationBySubdomain:', error);
       return null;
@@ -110,7 +129,22 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         .select('organization_id')
         .eq('user_id', user.id);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error('Error fetching organization memberships:', memberError);
+        
+        // Special handling for the infinite recursion error
+        if (memberError.message.includes('infinite recursion')) {
+          toast.error('Database policy error. Please contact support.',
+            { description: 'There was an issue with database permissions.' });
+        } else {
+          throw memberError;
+        }
+        
+        setOrganizations([]);
+        setCurrentOrganization(null);
+        setLoading(false);
+        return;
+      }
       
       if (!memberData || memberData.length === 0) {
         setOrganizations([]);
@@ -126,7 +160,10 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         .select('*')
         .in('id', organizationIds);
 
-      if (orgsError) throw orgsError;
+      if (orgsError) {
+        console.error('Error fetching organizations data:', orgsError);
+        throw orgsError;
+      }
       
       setOrganizations(organizationsData as Organization[]);
       
@@ -151,12 +188,24 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
 
   const isValidSubdomain = async (subdomain: string): Promise<boolean> => {
     try {
+      if (subdomain.length < 3) return false;
+      
+      // Check subdomain format first
+      const subdomainRegex = /^[a-z0-9-]+$/;
+      if (!subdomainRegex.test(subdomain)) {
+        return false;
+      }
+      
       const { data, error } = await supabase
         .from('organizations')
         .select('subdomain')
         .eq('subdomain', subdomain);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error checking subdomain:', error);
+        return false;
+      }
+      
       return data.length === 0; // Subdomain is valid if no org is using it
     } catch (error) {
       console.error('Error checking subdomain:', error);
@@ -260,7 +309,12 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         
         if (subdomain) {
           const org = await fetchOrganizationBySubdomain(subdomain);
-          setCurrentOrganization(org);
+          if (org) {
+            setCurrentOrganization(org);
+            console.log('Successfully set current organization:', org.name);
+          } else {
+            console.log('No organization found for subdomain:', subdomain);
+          }
           
           if (isAuthenticated) {
             await fetchOrganizations();
