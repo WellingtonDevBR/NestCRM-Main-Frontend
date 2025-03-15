@@ -79,7 +79,7 @@ export function OrganizationSelector() {
         // In a production app, we'd redirect to the new subdomain here
         // For demo purposes, we'll just show a success message
         toast.success('Organization created!', {
-          description: `Visit ${subdomain}.yourdomain.com to access it`,
+          description: `Visit ${subdomain}.nestcrm.com.au to access it`,
         });
       }
     } finally {
@@ -151,7 +151,7 @@ export function OrganizationSelector() {
                   className="rounded-r-none"
                 />
                 <span className="bg-muted px-3 py-2 border border-l-0 border-input rounded-r-md text-muted-foreground">
-                  .yourdomain.com
+                  .nestcrm.com.au
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">

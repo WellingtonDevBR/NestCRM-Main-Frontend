@@ -47,21 +47,16 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         }
       }
       
-      // On a subdomain but the organization doesn't exist or user doesn't have access
-      if (subdomain && !currentOrganization && isAuthenticated && !hasShownMessage) {
-        console.log('Invalid tenant or no access for subdomain:', subdomain);
-        
-        // Check if the user has any organizations
-        if (organizations.length > 0) {
-          // Only show the access error if we've confirmed the user has organizations
-          // but doesn't have access to this specific one
-          toast.error('You do not have access to this organization');
-          setHasShownMessage(true);
-        } else {
-          // If user has no organizations yet, don't show the error message
-          // They might be in the process of creating their first one
-          console.log('User has no organizations yet, not showing access error');
-        }
+      // Only show the error message when:
+      // 1. We're on a subdomain
+      // 2. The currentOrganization is not loaded (user doesn't have access)
+      // 3. User is authenticated
+      // 4. User has at least one organization (so they're not in the process of creating their first)
+      // 5. We haven't shown the message yet
+      if (subdomain && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
+        console.log('User has organizations but no access to this subdomain:', subdomain);
+        toast.error('You do not have access to this organization');
+        setHasShownMessage(true);
       }
 
       // Refresh organizations with retry logic if authenticated and no organizations loaded

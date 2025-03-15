@@ -123,7 +123,7 @@ const Onboarding = () => {
                       required
                     />
                     <span className="bg-muted px-3 py-2 border border-l-0 border-input rounded-r-md text-muted-foreground">
-                      .yourdomain.com
+                      .nestcrm.com.au
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">
