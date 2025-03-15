@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -222,6 +223,10 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
       // Also set a cookie that indicates this is a cross-domain redirect
       document.cookie = `auth_redirect=true; path=/; domain=.${MAIN_DOMAIN}; secure`;
       
+      // Set auth-related cookies directly at the root domain level
+      document.cookie = `sb-access-token=${currentSession.access_token}; expires=${expiryDate.toUTCString()}; path=/; domain=.${MAIN_DOMAIN}; secure; SameSite=Lax`;
+      document.cookie = `sb-refresh-token=${currentSession.refresh_token}; expires=${expiryDate.toUTCString()}; path=/; domain=.${MAIN_DOMAIN}; secure; SameSite=Lax`;
+      
       console.log('🔑 Cross-domain auth: Successfully prepared session for subdomain access');
     } catch (error) {
       console.error('❌ Error setting cross-domain session:', error);
@@ -230,6 +235,22 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
     // Add organization ID and access token to the URL as temporary parameters
     // These will be used to restore the session if cookies fail
     const urlWithAuth = `${targetUrl}?auth_redirect=true&org_id=${org.id}`;
+    
+    // Add a fallback mechanism for when the subdomain isn't available yet
+    // This checks if the subdomain is reachable first
+    try {
+      const checkSubdomainResponse = await fetch(`${protocol}//${targetSubdomain}/ping.txt`, { 
+        method: 'HEAD',
+        mode: 'no-cors' // This allows us to check existence without CORS issues
+      });
+      
+      console.log('Subdomain check result:', checkSubdomainResponse.status);
+    } catch (error) {
+      console.warn('Subdomain may not be available yet, redirecting to organizations page instead');
+      // If the subdomain ping fails, redirect to organizations page instead
+      window.location.href = '/organizations';
+      return;
+    }
     
     // Use a small timeout to ensure the auth state is properly set
     setTimeout(() => {
@@ -241,6 +262,8 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
     toast.error('Redirect error', {
       description: 'Unable to redirect to organization dashboard'
     });
+    
+    // Fallback to the organizations page
+    window.location.href = '/organizations';
   }
 };
-

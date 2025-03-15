@@ -32,6 +32,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const [lastCheckTime, setLastCheckTime] = useState(0);
   const [checkAttempts, setCheckAttempts] = useState(0);
   const [hasRedirected, setHasRedirected] = useState(false);
+  const [isSubdomainValid, setIsSubdomainValid] = useState(true);
 
   // Log component lifecycle
   useEffect(() => {
@@ -78,6 +79,53 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       }
     }
   }, [location.search, isAuthenticated, location.pathname, navigate, currentOrganization, organizations]);
+
+  // Check if the current subdomain is valid
+  useEffect(() => {
+    const checkSubdomainValidity = async () => {
+      const subdomain = getSubdomainFromUrl();
+      
+      // If there's no subdomain or we're on the main domain, it's valid
+      if (!subdomain || isMainDomain(subdomain)) {
+        setIsSubdomainValid(true);
+        return;
+      }
+      
+      try {
+        // Try to fetch the subdomain's organization
+        const { data, error } = await supabase
+          .from('organizations')
+          .select('id, name')
+          .eq('subdomain', subdomain)
+          .maybeSingle();
+          
+        // If not found, set as invalid
+        if (error || !data) {
+          console.error('⚠️ Subdomain Validation: Invalid subdomain detected:', subdomain);
+          setIsSubdomainValid(false);
+        } else {
+          setIsSubdomainValid(true);
+        }
+      } catch (err) {
+        console.error('❌ Error checking subdomain validity:', err);
+        // Default to valid to avoid blocking legitimate traffic
+        setIsSubdomainValid(true);
+      }
+    };
+    
+    // Only check for authenticated users or on dashboard paths
+    if (isAuthenticated || location.pathname.includes('/dashboard')) {
+      checkSubdomainValidity();
+    }
+  }, [isAuthenticated, location.pathname]);
+
+  // Redirect to 404 if invalid subdomain
+  useEffect(() => {
+    if (!isSubdomainValid && !isChecking) {
+      console.log('⚠️ Redirecting to 404: Invalid subdomain detected');
+      navigate('/not-found', { replace: true });
+    }
+  }, [isSubdomainValid, isChecking, navigate]);
 
   // Original tenant redirector logic
   useEffect(() => {

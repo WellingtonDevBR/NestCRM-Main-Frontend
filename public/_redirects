@@ -5,8 +5,12 @@
 # Special handling for the dashboard path
 /dashboard/*  /index.html  200
 
-# Explicit SPA route handling for dashboard path, to avoid 404s on direct access
+# Special handling for direct dashboard access (for subdomains too)
 /dashboard  /index.html  200
 
-# Special handling for auth redirections
-/dashboard?auth_redirect=true  /index.html  200
+# Special handling for auth redirections with query parameters
+/dashboard?*  /index.html  200
+
+# Handle all paths on all subdomains correctly
+https://*.nestcrm.com.au/*  /index.html  200
+
