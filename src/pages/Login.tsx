@@ -45,7 +45,7 @@ const Login = () => {
           <div className="mb-10">
             <Link
               to="/"
-              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
+              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-400"
             >
               NESTCRM
             </Link>
@@ -54,7 +54,7 @@ const Login = () => {
             </h2>
             <p className="mt-2 text-sm text-foreground/70">
               Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:text-primary/80 font-medium">
+              <Link to="/signup" className="text-purple-600 hover:text-purple-500 font-medium">
                 Sign up
               </Link>
             </p>
@@ -79,7 +79,7 @@ const Login = () => {
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
                     <div className="text-sm">
-                      <a href="#" className="text-primary hover:text-primary/80 font-medium">
+                      <a href="#" className="text-purple-600 hover:text-purple-500 font-medium">
                         Forgot password?
                       </a>
                     </div>
@@ -172,7 +172,7 @@ const Login = () => {
       <div className="hidden lg:block relative flex-1 bg-cover bg-center" style={{ 
         backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1)), url("https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070")` 
       }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/20 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/40 to-purple-400/20 mix-blend-multiply"></div>
         <div className="absolute inset-0 flex flex-col justify-center p-20">
           <div className="max-w-md text-white">
             <div className="glass-card mb-6 p-6 bg-white/10 backdrop-blur-sm border-white/10">

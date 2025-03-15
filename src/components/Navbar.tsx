@@ -35,7 +35,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <Link
             to="/"
-            className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
+            className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-400"
           >
             NESTCRM
           </Link>
@@ -43,25 +43,25 @@ const Navbar = () => {
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className="text-foreground/80 hover:text-primary transition-colors"
+              className="text-foreground/80 hover:text-purple-600 transition-colors"
             >
               Home
             </Link>
             <a
               href="#features"
-              className="text-foreground/80 hover:text-primary transition-colors"
+              className="text-foreground/80 hover:text-purple-600 transition-colors"
             >
               Features
             </a>
             <a
               href="#testimonials"
-              className="text-foreground/80 hover:text-primary transition-colors"
+              className="text-foreground/80 hover:text-purple-600 transition-colors"
             >
               Testimonials
             </a>
             <a
               href="#pricing"
-              className="text-foreground/80 hover:text-primary transition-colors"
+              className="text-foreground/80 hover:text-purple-600 transition-colors"
             >
               Pricing
             </a>
@@ -69,7 +69,7 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center space-x-4">
             <Link to="/login">
-              <Button variant="outline">Log in</Button>
+              <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
             </Link>
             <Link to="/signup">
               <Button className="button-gradient">Sign up</Button>
@@ -95,35 +95,35 @@ const Navbar = () => {
           <div className="container-custom py-4 flex flex-col space-y-4">
             <Link
               to="/"
-              className="text-foreground/80 hover:text-primary transition-colors py-2"
+              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Home
             </Link>
             <a
               href="#features"
-              className="text-foreground/80 hover:text-primary transition-colors py-2"
+              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Features
             </a>
             <a
               href="#testimonials"
-              className="text-foreground/80 hover:text-primary transition-colors py-2"
+              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Testimonials
             </a>
             <a
               href="#pricing"
-              className="text-foreground/80 hover:text-primary transition-colors py-2"
+              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Pricing
             </a>
             <div className="flex flex-col space-y-2 pt-2">
               <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">
                   Log in
                 </Button>
               </Link>
