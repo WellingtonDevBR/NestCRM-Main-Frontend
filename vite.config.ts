@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Add SPA fallback for proper routing during development
+    proxy: {},
+    historyApiFallback: {
+      disableDotRule: true
+    }
   },
   plugins: [
     react(),
@@ -31,4 +36,15 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
+  // Ensure all paths are properly handled
+  preview: {
+    host: "::",
+    port: 8080,
+    strictPort: true,
+    // Add SPA fallback for proper routing during preview
+    proxy: {},
+    historyApiFallback: {
+      disableDotRule: true
+    }
+  }
 }));

@@ -64,12 +64,22 @@ export function useOrganizationInitialization({
         
         console.log(`Initializing organization with hostname: "${hostname}", subdomain: "${subdomain || 'none'}"`);
         
+        // CRITICAL FIX: Never set an organization for unauthenticated users
+        if (!isAuthenticated) {
+          console.log('User not authenticated, clearing organization state');
+          setCurrentOrganization(null);
+          setOrganizations([]);
+          setInitialized(true);
+          setLoading(false);
+          return;
+        }
+        
         // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
           console.log(`Fetching organization by subdomain: ${subdomain}`);
           
           // Only fetch and set organization if user is authenticated
-          if (isAuthenticated) {
+          if (isAuthenticated && userId) {
             const org = await fetchOrganizationBySubdomain(subdomain);
             if (org) {
               setCurrentOrganization(org);
@@ -89,15 +99,13 @@ export function useOrganizationInitialization({
         }
         
         // If authenticated, always fetch the user's organizations
-        if (isAuthenticated) {
-          if (userId) {
-            const orgs = await fetchUserOrganizations(userId);
-            setOrganizations(orgs);
-            
-            // If we're on main domain and user has orgs but no current org is set, use the first one
-            if (isMainDomain(subdomain) && orgs.length > 0 && !subdomain) {
-              setCurrentOrganization(orgs[0]);
-            }
+        if (isAuthenticated && userId) {
+          const orgs = await fetchUserOrganizations(userId);
+          setOrganizations(orgs);
+          
+          // If we're on main domain and user has orgs but no current org is set, use the first one
+          if (isMainDomain(subdomain) && orgs.length > 0 && !subdomain) {
+            setCurrentOrganization(orgs[0]);
           }
         } else {
           setOrganizations([]);

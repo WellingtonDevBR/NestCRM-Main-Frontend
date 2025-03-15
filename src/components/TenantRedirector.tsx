@@ -44,8 +44,21 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     };
   }, [isAuthenticated, location.pathname]);
 
+  // CRITICAL FIX: Reset hasRedirected when authentication state changes
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setHasRedirected(false);
+    }
+  }, [isAuthenticated]);
+
   // Improved function to handle redirection to organization subdomain
   const redirectToSubdomain = async (subdomain: string) => {
+    // CRITICAL FIX: Only redirect if user is authenticated
+    if (!isAuthenticated) {
+      console.log('🚫 Redirection: Blocked redirect attempt for unauthenticated user');
+      return;
+    }
+    
     const protocol = window.location.protocol;
     const url = `${protocol}//${subdomain}.${MAIN_DOMAIN}/dashboard`;
     console.log(`🚀 Redirection: Redirecting to subdomain URL: ${url}`);
@@ -55,12 +68,16 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   // Check if user has organizations and redirect if on main domain - but ONLY if authenticated
   useEffect(() => {
     const checkUserOrganizations = async () => {
-      // Skip if already redirected, not authenticated, still loading, or not on main domain
+      // CRITICAL FIX: More explicit check for authentication state
+      if (!isAuthenticated || !user?.id) {
+        console.log('🔍 Organizations: Skipping organization check - user not authenticated');
+        return;
+      }
+      
+      // Skip if already redirected, still loading, or not on main domain
       if (
         hasRedirected || 
-        !isAuthenticated || 
         authLoading || 
-        !user?.id ||
         !isMainDomain(getSubdomainFromUrl()) ||
         location.pathname === '/onboarding' ||
         location.pathname === '/create-organization' ||
@@ -122,7 +139,9 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     };
     
     // Run the check when authentication status changes
-    checkUserOrganizations();
+    if (isAuthenticated && user?.id) {
+      checkUserOrganizations();
+    }
   }, [isAuthenticated, authLoading, user, hasRedirected, location.pathname]);
 
   // Original tenant redirector logic
@@ -144,16 +163,10 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
     const checkTenant = async () => {
       try {
-        // Always render the index page immediately for all users
-        if (location.pathname === '/' || location.pathname === '/index.html') {
-          console.log('🔍 Routing: Root path detected - bypassing tenant checks');
-          setIsChecking(false);
-          return;
-        }
-        
-        // Always render public paths immediately
-        if (location.pathname === '/login' || location.pathname === '/signup') {
-          console.log('🔍 Routing: Public authentication path detected - bypassing tenant checks');
+        // CRITICAL FIX: Always render these paths immediately for all users
+        const publicPaths = ['/', '/index.html', '/login', '/signup', '/not-found'];
+        if (publicPaths.includes(location.pathname)) {
+          console.log('🔍 Routing: Public path detected - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
@@ -171,10 +184,18 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         
         console.log(`🔍 Tenant: TenantRedirector checking - hostname: "${hostname}", subdomain: "${subdomain || 'none'}", attempt: ${checkAttempts + 1}`);
         
+        // CRITICAL FIX: If not authenticated and on a subdomain, redirect to login
+        if (subdomain && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/signup') {
+          console.log('🚀 Redirection: Unauthenticated user on subdomain, redirecting to login');
+          navigate('/login');
+          setIsChecking(false);
+          return;
+        }
+        
         // Determine if we're on the main domain or a development environment
         const isOnMainDomain = isMainDomain(subdomain);
         const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
-        const isPublicPath = location.pathname === '/' || location.pathname === '/index.html' || isAuthPath;
+        const isPublicPath = publicPaths.includes(location.pathname);
         const isDevelopmentDomain = hostname.includes('localhost') || 
                                     hostname.includes('127.0.0.1') || 
                                     hostname.includes('lovableproject.com') ||
@@ -197,6 +218,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         // Allow access on public paths
         if (isPublicPath) {
           console.log("🔍 Routing: Public path detected, allowing access");
+          setIsChecking(false);
+          return;
+        }
+        
+        // Handle 404 routing properly - allow NotFound page to render
+        if (location.pathname === '/not-found') {
+          console.log("🔍 Routing: 404 page detected, allowing access");
           setIsChecking(false);
           return;
         }

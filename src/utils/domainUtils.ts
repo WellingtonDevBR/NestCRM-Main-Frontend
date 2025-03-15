@@ -22,10 +22,15 @@ export const getSubdomainFromUrl = (): string | null => {
     return null;
   }
   
-  // For localhost/staging development, check URL query params
-  if (hostname === 'localhost' || 
-      hostname === '127.0.0.1' || 
-      hostname.includes('lovableproject.com')) {
+  // CRITICAL FIX: More reliable detection for local development environments
+  const isDevelopmentEnvironment = 
+    hostname === 'localhost' || 
+    hostname === '127.0.0.1' || 
+    hostname.includes('lovableproject.com') ||
+    hostname.includes('netlify.app') || 
+    hostname.includes('vercel.app');
+    
+  if (isDevelopmentEnvironment) {
     // Check for subdomain param in URL for local development
     const urlSearchParams = new URLSearchParams(window.location.search);
     const subdomainParam = urlSearchParams.get('subdomain');
@@ -34,20 +39,20 @@ export const getSubdomainFromUrl = (): string | null => {
       return subdomainParam;
     }
     
-    // For localhost.subdomain pattern
-    const parts = hostname.split('.');
-    if (parts.length > 1 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
-      console.log(`Development with subdomain format: ${parts[0]}`);
-      return parts[0];
+    // For localhost.subdomain pattern or lovableproject.com pattern
+    if (hostname.includes('.')) {
+      const parts = hostname.split('.');
+      // Check if first part is a development-specific pattern to ignore
+      const knownDevPatterns = ['localhost', 'www', '127', 'netlify', 'vercel'];
+      const isDevPart = knownDevPatterns.some(pattern => parts[0].includes(pattern));
+      
+      if (!isDevPart && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
+        console.log(`Development with subdomain format: ${parts[0]}`);
+        return parts[0];
+      }
     }
     
     console.log('Development without subdomain');
-    return null;
-  }
-  
-  // Handle preview URLs by returning null (no subdomain)
-  if (hostname.includes('netlify.app') || hostname.includes('vercel.app')) {
-    console.log(`Preview URL detected: ${hostname}`);
     return null;
   }
   
