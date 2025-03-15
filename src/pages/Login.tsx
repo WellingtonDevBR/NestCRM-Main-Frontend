@@ -55,10 +55,10 @@ const Login = () => {
   }, []);
   
   // Custom submit handler that passes the target tenant
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Pass the target tenant to the handleSubmit function
-    handleSubmit(e, targetTenant);
+    await handleSubmit(e, targetTenant);
   };
   
   // Log authentication state on component mount

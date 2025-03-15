@@ -10,9 +10,10 @@ const schema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-type FormErrors = {
+export type FormErrors = {
   email?: string;
   password?: string;
+  form?: string;
 };
 
 export const useLoginForm = () => {
@@ -96,8 +97,8 @@ export const useLoginForm = () => {
     return redirectPath;
   };
 
-  // Form submission handler
-  const handleSubmit = async (e: React.FormEvent, targetTenant?: string | null) => {
+  // Form submission handler - updating to return Promise<void>
+  const handleSubmit = async (e: React.FormEvent, targetTenant?: string | null): Promise<void> => {
     e.preventDefault();
     console.log('🔍 Form Submission: Login form submitted');
     
