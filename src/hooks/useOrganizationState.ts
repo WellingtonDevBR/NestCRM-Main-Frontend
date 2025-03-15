@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -13,6 +12,9 @@ import {
   createNewOrganization,
   updateOrganizationDetails
 } from '@/services/organizationService';
+import {
+  getOrganizationFromUrl
+} from '@/utils/organizationUtils';
 
 interface UseOrganizationStateProps {
   userId: string | undefined;
@@ -149,6 +151,7 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
         // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
           console.log(`Fetching organization by subdomain: ${subdomain}`);
+          // Use the new utility function
           const org = await fetchOrganizationBySubdomain(subdomain);
           if (org) {
             setCurrentOrganization(org);

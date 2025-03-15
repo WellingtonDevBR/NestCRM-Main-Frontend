@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/hooks/useAuth";
+import { redirectToOrganization } from "@/utils/organizationUtils";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -63,10 +63,8 @@ const Onboarding = () => {
           description: "Redirecting to your dashboard..."
         });
         
-        // Redirect to the subdomain
+        // Use the new utility function for redirection
         setTimeout(() => {
-          // Redirect to the subdomain
-          const protocol = window.location.protocol;
           const host = window.location.host;
           
           // If on localhost, just navigate to the dashboard
@@ -75,18 +73,8 @@ const Onboarding = () => {
             return;
           }
           
-          // In production, redirect to the subdomain
-          const domainParts = host.split('.');
-          
-          // We're redirecting to the subdomain, e.g. subdomain.nestcrm.com.au
-          if (domainParts.length >= 2) {
-            // If we're on nestcrm.com.au or www.nestcrm.com.au, navigate to subdomain.nestcrm.com.au
-            const baseDomain = domainParts.length > 2 ? domainParts.slice(1).join('.') : domainParts.join('.');
-            window.location.href = `${protocol}//${subdomain}.${baseDomain}/dashboard`;
-          } else {
-            // Fallback to just navigating to the dashboard
-            navigate("/dashboard");
-          }
+          // Use the new utility function for redirection
+          redirectToOrganization(org);
         }, 1000);
       }
     } catch (error) {
