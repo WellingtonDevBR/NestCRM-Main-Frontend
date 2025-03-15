@@ -5,6 +5,7 @@ import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { getSubdomainFromUrl, isMainDomain } from '@/utils/domainUtils';
+import { initializeIndexPageOrganization } from '@/utils/organizationUtils';
 
 interface TenantRedirectorProps {
   children: React.ReactNode;
@@ -33,6 +34,14 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
     const checkTenant = async () => {
       try {
+        // Check if this is the main index page - if so, render immediately without checks
+        const isIndexPage = initializeIndexPageOrganization();
+        if (isIndexPage) {
+          console.log('Index page detected - bypassing tenant checks');
+          setIsChecking(false);
+          return;
+        }
+        
         if (authLoading || orgLoading) {
           console.log("Still loading auth or organizations...");
           return;

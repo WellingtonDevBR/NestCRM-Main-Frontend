@@ -9,6 +9,7 @@ interface OrganizationContextType {
   currentOrganization: Organization | null;
   organizations: Organization[];
   loading: boolean;
+  initialized: boolean;
   createOrganization: (name: string, subdomain: string) => Promise<Organization | null>;
   switchOrganization: (organizationId: string) => Promise<void>;
   updateOrganization: (id: string, updates: Partial<Organization>) => Promise<void>;
@@ -32,6 +33,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         currentOrganization: organizationState.currentOrganization,
         organizations: organizationState.organizations,
         loading: organizationState.loading,
+        initialized: organizationState.initialized,
         createOrganization: organizationState.createOrganization,
         switchOrganization: organizationState.switchOrganization,
         updateOrganization: organizationState.updateOrganization,

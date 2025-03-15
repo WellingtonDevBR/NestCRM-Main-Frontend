@@ -123,3 +123,14 @@ export const getUserOrganizationRole = async (
     return null;
   }
 };
+
+/**
+ * Initialize the organization context for the main index page
+ * Used specifically to ensure the landing page loads correctly regardless of domain
+ */
+export const initializeIndexPageOrganization = (): boolean => {
+  // On the index page, we want to render regardless of organization context
+  // This is essential for the main domain landing page
+  const pathname = window.location.pathname;
+  return pathname === '/' || pathname === '/index.html';
+};

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -13,7 +14,8 @@ import {
   updateOrganizationDetails
 } from '@/services/organizationService';
 import {
-  getOrganizationFromUrl
+  getOrganizationFromUrl,
+  initializeIndexPageOrganization
 } from '@/utils/organizationUtils';
 
 interface UseOrganizationStateProps {
@@ -26,6 +28,7 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [initializationAttempts, setInitializationAttempts] = useState(0);
+  const [initialized, setInitialized] = useState(false);
 
   const isValidSubdomain = async (subdomain: string): Promise<boolean> => {
     return await checkSubdomainAvailability(subdomain);
@@ -141,6 +144,15 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
 
   useEffect(() => {
     const initializeOrganization = async () => {
+      // Check if this is the main index page - if so, it's okay to have no organization
+      const isIndexPage = initializeIndexPageOrganization();
+      if (isIndexPage) {
+        console.log('Initializing on index page - no organization needed');
+        setLoading(false);
+        setInitialized(true);
+        return;
+      }
+
       setLoading(true);
       try {
         const subdomain = getSubdomainFromUrl();
@@ -151,7 +163,7 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
         // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
           console.log(`Fetching organization by subdomain: ${subdomain}`);
-          // Use the new utility function
+          // Use the utility function
           const org = await fetchOrganizationBySubdomain(subdomain);
           if (org) {
             setCurrentOrganization(org);
@@ -172,6 +184,8 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
             setCurrentOrganization(null);
           }
         }
+        
+        setInitialized(true);
       } catch (error) {
         console.error('Error initializing organization:', error);
         // If we fail, increment the retry counter
@@ -198,6 +212,7 @@ export function useOrganizationState({ userId, isAuthenticated }: UseOrganizatio
     currentOrganization,
     organizations,
     loading,
+    initialized,
     createOrganization,
     switchOrganization,
     updateOrganization,
