@@ -22,52 +22,21 @@ export const useSubdomainRedirect = ({ skipIndexRedirect = false }: UseSubdomain
   useEffect(() => {
     const subdomain = getSubdomainFromUrl();
     
-    // If there's no subdomain or we're on the main domain, no need to restrict access
-    if (!subdomain || isMainDomain(subdomain)) {
-      return;
-    }
-    
-    // List of allowed paths for subdomain users
-    const allowedPaths = ['/dashboard', '/not-found'];
-    const isDashboardSubpath = location.pathname.startsWith('/dashboard/');
-    const isAllowedPath = allowedPaths.includes(location.pathname) || isDashboardSubpath;
-    
-    // Special case for login path - redirect to main domain login
-    if (location.pathname === '/login') {
-      console.log('🔒 Security: Login on subdomain - redirecting to main domain login');
-      window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
-      return;
-    }
-    
-    // For subdomain access to unauthorized pages
-    if (!isAllowedPath) {
-      console.log(`🔒 Security: Restricted subdomain access to path: ${location.pathname}`);
+    // If there's a valid subdomain and we're on the index page
+    if (subdomain && 
+        !isMainDomain(subdomain) && 
+        (location.pathname === '/' || location.pathname === '/index.html')) {
       
-      // If user is authenticated, redirect to dashboard
-      if (isAuthenticated) {
-        toast.info("Redirecting to dashboard...");
-        navigate('/dashboard', { replace: true });
-        return;
-      } 
-      // If not authenticated, redirect to main domain login
-      else {
-        toast.info("Redirecting to login...");
-        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
-        return;
-      }
-    }
-    
-    // Index page specific redirect 
-    if ((location.pathname === '/' || location.pathname === '/index.html') && !skipIndexRedirect) {
+      // Even if skipIndexRedirect is true, we want to enforce redirects for tenant subdomains
       console.log('🔄 Subdomain on index: Redirecting tenant to dashboard', subdomain);
       
       if (isAuthenticated) {
         // Redirect authenticated users to dashboard
         navigate('/dashboard', { replace: true });
       } else {
-        // Redirect unauthenticated users to main domain login
-        toast.info("Redirecting to login...");
-        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
+        // Redirect unauthenticated users to main domain
+        toast.info("Redirecting to main site...");
+        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
       }
       return;
     }

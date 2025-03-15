@@ -5,14 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { LoginFormErrors } from "@/hooks/useLoginForm";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Define the correct interface for form errors
-interface LoginFormErrors {
-  email?: string;
-  password?: string;
-  form?: string;
-}
 
 interface LoginFormProps {
   email: string;

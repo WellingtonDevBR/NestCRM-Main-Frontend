@@ -1,133 +1,117 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from './useAuth';
-import * as z from 'zod';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { z } from "zod";
+import { toast } from "sonner";
 
 // Form validation schema
-const schema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string()
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password must be less than 100 characters"),
 });
 
-export type FormErrors = {
+export type LoginFormErrors = {
   email?: string;
   password?: string;
   form?: string;
 };
 
-export const useLoginForm = () => {
-  const { isAuthenticated, signIn } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+export function useLoginForm() {
+  const { signIn, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<LoginFormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  // Reset form state when component mounts
-  useEffect(() => {
-    setEmail('');
-    setPassword('');
-    setErrors({});
-    setTouched({});
-    setIsLoading(false);
-  }, []);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  // Handle input field blur for validation
-  const handleBlur = (field: string) => {
-    setTouched({ ...touched, [field]: true });
-    validateField(field);
-  };
-
-  // Validate a specific field
-  const validateField = (field: string) => {
-    console.log(`🔍 Form Validation: Validating ${field} field`);
-    
+  
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+  
+  // Validate field when it's touched or on submission
+  const validateField = (field: 'email' | 'password', value: string) => {
     try {
-      const fieldSchema = schema.pick({ [field]: true } as any);
-      fieldSchema.parse({ [field]: field === 'email' ? email : password });
-      
-      // Clear error for this field if validation passes
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-      return true;
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const fieldError = err.errors[0]?.message;
-        setErrors(prev => ({ ...prev, [field]: fieldError }));
-        return false;
+      console.log(`🔍 Form Validation: Validating ${field} field`);
+      const result = loginSchema.shape[field].parse(value);
+      return { valid: true, error: undefined };
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.log(`❌ Form Validation: ${field} validation error:`, error.errors[0]?.message);
+        return { valid: false, error: error.errors[0]?.message };
       }
-      return true;
+      console.log(`❌ Form Validation: ${field} unknown validation error`);
+      return { valid: false, error: "Invalid input" };
     }
   };
 
-  // Validate the entire form
+  // Mark field as touched
+  const handleBlur = (field: 'email' | 'password') => {
+    console.log(`🔍 Form Interaction: ${field} field blurred`);
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const { error } = validateField(field, field === 'email' ? email : password);
+    if (error) {
+      setErrors((prev) => ({ ...prev, [field]: error }));
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  // Validate all fields
   const validateForm = () => {
     console.log('🔍 Form Validation: Validating entire form');
-    try {
-      schema.parse({ email, password });
-      console.log('🔍 Form Validation: Form validation result: Valid', {});
-      setErrors({});
-      return true;
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        const formErrors: FormErrors = {};
-        err.errors.forEach(error => {
-          const field = error.path[0];
-          formErrors[field as keyof FormErrors] = error.message;
-        });
-        console.log('🔍 Form Validation: Form validation result: Invalid', formErrors);
-        setErrors(formErrors);
-        return false;
-      }
-      return true;
-    }
+    const emailResult = validateField('email', email);
+    const passwordResult = validateField('password', password);
+    
+    const newErrors: LoginFormErrors = {};
+    
+    if (!emailResult.valid) newErrors.email = emailResult.error;
+    if (!passwordResult.valid) newErrors.password = passwordResult.error;
+    
+    setErrors(newErrors);
+    const isValid = Object.keys(newErrors).length === 0;
+    console.log('🔍 Form Validation: Form validation result:', isValid ? 'Valid' : 'Invalid', newErrors);
+    return isValid;
   };
-
-  // Determine the redirect path after successful login
-  const determineRedirectPath = () => {
-    console.log('🚀 Redirection: determineRedirectPath called (legacy method)');
-    // Default redirect to organizations page
-    const redirectPath = '/organizations';
-    console.log('🚀 Redirection: User is authenticated, redirecting to:', redirectPath);
-    return redirectPath;
-  };
-
-  // Form submission handler - updating to return Promise<void>
-  const handleSubmit = async (e: React.FormEvent, targetTenant?: string | null): Promise<void> => {
+  
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('🔍 Form Submission: Login form submitted');
     
-    const isValid = validateForm();
-
-    if (isValid) {
-      console.log('🔍 Form Submission: Form is valid, proceeding with login');
-      console.log('🔍 Form Submission: Calling signIn with email:', email);
-      setIsLoading(true);
-
-      try {
-        await signIn(email, password, targetTenant);
-        console.log('🔍 Form Submission: signIn completed successfully');
-      } catch (error) {
-        // Error handling is done in the signIn function already
-        console.log('🔍 Form Submission: signIn failed with error');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      console.log('🔍 Form Submission: Form has validation errors, not proceeding');
-      // Mark all fields as touched to show all errors
-      setTouched({ email: true, password: true });
-      
-      // Notify user about errors
-      toast.error('Please correct the errors in the form', {
-        description: 'Please check the highlighted fields',
-      });
+    // Reset form error
+    setErrors((prev) => ({ ...prev, form: undefined }));
+    
+    // Validate all fields before submission
+    if (!validateForm()) {
+      console.log('❌ Form Submission: Form validation failed, aborting submission');
+      return;
     }
+    
+    console.log('🔍 Form Submission: Form is valid, proceeding with login');
+    setIsLoading(true);
+    
+    try {
+      console.log('🔍 Form Submission: Calling signIn with email:', email);
+      await signIn(email, password);
+      console.log('🔍 Form Submission: signIn completed successfully');
+      // The redirection is now handled directly in the signIn method
+      // within authService.ts to ensure a more reliable flow
+    } catch (error: any) {
+      console.error('❌ Form Submission: Login error:', error);
+      const errorMessage = error?.message || "Failed to sign in. Please try again.";
+      setErrors((prev) => ({ ...prev, form: errorMessage }));
+      toast.error("Login failed", {
+        description: errorMessage,
+      });
+      setIsLoading(false);
+    }
+  };
+
+  // This function is kept for compatibility with components that use it
+  // But redirection is now primarily handled in authService.ts
+  const determineRedirectPath = () => {
+    console.log('🚀 Redirection: determineRedirectPath called (legacy method)');
+    return '/organizations';
   };
 
   return {
@@ -143,6 +127,6 @@ export const useLoginForm = () => {
     determineRedirectPath,
     errors,
     handleBlur,
-    touched,
+    touched
   };
-};
+}
