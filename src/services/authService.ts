@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
+import { MAIN_DOMAIN } from '@/utils/domainUtils';
 
 /**
  * Signs in a user with email and password
@@ -135,18 +136,36 @@ export const signOut = async (): Promise<void> => {
   try {
     console.log('🔑 Authentication: Starting sign out process');
     
+    // CRITICAL FIX: Clear all storage to prevent persistent sessions
+    window.localStorage.removeItem('supabase.auth.token');
+    window.sessionStorage.removeItem('supabase.auth.token');
+    
+    // Clear localStorage and sessionStorage completely
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    
+    // Clear all cookies
+    document.cookie.split(";").forEach(function(c) {
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     
     console.log('🔑 Authentication: Successfully signed out, redirecting to main domain');
     
-    // Redirect to main domain
-    window.location.href = `${window.location.protocol}//${window.location.host.split('.').slice(-2).join('.')}`;
+    // Redirect to main domain, not a subdomain
+    window.location.href = `${window.location.protocol}//${MAIN_DOMAIN}`;
   } catch (error: any) {
     console.error('❌ Error: Error signing out:', error);
     toast.error('Error signing out', {
       description: error.message,
     });
+    
+    // Force redirect to main domain even if there was an error
+    setTimeout(() => {
+      window.location.href = `${window.location.protocol}//${MAIN_DOMAIN}`;
+    }, 2000);
   }
 };
 
@@ -156,8 +175,7 @@ export const signOut = async (): Promise<void> => {
 export const redirectToOrganizationSubdomain = (org: Organization): void => {
   // Force a direct redirect to the organization subdomain
   const protocol = window.location.protocol;
-  const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works in production
-  const url = `${protocol}//${org.subdomain}.${domain}/dashboard`;
+  const url = `${protocol}//${org.subdomain}.${MAIN_DOMAIN}/dashboard`;
   
   console.log('🚀 Redirection: Direct redirect URL:', url);
   

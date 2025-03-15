@@ -37,6 +37,15 @@ export function useOrganizationInitialization({
   const [initializationAttempts, setInitializationAttempts] = useState(0);
   const [initialized, setInitialized] = useState(skipInitialization);
 
+  // CRITICAL FIX: Clear organization state when user logs out
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log('User not authenticated, clearing organization state');
+      setCurrentOrganization(null);
+      setOrganizations([]);
+    }
+  }, [isAuthenticated, setCurrentOrganization, setOrganizations]);
+
   // Function to initialize organizations when the app loads
   useEffect(() => {
     // Skip initialization if requested (for main domain optimization)
@@ -105,7 +114,8 @@ export function useOrganizationInitialization({
           
           // If we're on main domain and user has orgs but no current org is set, use the first one
           if (isMainDomain(subdomain) && orgs.length > 0 && !subdomain) {
-            setCurrentOrganization(orgs[0]);
+            // Do not automatically set current organization
+            console.log('User has organizations, but not setting current organization automatically');
           }
         } else {
           setOrganizations([]);
