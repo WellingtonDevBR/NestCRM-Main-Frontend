@@ -6,11 +6,21 @@ import { redirectToOrganization } from "@/utils/organizationUtils";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export const OrganizationRedirectButton = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { currentOrganization, organizations } = useOrganization();
   const navigate = useNavigate();
+
+  // Force check authentication status on component mount
+  // This helps clean up any stale state
+  useEffect(() => {
+    if (!user && isAuthenticated) {
+      console.log('Authentication state inconsistent - refreshing');
+      window.location.reload();
+    }
+  }, [user, isAuthenticated]);
 
   if (!isAuthenticated) {
     return null;

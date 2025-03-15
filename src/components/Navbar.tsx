@@ -9,7 +9,7 @@ import { OrganizationRedirectButton } from "@/components/OrganizationRedirectBut
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +25,10 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  // Don't show the dashboard button when auth is loading
+  // This prevents flash of unauthorized content
+  const showAuthButtons = !loading;
 
   return (
     <header
@@ -71,17 +75,19 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            {isAuthenticated ? (
-              <OrganizationRedirectButton />
-            ) : (
-              <>
-                <Link to="/login">
-                  <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
-                </Link>
-                <Link to="/signup">
-                  <Button className="button-gradient">Sign up</Button>
-                </Link>
-              </>
+            {showAuthButtons && (
+              isAuthenticated ? (
+                <OrganizationRedirectButton />
+              ) : (
+                <>
+                  <Link to="/login">
+                    <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
+                  </Link>
+                  <Link to="/signup">
+                    <Button className="button-gradient">Sign up</Button>
+                  </Link>
+                </>
+              )
             )}
           </div>
 
@@ -130,21 +136,23 @@ const Navbar = () => {
             >
               Pricing
             </a>
-            {isAuthenticated ? (
-              <div className="pt-2">
-                <OrganizationRedirectButton />
-              </div>
-            ) : (
-              <div className="flex flex-col space-y-2 pt-2">
-                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">
-                    Log in
-                  </Button>
-                </Link>
-                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="w-full button-gradient">Sign up</Button>
-                </Link>
-              </div>
+            {showAuthButtons && (
+              isAuthenticated ? (
+                <div className="pt-2">
+                  <OrganizationRedirectButton />
+                </div>
+              ) : (
+                <div className="flex flex-col space-y-2 pt-2">
+                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">
+                      Log in
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button className="w-full button-gradient">Sign up</Button>
+                  </Link>
+                </div>
+              )
             )}
           </div>
         </div>
