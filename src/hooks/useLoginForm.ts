@@ -32,18 +32,22 @@ export function useLoginForm() {
   // Validate field when it's touched or on submission
   const validateField = (field: 'email' | 'password', value: string) => {
     try {
+      console.log(`🔍 Form Validation: Validating ${field} field`);
       const result = loginSchema.shape[field].parse(value);
       return { valid: true, error: undefined };
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.log(`❌ Form Validation: ${field} validation error:`, error.errors[0]?.message);
         return { valid: false, error: error.errors[0]?.message };
       }
+      console.log(`❌ Form Validation: ${field} unknown validation error`);
       return { valid: false, error: "Invalid input" };
     }
   };
 
   // Mark field as touched
   const handleBlur = (field: 'email' | 'password') => {
+    console.log(`🔍 Form Interaction: ${field} field blurred`);
     setTouched((prev) => ({ ...prev, [field]: true }));
     const { error } = validateField(field, field === 'email' ? email : password);
     if (error) {
@@ -55,6 +59,7 @@ export function useLoginForm() {
 
   // Validate all fields
   const validateForm = () => {
+    console.log('🔍 Form Validation: Validating entire form');
     const emailResult = validateField('email', email);
     const passwordResult = validateField('password', password);
     
@@ -64,27 +69,35 @@ export function useLoginForm() {
     if (!passwordResult.valid) newErrors.password = passwordResult.error;
     
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const isValid = Object.keys(newErrors).length === 0;
+    console.log('🔍 Form Validation: Form validation result:', isValid ? 'Valid' : 'Invalid', newErrors);
+    return isValid;
   };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('🔍 Form Submission: Login form submitted');
     
     // Reset form error
     setErrors((prev) => ({ ...prev, form: undefined }));
     
     // Validate all fields before submission
     if (!validateForm()) {
+      console.log('❌ Form Submission: Form validation failed, aborting submission');
       return;
     }
     
+    console.log('🔍 Form Submission: Form is valid, proceeding with login');
     setIsLoading(true);
     
     try {
+      console.log('🔍 Form Submission: Calling signIn with email:', email);
       await signIn(email, password);
+      console.log('🔍 Form Submission: signIn completed successfully');
       // The redirection is now handled directly in the signIn method
       // within authService.ts to ensure a more reliable flow
     } catch (error: any) {
+      console.error('❌ Form Submission: Login error:', error);
       const errorMessage = error?.message || "Failed to sign in. Please try again.";
       setErrors((prev) => ({ ...prev, form: errorMessage }));
       toast.error("Login failed", {
@@ -97,6 +110,7 @@ export function useLoginForm() {
   // This function is kept for compatibility with components that use it
   // But redirection is now primarily handled in authService.ts
   const determineRedirectPath = () => {
+    console.log('🚀 Redirection: determineRedirectPath called (legacy method)');
     return '/organizations';
   };
 

@@ -26,10 +26,16 @@ const Login = () => {
   
   const navigate = useNavigate();
   
+  // Log authentication state on component mount
+  useEffect(() => {
+    console.log('🔑 Authentication: Login page mounted, authentication state:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
+  }, []);
+  
   // Redirect authenticated users based on context
   useEffect(() => {
     if (isAuthenticated) {
       const redirectPath = determineRedirectPath();
+      console.log('🚀 Redirection: User is authenticated, redirecting to:', redirectPath);
       navigate(redirectPath);
     }
   }, [isAuthenticated, navigate, determineRedirectPath]);

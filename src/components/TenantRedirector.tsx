@@ -33,11 +33,22 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const [checkAttempts, setCheckAttempts] = useState(0);
   const [hasRedirected, setHasRedirected] = useState(false);
 
+  // Log component lifecycle
+  useEffect(() => {
+    console.log('🔄 TenantRedirector: Component mounted/updated');
+    console.log('🔄 TenantRedirector: Auth state -', isAuthenticated ? 'Authenticated' : 'Not authenticated');
+    console.log('🔄 TenantRedirector: Current path -', location.pathname);
+    
+    return () => {
+      console.log('🔄 TenantRedirector: Component unmounting');
+    };
+  }, [isAuthenticated, location.pathname]);
+
   // Improved function to handle redirection to organization subdomain
   const redirectToSubdomain = async (subdomain: string) => {
     const protocol = window.location.protocol;
     const url = `${protocol}//${subdomain}.${MAIN_DOMAIN}/dashboard`;
-    console.log(`Redirecting to subdomain URL: ${url}`);
+    console.log(`🚀 Redirection: Redirecting to subdomain URL: ${url}`);
     window.location.href = url;
   };
 
@@ -54,10 +65,18 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         location.pathname === '/onboarding' ||
         location.pathname === '/create-organization'
       ) {
+        console.log('🔍 Organizations: Skipping organization check due to conditions not met:', {
+          hasRedirected,
+          isAuthenticated,
+          authLoading,
+          userId: user?.id ? 'Present' : 'Missing',
+          isMainDomain: isMainDomain(getSubdomainFromUrl()),
+          path: location.pathname
+        });
         return;
       }
 
-      console.log('Checking for user organizations to redirect from main domain...');
+      console.log('🔍 Organizations: Checking for user organizations to redirect from main domain...');
       
       try {
         // Direct query to Supabase to get user's organizations
@@ -67,11 +86,11 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
           .eq('user_id', user.id);
           
         if (membershipError) {
-          console.error('Error fetching user organization memberships:', membershipError);
+          console.error('🔍 Organizations: Error fetching user organization memberships:', membershipError);
           return;
         }
         
-        console.log('Found memberships:', memberships?.length || 0);
+        console.log('🔍 Organizations: Found memberships:', memberships?.length || 0);
         
         if (memberships && memberships.length > 0) {
           // Get the first organization details
@@ -82,21 +101,21 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
             .single();
             
           if (orgError) {
-            console.error('Error fetching organization details:', orgError);
+            console.error('🔍 Organizations: Error fetching organization details:', orgError);
             return;
           }
           
           if (orgData) {
-            console.log('Found organization to redirect to:', orgData.name, 'with subdomain:', orgData.subdomain);
+            console.log('🔍 Organizations: Found organization to redirect to:', orgData.name, 'with subdomain:', orgData.subdomain);
             setHasRedirected(true);
             await redirectToSubdomain(orgData.subdomain);
           }
         } else if (location.pathname !== '/onboarding') {
-          console.log('No organizations found, redirecting to onboarding');
+          console.log('🔍 Organizations: No organizations found, redirecting to onboarding');
           navigate('/onboarding');
         }
       } catch (error) {
-        console.error('Error in checkUserOrganizations:', error);
+        console.error('❌ Error: Error in checkUserOrganizations:', error);
       }
     };
     
@@ -109,7 +128,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     // Early exit for main domain optimization
     // This ensures immediate rendering on the main domain
     if (window.__MAIN_DOMAIN_DETECTED && location.pathname === '/') {
-      console.log('Main domain fast path detected - bypassing all tenant checks');
+      console.log('🔍 Optimization: Main domain fast path detected - bypassing all tenant checks');
       setIsChecking(false);
       return;
     }
@@ -125,7 +144,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       try {
         // Always render the index page immediately
         if (location.pathname === '/' && !isAuthenticated) {
-          console.log('Root path detected for unauthenticated user - bypassing tenant checks');
+          console.log('🔍 Routing: Root path detected for unauthenticated user - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
@@ -133,13 +152,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         // Check if this is the main index page or another public page
         const isIndexPage = initializeIndexPageOrganization();
         if (isIndexPage && !isAuthenticated) {
-          console.log('Index page detected for unauthenticated user - bypassing tenant checks');
+          console.log('🔍 Routing: Index page detected for unauthenticated user - bypassing tenant checks');
           setIsChecking(false);
           return;
         }
         
         if (authLoading || orgLoading) {
-          console.log("Still loading auth or organizations...");
+          console.log("🔄 Loading: Still loading auth or organizations...");
           return;
         }
 
@@ -149,7 +168,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         const subdomain = getSubdomainFromUrl();
         const hostname = window.location.hostname;
         
-        console.log(`TenantRedirector checking - hostname: "${hostname}", subdomain: "${subdomain || 'none'}", attempt: ${checkAttempts + 1}`);
+        console.log(`🔍 Tenant: TenantRedirector checking - hostname: "${hostname}", subdomain: "${subdomain || 'none'}", attempt: ${checkAttempts + 1}`);
         
         // Determine if we're on the main domain or a development environment
         const isOnMainDomain = isMainDomain(subdomain);
@@ -161,7 +180,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
                                     hostname.includes('netlify.app') || 
                                     hostname.includes('vercel.app');
         
-        console.log('TenantRedirector check details:', { 
+        console.log('🔍 Tenant: TenantRedirector check details:', { 
           hostname,
           subdomain: subdomain || 'none', 
           isOnMainDomain, 
@@ -176,18 +195,18 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         
         // Allow access on public paths
         if (isPublicPath) {
-          console.log("Public path detected, allowing access");
+          console.log("🔍 Routing: Public path detected, allowing access");
           setIsChecking(false);
           return;
         }
         
         // Handling for main domain or development environment
         if (isOnMainDomain || isDevelopmentDomain || hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
-          console.log("Main domain or development URL detected, allowing access");
+          console.log("🔍 Tenant: Main domain or development URL detected, allowing access");
           
           // Redirect authenticated users from auth pages to organizations
           if (isAuthenticated && isAuthPath) {
-            console.log("Redirecting authenticated user from auth page to organizations");
+            console.log("🚀 Redirection: Redirecting authenticated user from auth page to organizations");
             navigate('/organizations');
             return;
           }
@@ -196,18 +215,18 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
           else if (isAuthenticated && organizations.length === 0 && 
                   location.pathname !== '/onboarding' && 
                   location.pathname !== '/create-organization') {
-            console.log("Redirecting user with no organizations to onboarding");
+            console.log("🚀 Redirection: Redirecting user with no organizations to onboarding");
             navigate('/onboarding');
             return;
           }
         } 
         // Handling for tenant subdomains
         else if (subdomain) {
-          console.log(`Tenant subdomain detected: ${subdomain}`);
+          console.log(`🔍 Tenant: Tenant subdomain detected: ${subdomain}`);
           
           // Redirect unauthenticated users on protected pages to login
           if (!isAuthenticated && !isPublicPath) {
-            console.log("Redirecting unauthenticated user to login");
+            console.log("🚀 Redirection: Redirecting unauthenticated user to login");
             navigate('/login');
             return;
           } 
@@ -215,26 +234,26 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
           // Show message for authenticated users without access to this organization
           else if (isAuthenticated && !currentOrganization && !orgLoading && !isPublicPath) {
             if (organizations.length > 0 && !hasShownMessage) {
-              console.log('User has organizations but no access to this subdomain:', subdomain);
+              console.log('🔍 Access: User has organizations but no access to this subdomain:', subdomain);
               toast.error('You do not have access to this organization');
               setHasShownMessage(true);
             } else {
-              console.log(`Invalid tenant or no access for subdomain: ${subdomain}`);
+              console.log(`🔍 Access: Invalid tenant or no access for subdomain: ${subdomain}`);
             }
           }
         }
 
         // Retry fetching organizations if authenticated and none loaded
         if (isAuthenticated && organizations.length === 0 && !orgLoading) {
-          console.log("Attempting to fetch organizations again");
+          console.log("🔍 Organizations: Attempting to fetch organizations again");
           try {
             await fetchOrganizations();
           } catch (error) {
-            console.error('Failed to fetch organizations:', error);
+            console.error('❌ Error: Failed to fetch organizations:', error);
           }
         }
       } catch (error) {
-        console.error('Error in TenantRedirector:', error);
+        console.error('❌ Error: Error in TenantRedirector:', error);
       } finally {
         setIsChecking(false);
       }
@@ -262,17 +281,17 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
                        
   // Fast path for main domain - show content immediately
   if (window.__MAIN_DOMAIN_DETECTED && location.pathname === '/') {
-    console.log("Main domain fast path - rendering children immediately");
+    console.log("🔍 Optimization: Main domain fast path - rendering children immediately");
     return <>{children}</>;
   }
                        
   if (isChecking && !isPublicPage && checkAttempts < 3 && !orgInitialized) {
-    console.log(`Showing loading spinner while checking tenant... (attempt ${checkAttempts + 1})`);
+    console.log(`🔄 Loading: Showing loading spinner while checking tenant... (attempt ${checkAttempts + 1})`);
     return <div className="flex items-center justify-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>;
   }
 
-  console.log("TenantRedirector - Rendering children");
+  console.log("🔄 Rendering: TenantRedirector - Rendering children");
   return <>{children}</>;
 };

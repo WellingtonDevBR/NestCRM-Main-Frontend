@@ -8,6 +8,8 @@ import type { Organization } from '@/types/supabase';
  */
 export const signIn = async (email: string, password: string): Promise<void> => {
   try {
+    console.log('🔑 Authentication: Starting sign in process for:', email);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -15,18 +17,19 @@ export const signIn = async (email: string, password: string): Promise<void> => 
 
     if (error) throw error;
 
+    console.log('🔑 Authentication: Successfully signed in with email');
     toast.success('Signed in successfully!');
 
     // Get current user ID
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
-      console.error('Error getting user after login:', userError);
+      console.error('🔑 Authentication: Error getting user after login:', userError);
       throw new Error('Unable to get user details');
     }
     
     const userId = user.id;
-    console.log('Fetching organizations for user:', userId);
+    console.log('🔍 Organizations: Fetching organizations for user ID:', userId);
     
     // Fetch user's organizations
     const { data: memberships, error: membershipError } = await supabase
@@ -35,16 +38,16 @@ export const signIn = async (email: string, password: string): Promise<void> => 
       .eq('user_id', userId);
 
     if (membershipError) {
-      console.error('Error fetching user organization memberships:', membershipError);
+      console.error('🔍 Organizations: Error fetching user organization memberships:', membershipError);
       throw new Error('Failed to fetch your organizations');
     }
 
-    console.log('Organization memberships found:', memberships?.length || 0, memberships);
+    console.log('🔍 Organizations: Memberships found:', memberships?.length || 0, memberships);
 
     // If user has organizations, redirect to the first one
     if (memberships && memberships.length > 0) {
       const organizationId = memberships[0].organization_id;
-      console.log('User has organizations, redirecting to first one:', organizationId);
+      console.log('🔍 Organizations: User has organizations, redirecting to first one:', organizationId);
       
       const { data: orgData, error: orgDetailsError } = await supabase
         .from('organizations')
@@ -53,12 +56,12 @@ export const signIn = async (email: string, password: string): Promise<void> => 
         .maybeSingle();
 
       if (orgDetailsError) {
-        console.error('Error fetching organization details:', orgDetailsError);
+        console.error('🔍 Organizations: Error fetching organization details:', orgDetailsError);
         throw new Error('Failed to fetch organization details');
       }
 
       if (orgData) {
-        console.log('Organization details retrieved:', orgData.name, 'with subdomain:', orgData.subdomain);
+        console.log('🔍 Organizations: Organization details retrieved:', orgData.name, 'with subdomain:', orgData.subdomain);
         
         // Create a properly typed Organization object
         const org: Organization = {
@@ -74,7 +77,7 @@ export const signIn = async (email: string, password: string): Promise<void> => 
             ) : {}
         };
         
-        console.log('Redirecting to organization subdomain:', org.subdomain);
+        console.log('🚀 Redirection: Redirecting to organization subdomain:', org.subdomain);
         
         // Force a direct redirect to the organization subdomain
         redirectToOrganizationSubdomain(org);
@@ -82,12 +85,12 @@ export const signIn = async (email: string, password: string): Promise<void> => 
       }
     } else {
       // User has no organizations, redirect to onboarding
-      console.log('No organizations found, redirecting to onboarding');
+      console.log('🚀 Redirection: No organizations found, redirecting to onboarding');
       window.location.href = '/onboarding';
       return;
     }
   } catch (error: any) {
-    console.error('Error during sign in:', error);
+    console.error('❌ Error: Error during sign in:', error);
     toast.error('Error signing in', {
       description: error.message,
     });
@@ -100,6 +103,8 @@ export const signIn = async (email: string, password: string): Promise<void> => 
  */
 export const signUp = async (email: string, password: string, userData: any): Promise<void> => {
   try {
+    console.log('🔑 Authentication: Starting sign up process for:', email);
+    
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -110,10 +115,12 @@ export const signUp = async (email: string, password: string, userData: any): Pr
 
     if (error) throw error;
 
+    console.log('🔑 Authentication: Successfully created account, verification email sent');
     toast.success('Account created successfully!', {
       description: 'Please check your email to verify your account.',
     });
   } catch (error: any) {
+    console.error('❌ Error: Error creating account:', error);
     toast.error('Error creating account', {
       description: error.message,
     });
@@ -126,12 +133,17 @@ export const signUp = async (email: string, password: string, userData: any): Pr
  */
 export const signOut = async (): Promise<void> => {
   try {
+    console.log('🔑 Authentication: Starting sign out process');
+    
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
+    
+    console.log('🔑 Authentication: Successfully signed out, redirecting to main domain');
     
     // Redirect to main domain
     window.location.href = `${window.location.protocol}//${window.location.host.split('.').slice(-2).join('.')}`;
   } catch (error: any) {
+    console.error('❌ Error: Error signing out:', error);
     toast.error('Error signing out', {
       description: error.message,
     });
@@ -147,10 +159,11 @@ export const redirectToOrganizationSubdomain = (org: Organization): void => {
   const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works in production
   const url = `${protocol}//${org.subdomain}.${domain}/dashboard`;
   
-  console.log('Direct redirect URL:', url);
+  console.log('🚀 Redirection: Direct redirect URL:', url);
   
   // Use a small timeout to ensure the toast is visible before redirect
   setTimeout(() => {
+    console.log('🚀 Redirection: Executing redirect now to:', url);
     window.location.href = url;
   }, 500);
 };
