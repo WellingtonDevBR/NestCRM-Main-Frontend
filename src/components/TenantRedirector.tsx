@@ -29,45 +29,55 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     setLastCheckTime(now);
 
     const checkTenant = async () => {
-      if (authLoading || orgLoading) return;
+      if (authLoading || orgLoading) {
+        console.log("Still loading auth or organizations...");
+        return;
+      }
 
       const subdomain = getSubdomainFromUrl();
+      console.log(`Current subdomain detected: "${subdomain}"`);
       
       // On the main domain (nestcrm.com.au), there's no subdomain or the subdomain is 'www' or 'nestcrm'
       const isOnMainDomain = isMainDomain(subdomain);
       const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
+      const isPublicPath = location.pathname === '/' || isAuthPath;
       
-      console.log('TenantRedirector: Checking tenant', { 
+      console.log('TenantRedirector check:', { 
         subdomain, 
         isOnMainDomain, 
-        isAuthPath, 
+        isAuthPath,
+        isPublicPath,
         isAuthenticated, 
-        organizationsCount: organizations.length,
+        organizationsCount: organizations?.length || 0,
         currentPath: location.pathname
       });
       
       // If we're on the main domain, don't do tenant access checks
       if (isOnMainDomain) {
+        console.log("We are on the main domain, allowing access");
         // If trying to access auth pages while logged in on main domain, redirect to organizations page
         if (isAuthenticated && isAuthPath) {
+          console.log("Redirecting authenticated user from auth page to organizations page");
           navigate('/organizations');
         }
         // If on main domain and authenticated but no organizations exist, redirect to onboarding
         else if (isAuthenticated && organizations.length === 0 && 
                 location.pathname !== '/onboarding' && 
                 location.pathname !== '/create-organization') {
+          console.log("Redirecting authenticated user with no organizations to onboarding");
           navigate('/onboarding');
         }
       } 
       // We are on a tenant subdomain
-      else {
-        // If on a specific organization subdomain but not authenticated, allow access to auth pages
-        if (!isAuthenticated && isAuthPath) {
-          // This is fine, let them access the login/signup page on the subdomain
-          console.log('Allowing unauthenticated access to auth page on subdomain');
+      else if (subdomain) {
+        console.log(`We are on tenant subdomain: ${subdomain}`);
+        // If on a specific organization subdomain but not authenticated and trying to access protected pages
+        if (!isAuthenticated && !isPublicPath) {
+          console.log("Unauthenticated user trying to access protected page on subdomain, redirecting to login");
+          navigate('/login');
         } 
         // If on a specific organization subdomain but no currentOrganization loaded
-        else if (!currentOrganization && !orgLoading && subdomain) {
+        else if (!currentOrganization && !orgLoading && !isPublicPath) {
           // Only show error for authenticated users, as they should have organization access
           if (isAuthenticated && organizations.length > 0 && !hasShownMessage) {
             console.log('User has organizations but no access to this subdomain:', subdomain);
@@ -80,7 +90,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       }
 
       // Refresh organizations with retry logic if authenticated and no organizations loaded
-      if (isAuthenticated && organizations.length === 0) {
+      if (isAuthenticated && organizations.length === 0 && !isChecking) {
+        console.log("Attempting to fetch organizations for authenticated user");
         try {
           await fetchOrganizations();
         } catch (error) {
@@ -97,14 +108,18 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     orgLoading, 
     location.pathname, 
     isAuthenticated, 
-    organizations.length,
+    organizations?.length,
     currentOrganization,
     hasShownMessage,
     lastCheckTime
   ]);
 
-  if (isChecking) {
-    // Simple loading state while checking tenant
+  // Don't show loading spinner for public pages
+  const isPublicPage = location.pathname === '/' || 
+                       location.pathname === '/login' || 
+                       location.pathname === '/signup';
+                       
+  if (isChecking && !isPublicPage) {
     return <div className="flex items-center justify-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>;

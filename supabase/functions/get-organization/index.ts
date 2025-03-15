@@ -18,16 +18,23 @@ const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
 serve(async (req) => {
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
+    console.log("Handling CORS preflight request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     // Get subdomain from request
     const { subdomain } = await req.json() as GetOrganizationRequest;
+    
+    console.log(`Edge function received subdomain: ${subdomain}`);
 
     if (!subdomain) {
+      console.log("No subdomain provided in request");
       return new Response(
-        JSON.stringify({ error: "Subdomain is required" }),
+        JSON.stringify({ 
+          error: "Subdomain is required",
+          isMainDomain: false 
+        }),
         { 
           status: 400, 
           headers: { 
@@ -39,12 +46,16 @@ serve(async (req) => {
     }
 
     // Check if this is a main domain request
-    if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain) || subdomain === MAIN_DOMAIN) {
-      console.log(`Request for main domain identifier: ${subdomain}`);
+    // Direct match with full domain or main domain identifiers
+    if (subdomain === MAIN_DOMAIN || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
+      console.log(`Request identified as main domain: ${subdomain}`);
       return new Response(
-        JSON.stringify({ error: "This is the main domain, not a tenant subdomain" }),
+        JSON.stringify({ 
+          isMainDomain: true,
+          message: "This is the main domain, not a tenant subdomain" 
+        }),
         { 
-          status: 400, 
+          status: 200,
           headers: { 
             "Content-Type": "application/json",
             ...corsHeaders
@@ -70,7 +81,10 @@ serve(async (req) => {
     if (error) {
       console.error("Error fetching organization:", error.message);
       return new Response(
-        JSON.stringify({ error: "Could not find organization" }),
+        JSON.stringify({ 
+          error: "Could not find organization",
+          isMainDomain: false 
+        }),
         { 
           status: 404, 
           headers: { 
@@ -84,7 +98,10 @@ serve(async (req) => {
     console.log(`Found organization: ${organization.name}`);
     
     return new Response(
-      JSON.stringify({ organization }),
+      JSON.stringify({ 
+        organization,
+        isMainDomain: false 
+      }),
       { 
         status: 200, 
         headers: { 
@@ -96,7 +113,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Unexpected error:", error);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ 
+        error: "Internal server error",
+        isMainDomain: false
+      }),
       { 
         status: 500, 
         headers: { 
