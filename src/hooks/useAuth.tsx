@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userId = (await supabase.auth.getUser()).data.user?.id;
 
       if (!userId) {
-        console.log('No user ID found after login');
+        console.error('No user ID found after login');
         navigate('/organizations');
         return;
       }
@@ -90,27 +90,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Fetching organizations for user:', userId);
       
       // Fetch user's organizations
-      const { data: organizations, error: orgError } = await supabase
+      const { data: memberships, error: membershipError } = await supabase
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', userId);
 
-      if (orgError) {
-        console.error('Error fetching user organizations:', orgError);
+      if (membershipError) {
+        console.error('Error fetching user organization memberships:', membershipError);
         navigate('/organizations');
         return;
       }
 
-      console.log('Organizations found:', organizations?.length || 0);
+      console.log('Organization memberships found:', memberships?.length || 0, memberships);
 
       // If user has organizations, redirect to the first one
-      if (organizations && organizations.length > 0) {
-        console.log('User has organizations, redirecting to first one:', organizations[0].organization_id);
+      if (memberships && memberships.length > 0) {
+        const organizationId = memberships[0].organization_id;
+        console.log('User has organizations, redirecting to first one:', organizationId);
         
         const { data: orgData, error: orgDetailsError } = await supabase
           .from('organizations')
           .select('*')
-          .eq('id', organizations[0].organization_id)
+          .eq('id', organizationId)
           .single();
 
         if (orgDetailsError) {
@@ -120,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (orgData) {
-          console.log('Organization details retrieved:', orgData.name);
+          console.log('Organization details retrieved:', orgData.name, 'with subdomain:', orgData.subdomain);
           
           // Create a properly typed Organization object
           const org: Organization = {
@@ -138,13 +139,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           console.log('Redirecting to organization subdomain:', org.subdomain);
           
-          // Force a direct redirect instead of using the utility
+          // Force a direct redirect to the organization subdomain
           const protocol = window.location.protocol;
-          const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works
+          const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works in production
           const url = `${protocol}//${org.subdomain}.${domain}/dashboard`;
           
           console.log('Direct redirect URL:', url);
-          window.location.href = url;
+          
+          // Use a small timeout to ensure the toast is visible before redirect
+          setTimeout(() => {
+            window.location.href = url;
+          }, 500);
           return;
         }
       } else {
@@ -153,8 +158,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         navigate('/onboarding');
         return;
       }
-
-      navigate('/organizations');
     } catch (error: any) {
       toast.error('Error signing in', {
         description: error.message,

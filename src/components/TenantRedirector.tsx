@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { getSubdomainFromUrl, isMainDomain } from '@/utils/domainUtils';
 import { initializeIndexPageOrganization } from '@/utils/organizationUtils';
 import { redirectToOrganization } from '@/utils/organizationUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TenantRedirectorProps {
   children: React.ReactNode;
@@ -16,7 +17,7 @@ interface TenantRedirectorProps {
 import { MAIN_DOMAIN } from '@/utils/domainUtils';
 
 export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, user } = useAuth();
   const { 
     organizations, 
     currentOrganization, 
@@ -32,42 +33,78 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const [checkAttempts, setCheckAttempts] = useState(0);
   const [hasRedirected, setHasRedirected] = useState(false);
 
+  // Improved function to handle redirection to organization subdomain
+  const redirectToSubdomain = async (subdomain: string) => {
+    const protocol = window.location.protocol;
+    const url = `${protocol}//${subdomain}.${MAIN_DOMAIN}/dashboard`;
+    console.log(`Redirecting to subdomain URL: ${url}`);
+    window.location.href = url;
+  };
+
+  // Check if user has organizations and redirect if on main domain
   useEffect(() => {
-    // Handle redirect to subdomain for authenticated users on main domain
-    const redirectAuthenticatedUserToSubdomain = async () => {
-      // Skip if already redirected or not on main domain
-      if (hasRedirected || location.pathname !== '/' || !isMainDomain(getSubdomainFromUrl())) {
+    const checkUserOrganizations = async () => {
+      // Skip if already redirected, not authenticated, still loading, or not on main domain
+      if (
+        hasRedirected || 
+        !isAuthenticated || 
+        authLoading || 
+        !user?.id ||
+        !isMainDomain(getSubdomainFromUrl()) ||
+        location.pathname === '/onboarding' ||
+        location.pathname === '/create-organization'
+      ) {
         return;
       }
+
+      console.log('Checking for user organizations to redirect from main domain...');
       
-      // Proceed only if authenticated and we have organizations
-      if (isAuthenticated && !authLoading && !orgLoading && organizations.length > 0) {
-        console.log('Authenticated user on main domain - redirecting to organization subdomain');
-        
-        // Get first organization for redirection
-        const targetOrg = organizations[0];
-        if (targetOrg) {
-          setHasRedirected(true); // Prevent redirect loop
-          console.log(`Redirecting to ${targetOrg.subdomain}.${MAIN_DOMAIN}/dashboard`);
-          redirectToOrganization(targetOrg);
+      try {
+        // Direct query to Supabase to get user's organizations
+        const { data: memberships, error: membershipError } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', user.id);
+          
+        if (membershipError) {
+          console.error('Error fetching user organization memberships:', membershipError);
+          return;
         }
+        
+        console.log('Found memberships:', memberships?.length || 0);
+        
+        if (memberships && memberships.length > 0) {
+          // Get the first organization details
+          const { data: orgData, error: orgError } = await supabase
+            .from('organizations')
+            .select('*')
+            .eq('id', memberships[0].organization_id)
+            .single();
+            
+          if (orgError) {
+            console.error('Error fetching organization details:', orgError);
+            return;
+          }
+          
+          if (orgData) {
+            console.log('Found organization to redirect to:', orgData.name, 'with subdomain:', orgData.subdomain);
+            setHasRedirected(true);
+            await redirectToSubdomain(orgData.subdomain);
+          }
+        } else if (location.pathname !== '/onboarding') {
+          console.log('No organizations found, redirecting to onboarding');
+          navigate('/onboarding');
+        }
+      } catch (error) {
+        console.error('Error in checkUserOrganizations:', error);
       }
     };
+    
+    // Run the check when authentication status changes
+    checkUserOrganizations();
+  }, [isAuthenticated, authLoading, user, hasRedirected, location.pathname]);
 
-    // Only run this check after auth and org data are loaded
-    if (!authLoading && !orgLoading && orgInitialized) {
-      redirectAuthenticatedUserToSubdomain();
-    }
-  }, [
-    isAuthenticated, 
-    authLoading, 
-    orgLoading, 
-    organizations, 
-    orgInitialized, 
-    location.pathname,
-    hasRedirected
-  ]);
-
+  // Original tenant redirector logic
   useEffect(() => {
     // Early exit for main domain optimization
     // This ensures immediate rendering on the main domain
@@ -162,22 +199,6 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
             console.log("Redirecting user with no organizations to onboarding");
             navigate('/onboarding');
             return;
-          }
-          
-          // Redirect authenticated users on main domain to their subdomain dashboard
-          // But only if not already on a protected path
-          else if (isAuthenticated && organizations.length > 0 && 
-                  isOnMainDomain && 
-                  location.pathname !== '/organizations' && 
-                  location.pathname !== '/create-organization' &&
-                  !hasRedirected) {
-            const targetOrg = organizations[0];
-            if (targetOrg) {
-              console.log(`Redirecting authenticated user to subdomain: ${targetOrg.subdomain}`);
-              setHasRedirected(true);
-              redirectToOrganization(targetOrg);
-              return;
-            }
           }
         } 
         // Handling for tenant subdomains

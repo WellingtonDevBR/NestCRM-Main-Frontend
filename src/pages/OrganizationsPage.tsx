@@ -16,6 +16,7 @@ import { Building, ArrowRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Organization } from "@/types/supabase";
+import { MAIN_DOMAIN } from "@/utils/domainUtils";
 
 const OrganizationsPage = () => {
   const { isAuthenticated, loading: authLoading, user } = useAuth();
@@ -36,6 +37,8 @@ const OrganizationsPage = () => {
       if (!isAuthenticated || !user?.id) return;
       
       try {
+        console.log('Fetching organization memberships for user:', user.id);
+        
         // Fetch organization memberships for current user
         const { data: memberships, error: membershipError } = await supabase
           .from('organization_members')
@@ -47,16 +50,29 @@ const OrganizationsPage = () => {
           return;
         }
         
+        console.log('Found memberships:', memberships?.length || 0);
+        
         if (memberships && memberships.length > 0) {
-          // Filter organizations list to only include organizations the user is a member of
-          const userOrgIds = memberships.map(m => m.organization_id);
-          const filteredOrgs = organizations.filter(org => userOrgIds.includes(org.id));
-          setUserOrganizations(filteredOrgs);
+          const orgPromises = memberships.map(membership => 
+            supabase
+              .from('organizations')
+              .select('*')
+              .eq('id', membership.organization_id)
+              .single()
+          );
+          
+          const orgResults = await Promise.all(orgPromises);
+          const validOrgs = orgResults
+            .filter(result => !result.error && result.data)
+            .map(result => result.data as Organization);
+          
+          console.log('Retrieved organizations:', validOrgs.length);
+          setUserOrganizations(validOrgs);
           
           // If there's only one organization, redirect to it directly
-          if (filteredOrgs.length === 1) {
-            console.log('User has only one organization, redirecting to it:', filteredOrgs[0].name);
-            handleSelectOrganization(filteredOrgs[0].id, filteredOrgs[0].subdomain);
+          if (validOrgs.length === 1) {
+            console.log('User has only one organization, redirecting to it:', validOrgs[0].name);
+            handleSelectOrganization(validOrgs[0].id, validOrgs[0].subdomain);
           }
         } else {
           setUserOrganizations([]);
@@ -78,41 +94,39 @@ const OrganizationsPage = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  if (authLoading || orgLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
   const handleSelectOrganization = async (id: string, subdomain: string) => {
     setIsLoading(true);
     try {
       await switchOrganization(id);
       
-      // Redirect to the subdomain URL
+      toast.success(`Switching to ${subdomain} organization`, {
+        description: "Redirecting to dashboard..."
+      });
+      
+      // Direct redirection to subdomain
       const protocol = window.location.protocol;
       const host = window.location.host;
       
-      // If on localhost, just navigate to the dashboard
-      if (host.includes('localhost') || host.includes('127.0.0.1')) {
-        navigate("/dashboard?subdomain=" + subdomain);
+      // If on localhost or development environment, use query parameter
+      if (host.includes('localhost') || 
+          host.includes('127.0.0.1') || 
+          host.includes('lovableproject.com') ||
+          host.includes('netlify.app') || 
+          host.includes('vercel.app')) {
+        console.log('Development environment detected, navigating with query parameter');
+        navigate(`/dashboard?subdomain=${subdomain}`);
         return;
       }
       
-      // In production, redirect to the subdomain
-      const domainParts = host.split('.');
+      // In production, redirect to the subdomain directly
+      console.log('Production environment detected, redirecting to subdomain');
+      const url = `${protocol}//${subdomain}.${MAIN_DOMAIN}/dashboard`;
+      console.log('Redirecting to:', url);
       
-      // We're redirecting to the subdomain, e.g. subdomain.nestcrm.com.au
-      if (domainParts.length >= 2) {
-        // If we're on nestcrm.com.au or www.nestcrm.com.au, navigate to subdomain.nestcrm.com.au
-        const baseDomain = domainParts.length > 2 ? domainParts.slice(1).join('.') : domainParts.join('.');
-        window.location.href = `${protocol}//${subdomain}.${baseDomain}/dashboard`;
-      } else {
-        // Fallback to just navigating to the dashboard
-        navigate("/dashboard");
-      }
+      // Use a small timeout to ensure the toast is visible
+      setTimeout(() => {
+        window.location.href = url;
+      }, 500);
     } catch (error) {
       console.error("Error selecting organization:", error);
       toast.error("Failed to select organization");
@@ -120,6 +134,14 @@ const OrganizationsPage = () => {
       setIsLoading(false);
     }
   };
+
+  if (authLoading || orgLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">
