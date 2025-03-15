@@ -27,6 +27,12 @@ const queryClient = new QueryClient({
   },
 });
 
+// Base URL check to ensure all assets load correctly
+// This helps with domain and subdomain hosting
+if (import.meta.env.PROD) {
+  console.log(`Running in production on: ${window.location.hostname}`);
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>

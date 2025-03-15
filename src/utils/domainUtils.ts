@@ -14,6 +14,8 @@ const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
 export const getSubdomainFromUrl = (): string | null => {
   const hostname = window.location.hostname;
   
+  console.log(`Current hostname: ${hostname}`);
+  
   // For localhost development, check URL format
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     // Check for subdomain param in URL for local development
@@ -31,24 +33,28 @@ export const getSubdomainFromUrl = (): string | null => {
     return null;
   }
   
-  // Handle Netlify/Vercel preview URLs
-  if (hostname.includes('preview--')) {
-    const parts = hostname.split('--');
-    if (parts.length > 1) {
-      return parts[1].split('.')[0];
-    }
+  // Handle Netlify/Vercel/Lovable preview URLs
+  if (hostname.includes('preview--') || hostname.includes('lovableproject.com')) {
+    console.log(`Detected preview/development URL: ${hostname}`);
+    return null;
   }
   
   // Production domain handling
   
   // Check if this is exactly the main domain or www.main_domain
-  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}` || hostname === 'nestcrm') {
-    console.log(`Detected main domain: ${hostname}`);
+  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
+    console.log(`Detected exact main domain: ${hostname}`);
+    return null;
+  }
+  
+  // Special case for just "nestcrm" without domain
+  if (hostname === 'nestcrm') {
+    console.log('Detected nestcrm without domain suffix, treating as main domain');
     return null;
   }
   
   // For other subdomains under nestcrm.com.au
-  if (hostname.endsWith(MAIN_DOMAIN)) {
+  if (hostname.endsWith(`.${MAIN_DOMAIN}`)) {
     const subdomain = hostname.replace(`.${MAIN_DOMAIN}`, '');
     
     // Only return if it's not www or nestcrm
@@ -58,12 +64,6 @@ export const getSubdomainFromUrl = (): string | null => {
     }
     
     console.log(`Detected main domain identifier: ${subdomain}`);
-    return null;
-  }
-  
-  // For development domains that aren't properly structured
-  if (hostname === 'nestcrm') {
-    console.log('Detected nestcrm without domain suffix, treating as main domain');
     return null;
   }
   
@@ -105,6 +105,11 @@ export const buildSubdomainUrl = (subdomain: string, path: string = '/dashboard'
   
   // If on localhost, just return a query param version
   if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    return `${path}?subdomain=${subdomain}`;
+  }
+  
+  // Handle preview/development URLs
+  if (host.includes('lovableproject.com')) {
     return `${path}?subdomain=${subdomain}`;
   }
   

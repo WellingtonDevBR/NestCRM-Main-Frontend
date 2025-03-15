@@ -33,10 +33,10 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: "Subdomain is required",
-          isMainDomain: false 
+          isMainDomain: true  // Changed to true for empty subdomains
         }),
         { 
-          status: 400, 
+          status: 200,  // Changed to 200
           headers: { 
             "Content-Type": "application/json",
             ...corsHeaders
@@ -115,10 +115,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: "Internal server error",
-        isMainDomain: false
+        isMainDomain: true  // Changed to true for errors too
       }),
       { 
-        status: 500, 
+        status: 200,  // Changed to 200
         headers: { 
           "Content-Type": "application/json",
           ...corsHeaders

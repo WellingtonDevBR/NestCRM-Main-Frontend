@@ -52,13 +52,14 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         currentPath: location.pathname
       });
       
-      // If we're on the main domain, don't do tenant access checks
-      if (isOnMainDomain) {
-        console.log("We are on the main domain, allowing access");
+      // If we're on the main domain or a development domain, don't do tenant access checks
+      if (isOnMainDomain || window.location.hostname.includes('lovableproject.com')) {
+        console.log("We are on the main domain or development URL, allowing access");
         // If trying to access auth pages while logged in on main domain, redirect to organizations page
         if (isAuthenticated && isAuthPath) {
           console.log("Redirecting authenticated user from auth page to organizations page");
           navigate('/organizations');
+          return;
         }
         // If on main domain and authenticated but no organizations exist, redirect to onboarding
         else if (isAuthenticated && organizations.length === 0 && 
@@ -66,6 +67,7 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
                 location.pathname !== '/create-organization') {
           console.log("Redirecting authenticated user with no organizations to onboarding");
           navigate('/onboarding');
+          return;
         }
       } 
       // We are on a tenant subdomain
@@ -75,11 +77,12 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         if (!isAuthenticated && !isPublicPath) {
           console.log("Unauthenticated user trying to access protected page on subdomain, redirecting to login");
           navigate('/login');
+          return;
         } 
         // If on a specific organization subdomain but no currentOrganization loaded
-        else if (!currentOrganization && !orgLoading && !isPublicPath) {
+        else if (isAuthenticated && !currentOrganization && !orgLoading && !isPublicPath) {
           // Only show error for authenticated users, as they should have organization access
-          if (isAuthenticated && organizations.length > 0 && !hasShownMessage) {
+          if (organizations.length > 0 && !hasShownMessage) {
             console.log('User has organizations but no access to this subdomain:', subdomain);
             toast.error('You do not have access to this organization');
             setHasShownMessage(true);
