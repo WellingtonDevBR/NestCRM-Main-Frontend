@@ -27,9 +27,9 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const { isChecking, checkAttempts } = useTenantChecker();
   useSubdomainValidation();
   
-  // We're no longer redirecting subdomain users from index page automatically
-  // Instead, we'll show a return to dashboard button in the Index component
-  useSubdomainRedirect({ skipIndexRedirect: true });
+  // IMPORTANT: We're no longer skipping index redirects!
+  // This ensures tenant subdomain users are redirected from index page
+  useSubdomainRedirect({ skipIndexRedirect: false });
   useCrossDomainAuth();
 
   // Enhanced main domain dashboard protection

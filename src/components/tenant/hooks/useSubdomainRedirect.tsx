@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { getSubdomainFromUrl, isMainDomain, buildSubdomainUrl } from '@/utils/domainUtils';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface UseSubdomainRedirectProps {
   skipIndexRedirect?: boolean;
@@ -21,13 +22,23 @@ export const useSubdomainRedirect = ({ skipIndexRedirect = false }: UseSubdomain
   useEffect(() => {
     const subdomain = getSubdomainFromUrl();
     
-    // If there's a valid subdomain and we're on the index page, and not skipping index redirects
+    // If there's a valid subdomain and we're on the index page
     if (subdomain && 
         !isMainDomain(subdomain) && 
-        !skipIndexRedirect && 
         (location.pathname === '/' || location.pathname === '/index.html')) {
-      console.log('🔄 Subdomain on index: Redirecting subdomain to dashboard', subdomain);
-      navigate('/dashboard', { replace: true });
+      
+      // Even if skipIndexRedirect is true, we want to enforce redirects for tenant subdomains
+      console.log('🔄 Subdomain on index: Redirecting tenant to dashboard', subdomain);
+      
+      if (isAuthenticated) {
+        // Redirect authenticated users to dashboard
+        navigate('/dashboard', { replace: true });
+      } else {
+        // Redirect unauthenticated users to main domain
+        toast.info("Redirecting to main site...");
+        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
+      }
+      return;
     }
     
     // Always redirect dashboard access to the correct subdomain
