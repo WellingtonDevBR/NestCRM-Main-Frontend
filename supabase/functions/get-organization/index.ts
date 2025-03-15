@@ -34,6 +34,20 @@ serve(async (req) => {
       );
     }
 
+    // Special case for "nestcrm" subdomain - this is actually the base domain
+    if (subdomain === 'nestcrm') {
+      return new Response(
+        JSON.stringify({ error: "This is the root domain, not a tenant subdomain" }),
+        { 
+          status: 400, 
+          headers: { 
+            "Content-Type": "application/json",
+            ...corsHeaders
+          }
+        }
+      );
+    }
+
     console.log(`Looking up organization with subdomain: ${subdomain}`);
 
     // Create Supabase client with service role key for bypassing RLS

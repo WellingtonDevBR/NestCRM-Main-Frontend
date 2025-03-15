@@ -17,12 +17,32 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(true);
   const [hasShownMessage, setHasShownMessage] = useState(false);
+  const [lastCheckTime, setLastCheckTime] = useState(0);
 
   useEffect(() => {
+    // Prevent running checks too frequently
+    const now = Date.now();
+    if (now - lastCheckTime < 1000) {
+      // Don't run the check if it's been less than 1 second since the last check
+      return;
+    }
+    setLastCheckTime(now);
+
     const checkTenant = async () => {
       if (authLoading || orgLoading) return;
 
       const subdomain = getSubdomainFromUrl();
+      
+      // Special case for the "nestcrm" subdomain - this should be treated as the root domain
+      // since it's part of the base URL (.nestcrm.com.au)
+      if (subdomain === 'nestcrm') {
+        if (isAuthenticated && location.pathname === '/') {
+          navigate('/organizations');
+        }
+        setIsChecking(false);
+        return;
+      }
+
       const isRootDomain = !subdomain;
       const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
       
@@ -48,12 +68,12 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       }
       
       // Only show the error message when:
-      // 1. We're on a subdomain
+      // 1. We're on a subdomain (not the special 'nestcrm' case)
       // 2. The currentOrganization is not loaded (user doesn't have access)
       // 3. User is authenticated
       // 4. User has at least one organization (so they're not in the process of creating their first)
       // 5. We haven't shown the message yet
-      if (subdomain && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
+      if (subdomain && subdomain !== 'nestcrm' && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
         console.log('User has organizations but no access to this subdomain:', subdomain);
         toast.error('You do not have access to this organization');
         setHasShownMessage(true);
@@ -79,7 +99,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     isAuthenticated, 
     organizations.length,
     currentOrganization,
-    hasShownMessage
+    hasShownMessage,
+    lastCheckTime
   ]);
 
   if (isChecking) {
