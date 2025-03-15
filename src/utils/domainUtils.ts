@@ -40,20 +40,34 @@ export const getSubdomainFromUrl = (): string | null => {
   }
   
   // Production domain handling
-  // Explicitly handle the nestcrm.com.au domain as the main domain
-  if (hostname === MAIN_DOMAIN || hostname === 'www.' + MAIN_DOMAIN) {
+  
+  // Check if this is exactly the main domain or www.main_domain
+  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}` || hostname === 'nestcrm') {
+    console.log(`Detected main domain: ${hostname}`);
     return null;
   }
   
   // For other subdomains under nestcrm.com.au
   if (hostname.endsWith(MAIN_DOMAIN)) {
-    const subdomain = hostname.replace('.' + MAIN_DOMAIN, '');
+    const subdomain = hostname.replace(`.${MAIN_DOMAIN}`, '');
+    
     // Only return if it's not www or nestcrm
     if (!MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
+      console.log(`Detected valid subdomain: ${subdomain}`);
       return subdomain;
     }
+    
+    console.log(`Detected main domain identifier: ${subdomain}`);
+    return null;
   }
   
+  // For development domains that aren't properly structured
+  if (hostname === 'nestcrm') {
+    console.log('Detected nestcrm without domain suffix, treating as main domain');
+    return null;
+  }
+  
+  console.log(`Unknown domain structure: ${hostname}, treating as subdomain-less`);
   return null;
 };
 
@@ -65,7 +79,9 @@ export const getSubdomainFromUrl = (): string | null => {
 export const isValidSubdomainFormat = (subdomain: string): boolean => {
   // Check subdomain format
   const subdomainRegex = /^[a-z0-9-]+$/;
-  return subdomainRegex.test(subdomain) && subdomain.length >= 3 && !MAIN_DOMAIN_IDENTIFIERS.includes(subdomain);
+  return subdomainRegex.test(subdomain) && 
+         subdomain.length >= 3 && 
+         !MAIN_DOMAIN_IDENTIFIERS.includes(subdomain);
 };
 
 /**
@@ -93,7 +109,8 @@ export const buildSubdomainUrl = (subdomain: string, path: string = '/dashboard'
   }
   
   // In production, generate subdomain URL
-  if (host === MAIN_DOMAIN || host === 'www.' + MAIN_DOMAIN || MAIN_DOMAIN_IDENTIFIERS.includes(host)) {
+  if (host === MAIN_DOMAIN || host === `www.${MAIN_DOMAIN}` || 
+      MAIN_DOMAIN_IDENTIFIERS.includes(host) || host === 'nestcrm') {
     return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
   }
   

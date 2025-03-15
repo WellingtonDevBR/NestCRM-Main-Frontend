@@ -49,18 +49,26 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setOrganizations(orgs);
       
       const subdomain = getSubdomainFromUrl();
+      
+      // Check if we're on a tenant subdomain (not the main domain)
       if (subdomain && !isMainDomain(subdomain)) {
+        console.log(`Looking for organization matching subdomain: ${subdomain}`);
         // We're on a specific organization subdomain - find the matching org
         const subdomainOrg = orgs.find(org => org.subdomain === subdomain);
         if (subdomainOrg) {
+          console.log(`Found matching organization: ${subdomainOrg.name}`);
           setCurrentOrganization(subdomainOrg);
         } else if (orgs.length > 0) {
           // User doesn't have access to this subdomain org, but has other orgs
+          console.log(`No matching organization for subdomain. Using first available: ${orgs[0].name}`);
           setCurrentOrganization(orgs[0]);
         }
-      } else if (orgs.length > 0) {
-        // We're on the main domain - set the first org as current
-        setCurrentOrganization(orgs[0]);
+      } else {
+        console.log(`On main domain. ${orgs.length > 0 ? `Setting first org as current: ${orgs[0].name}` : 'No orgs available'}`);
+        // We're on the main domain - set the first org as current if available
+        if (orgs.length > 0) {
+          setCurrentOrganization(orgs[0]);
+        }
       }
     } catch (error: any) {
       console.error('Error fetching organizations:', error);
@@ -147,6 +155,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         
         // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
+          console.log(`Fetching organization by subdomain: ${subdomain}`);
           const org = await fetchOrganizationBySubdomain(subdomain);
           if (org) {
             setCurrentOrganization(org);
@@ -154,6 +163,8 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
           } else {
             console.log('No organization found for subdomain:', subdomain);
           }
+        } else {
+          console.log('On main domain, not fetching by subdomain');
         }
         
         // If authenticated, always fetch the user's organizations

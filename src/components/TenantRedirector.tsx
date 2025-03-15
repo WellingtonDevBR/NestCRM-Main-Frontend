@@ -46,24 +46,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         currentPath: location.pathname
       });
       
-      // Only perform organization checks if we're NOT on the main domain
-      if (!isOnMainDomain) {
-        // If on a specific organization subdomain but not authenticated, allow access to auth pages
-        if (!isAuthenticated && isAuthPath) {
-          // This is fine, let them access the login/signup page on the subdomain
-        } 
-        // If on a specific organization subdomain but no currentOrganization loaded
-        else if (!currentOrganization && !orgLoading) {
-          // Only show error for authenticated users, as they should have organization access
-          if (isAuthenticated && organizations.length > 0 && !hasShownMessage) {
-            console.log('User has organizations but no access to this subdomain:', subdomain);
-            toast.error('You do not have access to this organization');
-            setHasShownMessage(true);
-          }
-        }
-      } 
-      // Main domain handling
-      else if (isOnMainDomain) {
+      // If we're on the main domain, don't do tenant access checks
+      if (isOnMainDomain) {
         // If trying to access auth pages while logged in on main domain, redirect to organizations page
         if (isAuthenticated && isAuthPath) {
           navigate('/organizations');
@@ -73,6 +57,25 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
                 location.pathname !== '/onboarding' && 
                 location.pathname !== '/create-organization') {
           navigate('/onboarding');
+        }
+      } 
+      // We are on a tenant subdomain
+      else {
+        // If on a specific organization subdomain but not authenticated, allow access to auth pages
+        if (!isAuthenticated && isAuthPath) {
+          // This is fine, let them access the login/signup page on the subdomain
+          console.log('Allowing unauthenticated access to auth page on subdomain');
+        } 
+        // If on a specific organization subdomain but no currentOrganization loaded
+        else if (!currentOrganization && !orgLoading && subdomain) {
+          // Only show error for authenticated users, as they should have organization access
+          if (isAuthenticated && organizations.length > 0 && !hasShownMessage) {
+            console.log('User has organizations but no access to this subdomain:', subdomain);
+            toast.error('You do not have access to this organization');
+            setHasShownMessage(true);
+          } else {
+            console.log(`Invalid tenant or no access for subdomain: ${subdomain}`);
+          }
         }
       }
 
