@@ -66,11 +66,11 @@ const Hero = () => {
           
           <div className="w-full lg:w-1/2 flex justify-center lg:justify-end">
             <div className="relative w-full max-w-xl mx-auto">
-              <div className="relative z-10 glass-card p-3 md:p-5 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-[1.02]">
+              <div className="relative z-10 shadow-lg transform transition-all duration-300 hover:scale-[1.02]">
                 <img
-                  src="/lovable-uploads/8bcb9da2-58b4-49b0-bde5-e7781999b3aa.png"
+                  src="/lovable-uploads/d8c7cdb8-0aa8-4444-865f-70e276a15f2a.png"
                   alt="NESTCRM Dashboard"
-                  className="w-full h-auto rounded-lg shadow-sm"
+                  className="w-full h-auto"
                 />
               </div>
               <div className="absolute -top-4 -left-4 -right-4 -bottom-4 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-2xl blur-xl -z-10"></div>
