@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,10 +12,11 @@ import { redirectToOrganization } from "@/utils/organizationUtils";
 const Onboarding = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const { createOrganization, isValidSubdomain } = useOrganization();
+  const { createOrganization, isValidSubdomain, organizations, loading: orgLoading, fetchOrganizations } = useOrganization();
   
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingOrgs, setIsCheckingOrgs] = useState(true);
   
   // Organization info
   const [orgName, setOrgName] = useState("");
@@ -22,10 +24,43 @@ const Onboarding = () => {
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
 
   // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    navigate("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!isAuthenticated && !orgLoading) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, orgLoading, navigate]);
+
+  // Check if user already has organizations
+  useEffect(() => {
+    const checkExistingOrganizations = async () => {
+      if (!isAuthenticated || !user) return;
+      
+      try {
+        await fetchOrganizations();
+        setIsCheckingOrgs(false);
+      } catch (error) {
+        console.error("Error checking organizations:", error);
+        setIsCheckingOrgs(false);
+      }
+    };
+    
+    checkExistingOrganizations();
+  }, [isAuthenticated, user, fetchOrganizations]);
+
+  // Redirect if user already has organizations
+  useEffect(() => {
+    if (!isCheckingOrgs && organizations.length > 0) {
+      console.log("User already has organizations, redirecting...");
+      toast.info("Redirecting to your organization");
+      
+      // Redirect to the first organization
+      if (organizations[0]) {
+        redirectToOrganization(organizations[0]);
+      } else {
+        navigate("/organizations");
+      }
+    }
+  }, [organizations, isCheckingOrgs, navigate]);
 
   const handleSubdomainChange = async (value: string) => {
     const cleaned = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
@@ -65,24 +100,25 @@ const Onboarding = () => {
         
         // Use the new utility function for redirection
         setTimeout(() => {
-          const host = window.location.host;
-          
-          // If on localhost, just navigate to the dashboard
-          if (host.includes('localhost') || host.includes('127.0.0.1')) {
-            navigate("/dashboard?subdomain=" + subdomain);
-            return;
-          }
-          
-          // Use the new utility function for redirection
           redirectToOrganization(org);
         }, 1000);
       }
     } catch (error) {
       console.error("Error in onboarding:", error);
+      toast.error("Failed to create organization");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingOrgs || (organizations.length > 0)) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-secondary/30">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+        <p className="text-foreground/70">Checking your account...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-secondary/30">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,6 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
       
+      if (!userId) {
+        navigate('/organizations');
+        return;
+      }
+      
       const { data: organizations, error: orgError } = await supabase
         .from('organization_members')
         .select('organization_id')
@@ -118,6 +124,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           redirectToOrganization(org);
           return;
         }
+      } else {
+        // User has no organizations, redirect to onboarding
+        navigate('/onboarding');
+        return;
       }
       
       navigate('/organizations');
