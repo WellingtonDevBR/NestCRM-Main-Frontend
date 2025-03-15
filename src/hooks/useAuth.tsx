@@ -122,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (orgData) {
           console.log('Organization details retrieved:', orgData.name);
           
+          // Create a properly typed Organization object
           const org: Organization = {
             id: orgData.id,
             name: orgData.name,
@@ -136,7 +137,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
           
           console.log('Redirecting to organization subdomain:', org.subdomain);
-          redirectToOrganization(org);
+          
+          // Force a direct redirect instead of using the utility
+          const protocol = window.location.protocol;
+          const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works
+          const url = `${protocol}//${org.subdomain}.${domain}/dashboard`;
+          
+          console.log('Direct redirect URL:', url);
+          window.location.href = url;
           return;
         }
       } else {

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/hooks/useAuth";
 import { redirectToOrganization } from "@/utils/organizationUtils";
 import { supabase } from "@/integrations/supabase/client";
+import type { Organization } from "@/types/supabase";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -76,16 +78,28 @@ const Onboarding = () => {
             console.log("User already has an organization, redirecting to:", orgData.name);
             toast.info("Redirecting to your organization");
             
-            setTimeout(() => {
-              redirectToOrganization({
-                id: orgData.id,
-                name: orgData.name,
-                subdomain: orgData.subdomain,
-                created_at: orgData.created_at,
-                updated_at: orgData.updated_at,
-                settings: orgData.settings || {}
-              });
-            }, 500);
+            // Create a properly typed organization object
+            const org: Organization = {
+              id: orgData.id,
+              name: orgData.name,
+              subdomain: orgData.subdomain,
+              created_at: orgData.created_at,
+              updated_at: orgData.updated_at,
+              // Fix the TypeScript error by ensuring settings is a Record<string, any>
+              settings: orgData.settings ? 
+                (typeof orgData.settings === 'string' 
+                  ? JSON.parse(orgData.settings) 
+                  : orgData.settings as Record<string, any>
+                ) : {}
+            };
+            
+            // Force a direct redirection
+            const protocol = window.location.protocol;
+            const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works
+            const url = `${protocol}//${org.subdomain}.${domain}/dashboard`;
+            
+            console.log('Direct redirect URL:', url);
+            window.location.href = url;
             return;
           }
         }
@@ -139,9 +153,16 @@ const Onboarding = () => {
           description: "Redirecting to your dashboard..."
         });
         
-        // Use the new utility function for redirection
+        // Use direct redirection for reliability
+        const protocol = window.location.protocol;
+        const domain = 'nestcrm.com.au'; // Hardcoded domain to ensure it works
+        const url = `${protocol}//${org.subdomain}.${domain}/dashboard`;
+        
+        console.log('Direct redirect URL after organization creation:', url);
+        
+        // Small delay to ensure the toast is shown
         setTimeout(() => {
-          redirectToOrganization(org);
+          window.location.href = url;
         }, 1000);
       }
     } catch (error) {
