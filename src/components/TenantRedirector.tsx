@@ -16,7 +16,13 @@ import { MAIN_DOMAIN } from '@/utils/domainUtils';
 
 export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { organizations, currentOrganization, loading: orgLoading, fetchOrganizations } = useOrganization();
+  const { 
+    organizations, 
+    currentOrganization, 
+    loading: orgLoading, 
+    initialized: orgInitialized,
+    fetchOrganizations 
+  } = useOrganization();
   const location = useLocation();
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(true);
@@ -34,7 +40,14 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
     const checkTenant = async () => {
       try {
-        // Check if this is the main index page - if so, render immediately without checks
+        // Always render the index page immediately
+        if (location.pathname === '/') {
+          console.log('Root path detected - bypassing tenant checks');
+          setIsChecking(false);
+          return;
+        }
+        
+        // Check if this is the main index page or another public page
         const isIndexPage = initializeIndexPageOrganization();
         if (isIndexPage) {
           console.log('Index page detected - bypassing tenant checks');
@@ -74,7 +87,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
           isDevelopmentDomain,
           isAuthenticated, 
           organizationsCount: organizations?.length || 0,
-          currentPath: location.pathname
+          currentPath: location.pathname,
+          orgInitialized
         });
         
         // Allow access on public paths
@@ -153,15 +167,16 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     currentOrganization,
     hasShownMessage,
     lastCheckTime,
-    checkAttempts
+    checkAttempts,
+    orgInitialized
   ]);
 
-  // Don't show loading spinner for public pages
+  // Don't show loading spinner for public pages or when organization is initialized
   const isPublicPage = location.pathname === '/' || 
                        location.pathname === '/login' || 
                        location.pathname === '/signup';
                        
-  if (isChecking && !isPublicPage && checkAttempts < 3) {
+  if (isChecking && !isPublicPage && checkAttempts < 3 && !orgInitialized) {
     console.log(`Showing loading spinner while checking tenant... (attempt ${checkAttempts + 1})`);
     return <div className="flex items-center justify-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

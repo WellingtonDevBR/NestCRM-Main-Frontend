@@ -45,9 +45,9 @@ export const getSubdomainFromUrl = (): string | null => {
     return null;
   }
   
-  // Exact match for main domain or www.main_domain
+  // Main domain check: nestcrm.com.au or www.nestcrm.com.au should return null
   if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
-    console.log(`Exact main domain match: ${hostname}`);
+    console.log(`Main domain detected: ${hostname}`);
     return null;
   }
   
@@ -68,12 +68,6 @@ export const getSubdomainFromUrl = (): string | null => {
     }
     
     console.log(`Main domain identifier detected: ${subdomain}`);
-    return null;
-  }
-  
-  // Handle direct access to nestcrm.com.au (not www.nestcrm.com.au)
-  if (hostname === MAIN_DOMAIN) {
-    console.log(`Direct access to main domain: ${hostname}`);
     return null;
   }
   
@@ -103,6 +97,13 @@ export const isValidSubdomainFormat = (subdomain: string): boolean => {
  * @returns Boolean indicating if this is the main domain
  */
 export const isMainDomain = (subdomain: string | null): boolean => {
+  // If on the main hostname, always return true
+  const hostname = window.location.hostname;
+  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
+    return true;
+  }
+  
+  // Check subdomain
   if (!subdomain) return true;
   if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) return true;
   return false;

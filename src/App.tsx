@@ -13,7 +13,7 @@ import Onboarding from "./pages/Onboarding";
 import CreateOrganization from "./pages/CreateOrganization";
 import OrganizationsPage from "./pages/OrganizationsPage";
 import { AuthProvider } from "./hooks/useAuth";
-import { OrganizationProvider } from "./hooks/useOrganization";
+import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { TenantRedirector } from "./components/TenantRedirector";
 
 // Configure query client with better error handling
@@ -31,6 +31,11 @@ const queryClient = new QueryClient({
 // This helps with domain and subdomain hosting
 if (import.meta.env.PROD) {
   console.log(`Running in production on: ${window.location.hostname}`);
+  // Detect if we're on the main domain
+  if (window.location.hostname === 'nestcrm.com.au' || 
+      window.location.hostname === 'www.nestcrm.com.au') {
+    console.log('Main domain detected - optimizing for root domain experience');
+  }
 }
 
 const App = () => (

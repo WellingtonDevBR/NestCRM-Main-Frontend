@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Organization } from '@/types/supabase';
 import { getSubdomainFromUrl, buildSubdomainUrl } from './domainUtils';
@@ -129,8 +128,32 @@ export const getUserOrganizationRole = async (
  * Used specifically to ensure the landing page loads correctly regardless of domain
  */
 export const initializeIndexPageOrganization = (): boolean => {
-  // On the index page, we want to render regardless of organization context
-  // This is essential for the main domain landing page
+  // Get the current pathname
   const pathname = window.location.pathname;
+  const hostname = window.location.hostname;
+  
+  // Special handling for the main domain
+  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
+    console.log(`Main domain detected during initialization: ${hostname}`);
+    // If we're on the root path or index page, allow immediate rendering
+    if (pathname === '/' || pathname === '/index.html') {
+      return true;
+    }
+  }
+  
+  // Development environment check
+  if (hostname.includes('localhost') || 
+      hostname.includes('127.0.0.1') || 
+      hostname.includes('lovableproject.com') ||
+      hostname.includes('netlify.app') ||
+      hostname.includes('vercel.app')) {
+    // For development, always allow immediate rendering of public pages  
+    if (pathname === '/' || pathname === '/index.html' || 
+        pathname === '/login' || pathname === '/signup') {
+      return true;
+    }
+  }
+  
+  // Check if we're on a public route that should bypass organization checks
   return pathname === '/' || pathname === '/index.html';
 };

@@ -1,5 +1,5 @@
 
-import { createContext, ReactNode } from 'react';
+import { createContext, ReactNode, useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import type { Organization } from '@/types/supabase';
 import { getSubdomainFromUrl } from '@/utils/domainUtils'; 
@@ -21,11 +21,24 @@ interface OrganizationContextType {
 export const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
+  // Note: We're maintaining a consistent hook order by initializing all hooks first
   const { user, isAuthenticated } = useAuth();
+  
+  // Handle initialization state in the provider
+  const [localInitialized, setLocalInitialized] = useState(false);
+  
+  // Then use the state hook with proper dependencies
   const organizationState = useOrganizationState({
     userId: user?.id,
     isAuthenticated
   });
+  
+  // Effect to ensure we mark local initialization
+  useEffect(() => {
+    if (organizationState.initialized) {
+      setLocalInitialized(true);
+    }
+  }, [organizationState.initialized]);
 
   return (
     <OrganizationContext.Provider
@@ -33,7 +46,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         currentOrganization: organizationState.currentOrganization,
         organizations: organizationState.organizations,
         loading: organizationState.loading,
-        initialized: organizationState.initialized,
+        initialized: localInitialized || organizationState.initialized,
         createOrganization: organizationState.createOrganization,
         switchOrganization: organizationState.switchOrganization,
         updateOrganization: organizationState.updateOrganization,
