@@ -63,9 +63,31 @@ const Onboarding = () => {
           description: "Redirecting to your dashboard..."
         });
         
-        // In a production environment, we would redirect to the subdomain here
-        // For now, we'll just redirect to the dashboard
-        setTimeout(() => navigate("/dashboard"), 1000);
+        // Redirect to the subdomain
+        setTimeout(() => {
+          // Redirect to the subdomain
+          const protocol = window.location.protocol;
+          const host = window.location.host;
+          
+          // If on localhost, just navigate to the dashboard
+          if (host.includes('localhost') || host.includes('127.0.0.1')) {
+            navigate("/dashboard?subdomain=" + subdomain);
+            return;
+          }
+          
+          // In production, redirect to the subdomain
+          const domainParts = host.split('.');
+          
+          // We're redirecting to the subdomain, e.g. subdomain.nestcrm.com.au
+          if (domainParts.length >= 2) {
+            // If we're on nestcrm.com.au or www.nestcrm.com.au, navigate to subdomain.nestcrm.com.au
+            const baseDomain = domainParts.length > 2 ? domainParts.slice(1).join('.') : domainParts.join('.');
+            window.location.href = `${protocol}//${subdomain}.${baseDomain}/dashboard`;
+          } else {
+            // Fallback to just navigating to the dashboard
+            navigate("/dashboard");
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error("Error in onboarding:", error);

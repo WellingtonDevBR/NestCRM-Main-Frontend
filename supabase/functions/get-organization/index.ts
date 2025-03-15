@@ -34,10 +34,10 @@ serve(async (req) => {
       );
     }
 
-    // Special case for "nestcrm" subdomain - this is actually the base domain
-    if (subdomain === 'nestcrm') {
+    // nestcrm is not a subdomain, it's the main domain
+    if (subdomain === 'nestcrm' || subdomain === 'www') {
       return new Response(
-        JSON.stringify({ error: "This is the root domain, not a tenant subdomain" }),
+        JSON.stringify({ error: "This is the main domain, not a tenant subdomain" }),
         { 
           status: 400, 
           headers: { 

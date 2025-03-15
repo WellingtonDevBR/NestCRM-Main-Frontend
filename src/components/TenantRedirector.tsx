@@ -33,47 +33,38 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
       const subdomain = getSubdomainFromUrl();
       
-      // Special case for the "nestcrm" subdomain - this should be treated as the root domain
-      // since it's part of the base URL (.nestcrm.com.au)
-      if (subdomain === 'nestcrm') {
-        if (isAuthenticated && location.pathname === '/') {
-          navigate('/organizations');
-        }
-        setIsChecking(false);
-        return;
-      }
-
-      const isRootDomain = !subdomain;
+      // On the main domain (nestcrm.com.au), there's no subdomain or the subdomain is 'www'
+      const isMainDomain = !subdomain || subdomain === 'nestcrm' || subdomain === 'www';
       const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
       
       console.log('TenantRedirector: Checking tenant', { 
         subdomain, 
-        isRootDomain, 
+        isMainDomain, 
         isAuthPath, 
         isAuthenticated, 
         organizationsCount: organizations.length,
         currentPath: location.pathname
       });
       
-      // On the root domain (no subdomain) and authenticated
-      if (isRootDomain && isAuthenticated) {
-        // If trying to access auth pages while logged in on root domain, redirect to organizations page
+      // On the main domain (nestcrm.com.au) and authenticated
+      if (isMainDomain && isAuthenticated) {
+        // If trying to access auth pages while logged in on main domain, redirect to organizations page
         if (isAuthPath) {
           navigate('/organizations');
         }
-        // If on root domain and no organizations exist, redirect to onboarding
+        // If on main domain and no organizations exist, redirect to onboarding
         else if (organizations.length === 0 && location.pathname !== '/onboarding' && location.pathname !== '/create-organization') {
           navigate('/onboarding');
         }
       }
       
       // Only show the error message when:
-      // 1. We're on a subdomain (not the special 'nestcrm' case)
+      // 1. We're on a specific organization subdomain (not the main domain)
       // 2. The currentOrganization is not loaded (user doesn't have access)
       // 3. User is authenticated
       // 4. User has at least one organization (so they're not in the process of creating their first)
       // 5. We haven't shown the message yet
-      if (subdomain && subdomain !== 'nestcrm' && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
+      if (!isMainDomain && !currentOrganization && isAuthenticated && organizations.length > 0 && !hasShownMessage) {
         console.log('User has organizations but no access to this subdomain:', subdomain);
         toast.error('You do not have access to this organization');
         setHasShownMessage(true);

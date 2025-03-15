@@ -56,11 +56,13 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     }
     
     // Production subdomain handling
-    const hostnameSegments = hostname.split('.');
-    
-    // If more than 2 segments (e.g., subdomain.example.com)
-    if (hostnameSegments.length > 2) {
-      return hostnameSegments[0];
+    // For domain.nestcrm.com.au, extract "domain" as the subdomain
+    if (hostname.endsWith('nestcrm.com.au') && hostname !== 'nestcrm.com.au' && hostname !== 'www.nestcrm.com.au') {
+      const parts = hostname.split('.');
+      // If hostname is subdomain.nestcrm.com.au
+      if (parts.length === 4) {
+        return parts[0];
+      }
     }
     
     return null;

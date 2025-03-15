@@ -48,14 +48,33 @@ const OrganizationsPage = () => {
     );
   }
 
-  const handleSelectOrganization = async (id: string) => {
+  const handleSelectOrganization = async (id: string, subdomain: string) => {
     setIsLoading(true);
     try {
       await switchOrganization(id);
       
-      // In a production app, we'd redirect to the organization's subdomain
-      // For this demo, we'll just go to the dashboard
-      navigate("/dashboard");
+      // Redirect to the subdomain URL
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+      
+      // If on localhost, just navigate to the dashboard
+      if (host.includes('localhost') || host.includes('127.0.0.1')) {
+        navigate("/dashboard?subdomain=" + subdomain);
+        return;
+      }
+      
+      // In production, redirect to the subdomain
+      const domainParts = host.split('.');
+      
+      // We're redirecting to the subdomain, e.g. subdomain.nestcrm.com.au
+      if (domainParts.length >= 2) {
+        // If we're on nestcrm.com.au or www.nestcrm.com.au, navigate to subdomain.nestcrm.com.au
+        const baseDomain = domainParts.length > 2 ? domainParts.slice(1).join('.') : domainParts.join('.');
+        window.location.href = `${protocol}//${subdomain}.${baseDomain}/dashboard`;
+      } else {
+        // Fallback to just navigating to the dashboard
+        navigate("/dashboard");
+      }
     } catch (error) {
       console.error("Error selecting organization:", error);
       toast.error("Failed to select organization");
@@ -80,7 +99,7 @@ const OrganizationsPage = () => {
               <Card key={org.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle>{org.name}</CardTitle>
-                  <CardDescription>{org.subdomain}.yourdomain.com</CardDescription>
+                  <CardDescription>{org.subdomain}.nestcrm.com.au</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-12 flex items-center">
@@ -90,7 +109,7 @@ const OrganizationsPage = () => {
                 <CardFooter>
                   <Button
                     className="w-full"
-                    onClick={() => handleSelectOrganization(org.id)}
+                    onClick={() => handleSelectOrganization(org.id, org.subdomain)}
                     disabled={isLoading}
                   >
                     Access Dashboard <ArrowRight className="ml-2 h-4 w-4" />
