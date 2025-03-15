@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface GetOrganizationRequest {
   subdomain?: string;
+  hostname?: string; // Added hostname for better context
 }
 
 // Main domain constants
@@ -23,20 +24,21 @@ serve(async (req) => {
   }
 
   try {
-    // Get subdomain from request
-    const { subdomain } = await req.json() as GetOrganizationRequest;
+    // Get subdomain and hostname from request
+    const { subdomain, hostname } = await req.json() as GetOrganizationRequest;
     
-    console.log(`Edge function received subdomain: ${subdomain}`);
+    console.log(`Edge function received: subdomain: "${subdomain}", hostname: "${hostname}"`);
 
-    if (!subdomain) {
-      console.log("No subdomain provided in request");
+    // Empty subdomain or direct access to the main domain is always treated as main domain
+    if (!subdomain || subdomain === '' || hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}`) {
+      console.log(`Empty subdomain or direct main domain access: ${hostname}`);
       return new Response(
         JSON.stringify({ 
-          error: "Subdomain is required",
-          isMainDomain: true  // Changed to true for empty subdomains
+          isMainDomain: true,
+          message: "This is the main domain" 
         }),
         { 
-          status: 200,  // Changed to 200
+          status: 200,
           headers: { 
             "Content-Type": "application/json",
             ...corsHeaders
@@ -45,10 +47,9 @@ serve(async (req) => {
       );
     }
 
-    // Check if this is a main domain request
-    // Direct match with full domain or main domain identifiers
-    if (subdomain === MAIN_DOMAIN || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
-      console.log(`Request identified as main domain: ${subdomain}`);
+    // Check if this is a main domain identifier
+    if (MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
+      console.log(`Main domain identifier detected: ${subdomain}`);
       return new Response(
         JSON.stringify({ 
           isMainDomain: true,
@@ -76,10 +77,10 @@ serve(async (req) => {
       .from('organizations')
       .select('*')
       .eq('subdomain', subdomain)
-      .single();
+      .maybeSingle();
 
-    if (error) {
-      console.error("Error fetching organization:", error.message);
+    if (error || !organization) {
+      console.error("Error or no organization found:", error?.message || "No matching organization");
       return new Response(
         JSON.stringify({ 
           error: "Could not find organization",
@@ -115,10 +116,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: "Internal server error",
-        isMainDomain: true  // Changed to true for errors too
+        isMainDomain: true  // Fallback to main domain on errors
       }),
       { 
-        status: 200,  // Changed to 200
+        status: 200,
         headers: { 
           "Content-Type": "application/json",
           ...corsHeaders

@@ -14,7 +14,7 @@ const MAIN_DOMAIN_IDENTIFIERS = ['nestcrm', 'www'];
 export const getSubdomainFromUrl = (): string | null => {
   const hostname = window.location.hostname;
   
-  console.log(`Current hostname: ${hostname}`);
+  console.log(`Current hostname: "${hostname}"`);
   
   // For localhost development, check URL format
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
@@ -22,20 +22,25 @@ export const getSubdomainFromUrl = (): string | null => {
     const urlSearchParams = new URLSearchParams(window.location.search);
     const subdomainParam = urlSearchParams.get('subdomain');
     if (subdomainParam) {
+      console.log(`Local development with subdomain param: ${subdomainParam}`);
       return subdomainParam;
     }
     
     // Alternative: check for subdomain.localhost pattern
     const parts = hostname.split('.');
     if (parts.length > 1 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
+      console.log(`Local development with subdomain format: ${parts[0]}`);
       return parts[0];
     }
+    console.log('Local development without subdomain');
     return null;
   }
   
-  // Handle Netlify/Vercel/Lovable preview URLs
-  if (hostname.includes('preview--') || hostname.includes('lovableproject.com')) {
-    console.log(`Detected preview/development URL: ${hostname}`);
+  // Handle Netlify/Vercel/Lovable preview URLs by returning null (no subdomain)
+  if (hostname.includes('netlify.app') || 
+      hostname.includes('vercel.app') || 
+      hostname.includes('lovableproject.com')) {
+    console.log(`Development/preview URL detected: ${hostname}`);
     return null;
   }
   
@@ -67,7 +72,8 @@ export const getSubdomainFromUrl = (): string | null => {
     return null;
   }
   
-  console.log(`Unknown domain structure: ${hostname}, treating as subdomain-less`);
+  // For any other domain, assume no subdomain
+  console.log(`Unknown domain structure: ${hostname}, treating as main domain`);
   return null;
 };
 
@@ -101,26 +107,28 @@ export const isMainDomain = (subdomain: string | null): boolean => {
  */
 export const buildSubdomainUrl = (subdomain: string, path: string = '/dashboard'): string => {
   const protocol = window.location.protocol;
-  const host = window.location.host;
+  const hostname = window.location.hostname;
   
   // If on localhost, just return a query param version
-  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+  if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
     return `${path}?subdomain=${subdomain}`;
   }
   
   // Handle preview/development URLs
-  if (host.includes('lovableproject.com')) {
+  if (hostname.includes('netlify.app') || 
+      hostname.includes('vercel.app') || 
+      hostname.includes('lovableproject.com')) {
     return `${path}?subdomain=${subdomain}`;
   }
   
   // In production, generate subdomain URL
-  if (host === MAIN_DOMAIN || host === `www.${MAIN_DOMAIN}` || 
-      MAIN_DOMAIN_IDENTIFIERS.includes(host) || host === 'nestcrm') {
+  if (hostname === MAIN_DOMAIN || hostname === `www.${MAIN_DOMAIN}` || 
+      MAIN_DOMAIN_IDENTIFIERS.includes(hostname) || hostname === 'nestcrm') {
     return `${protocol}//${subdomain}.${MAIN_DOMAIN}${path}`;
   }
   
   // If we're already on a subdomain 
-  const domainParts = host.split('.');
+  const domainParts = hostname.split('.');
   if (domainParts.length >= 2) {
     // For domain.nestcrm.com.au to newdomain.nestcrm.com.au
     const baseDomain = domainParts.slice(1).join('.');

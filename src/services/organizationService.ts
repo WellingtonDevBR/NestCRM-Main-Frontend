@@ -16,6 +16,9 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
     try {
       const session = await supabase.auth.getSession();
       const accessToken = session.data.session?.access_token;
+      const hostname = window.location.hostname;
+      
+      console.log(`Using hostname for edge function: ${hostname}`);
       
       const response = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
@@ -23,14 +26,22 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`
         },
-        body: JSON.stringify({ subdomain })
+        body: JSON.stringify({ subdomain, hostname })
       });
       
       if (response.ok) {
         const result = await response.json();
+        console.log('Edge function response:', result);
+        
         if (result.organization) {
           console.log('Successfully fetched organization:', result.organization);
           return result.organization as Organization;
+        }
+        
+        if (result.isMainDomain) {
+          console.log('Edge function confirmed this is the main domain');
+          // No organization needed since this is the main domain
+          return null;
         }
       }
       
@@ -45,7 +56,7 @@ export const fetchOrganizationBySubdomain = async (subdomain: string): Promise<O
       .from('organizations')
       .select('*')
       .eq('subdomain', subdomain)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Error fetching organization by subdomain:', error);

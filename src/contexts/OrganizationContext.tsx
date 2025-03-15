@@ -34,6 +34,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [initializationAttempts, setInitializationAttempts] = useState(0);
 
   const isValidSubdomain = async (subdomain: string): Promise<boolean> => {
     return await checkSubdomainAvailability(subdomain);
@@ -49,6 +50,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setOrganizations(orgs);
       
       const subdomain = getSubdomainFromUrl();
+      const hostname = window.location.hostname;
       
       // Check if we're on a tenant subdomain (not the main domain)
       if (subdomain && !isMainDomain(subdomain)) {
@@ -64,7 +66,7 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
           setCurrentOrganization(orgs[0]);
         }
       } else {
-        console.log(`On main domain. ${orgs.length > 0 ? `Setting first org as current: ${orgs[0].name}` : 'No orgs available'}`);
+        console.log(`On main domain (${hostname}). ${orgs.length > 0 ? `Setting first org as current: ${orgs[0].name}` : 'No orgs available'}`);
         // We're on the main domain - set the first org as current if available
         if (orgs.length > 0) {
           setCurrentOrganization(orgs[0]);
@@ -151,7 +153,9 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       try {
         const subdomain = getSubdomainFromUrl();
-        console.log(`Initializing organization with subdomain: ${subdomain || 'none'}`);
+        const hostname = window.location.hostname;
+        
+        console.log(`Initializing organization with hostname: "${hostname}", subdomain: "${subdomain || 'none'}"`);
         
         // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
         if (subdomain && !isMainDomain(subdomain)) {
@@ -178,13 +182,25 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error initializing organization:', error);
+        // If we fail, increment the retry counter
+        setInitializationAttempts(prev => prev + 1);
       } finally {
         setLoading(false);
       }
     };
 
     initializeOrganization();
-  }, [isAuthenticated, user?.id]);
+    
+    // Set up a retry mechanism for initialization issues
+    if (initializationAttempts > 0 && initializationAttempts < 3) {
+      const retryTimeout = setTimeout(() => {
+        console.log(`Retrying organization initialization (attempt ${initializationAttempts + 1})...`);
+        initializeOrganization();
+      }, 2000); // Wait 2 seconds before retry
+      
+      return () => clearTimeout(retryTimeout);
+    }
+  }, [isAuthenticated, user?.id, initializationAttempts]);
 
   return (
     <OrganizationContext.Provider

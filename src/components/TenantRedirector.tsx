@@ -35,25 +35,39 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       }
 
       const subdomain = getSubdomainFromUrl();
-      console.log(`Current subdomain detected: "${subdomain}"`);
+      const hostname = window.location.hostname;
+      
+      console.log(`TenantRedirector - Current hostname: "${hostname}", subdomain: "${subdomain}"`);
       
       // On the main domain (nestcrm.com.au), there's no subdomain or the subdomain is 'www' or 'nestcrm'
       const isOnMainDomain = isMainDomain(subdomain);
       const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
       const isPublicPath = location.pathname === '/' || isAuthPath;
+      const isDevelopmentDomain = hostname.includes('localhost') || 
+                                  hostname.includes('127.0.0.1') || 
+                                  hostname.includes('lovableproject.com');
       
       console.log('TenantRedirector check:', { 
+        hostname,
         subdomain, 
         isOnMainDomain, 
         isAuthPath,
         isPublicPath,
+        isDevelopmentDomain,
         isAuthenticated, 
         organizationsCount: organizations?.length || 0,
         currentPath: location.pathname
       });
       
+      // Always allow access on public paths
+      if (isPublicPath) {
+        console.log("Public path detected, allowing access");
+        setIsChecking(false);
+        return;
+      }
+      
       // If we're on the main domain or a development domain, don't do tenant access checks
-      if (isOnMainDomain || window.location.hostname.includes('lovableproject.com')) {
+      if (isOnMainDomain || isDevelopmentDomain) {
         console.log("We are on the main domain or development URL, allowing access");
         // If trying to access auth pages while logged in on main domain, redirect to organizations page
         if (isAuthenticated && isAuthPath) {
@@ -123,10 +137,12 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
                        location.pathname === '/signup';
                        
   if (isChecking && !isPublicPage) {
+    console.log("Showing loading spinner while checking tenant...");
     return <div className="flex items-center justify-center h-screen">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>;
   }
 
+  console.log("TenantRedirector - Rendering children");
   return <>{children}</>;
 };
