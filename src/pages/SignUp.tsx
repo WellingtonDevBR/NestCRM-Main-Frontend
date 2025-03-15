@@ -7,10 +7,20 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const SignUp = () => {
+  const { signUp } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [password, setPassword] = useState("");
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -18,20 +28,19 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast.success("Account created successfully!", {
-        description: "Redirecting to dashboard...",
+      // Call the signUp method from our auth context
+      await signUp(email, password, {
+        first_name: firstName,
+        last_name: lastName,
+        company: company
       });
       
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
-    } catch (error) {
-      toast.error("Failed to create account", {
-        description: "Please try again later.",
-      });
+      // After successful signup, redirect to onboarding
+      // Note: In a real app with email verification, you might redirect to a confirmation page
+      navigate("/onboarding");
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      // Error is handled in the signUp method
     } finally {
       setIsLoading(false);
     }
@@ -69,6 +78,8 @@ const SignUp = () => {
                     <Input
                       id="first-name"
                       name="first-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       autoComplete="given-name"
                       required
                       className="bg-white"
@@ -79,6 +90,8 @@ const SignUp = () => {
                     <Input
                       id="last-name"
                       name="last-name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                       autoComplete="family-name"
                       required
                       className="bg-white"
@@ -92,6 +105,8 @@ const SignUp = () => {
                     id="email"
                     name="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
                     required
                     className="bg-white"
@@ -103,6 +118,8 @@ const SignUp = () => {
                   <Input
                     id="company"
                     name="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
                     autoComplete="organization"
                     required
                     className="bg-white"
@@ -118,6 +135,8 @@ const SignUp = () => {
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       autoComplete="new-password"
                       required
                       className="bg-white pr-10"

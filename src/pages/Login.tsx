@@ -4,13 +4,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
+  const { signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -18,21 +22,10 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast.success("Login successful!", {
-        description: "Welcome back to NESTCRM.",
-      });
-      
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      await signIn(email, password);
+      // Navigation is handled in the signIn method
     } catch (error) {
-      toast.error("Authentication failed", {
-        description: "Please check your credentials and try again.",
-      });
-    } finally {
+      // Error is handled in the signIn method
       setIsLoading(false);
     }
   };
@@ -45,17 +38,17 @@ const Login = () => {
           <div className="mb-10">
             <Link
               to="/"
-              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-400"
+              className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
             >
               NESTCRM
             </Link>
             <h2 className="mt-6 text-3xl font-bold tracking-tight">
-              Welcome back
+              Sign in to your account
             </h2>
             <p className="mt-2 text-sm text-foreground/70">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-purple-600 hover:text-purple-500 font-medium">
-                Sign up
+              New to NESTCRM?{" "}
+              <Link to="/signup" className="text-primary hover:text-primary/80 font-medium">
+                Create an account
               </Link>
             </p>
           </div>
@@ -69,6 +62,8 @@ const Login = () => {
                     id="email"
                     name="email"
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
                     required
                     className="bg-white"
@@ -78,17 +73,17 @@ const Login = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <div className="text-sm">
-                      <a href="#" className="text-purple-600 hover:text-purple-500 font-medium">
-                        Forgot password?
-                      </a>
-                    </div>
+                    <a href="#" className="text-sm text-primary hover:text-primary/80">
+                      Forgot password?
+                    </a>
                   </div>
                   <div className="relative">
                     <Input
                       id="password"
                       name="password"
                       type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       autoComplete="current-password"
                       required
                       className="bg-white pr-10"
@@ -105,13 +100,6 @@ const Login = () => {
                       )}
                     </button>
                   </div>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="remember" />
-                  <Label htmlFor="remember" className="text-sm">
-                    Remember me for 30 days
-                  </Label>
                 </div>
 
                 <Button
@@ -170,25 +158,15 @@ const Login = () => {
       
       {/* Right side - Image and text */}
       <div className="hidden lg:block relative flex-1 bg-cover bg-center" style={{ 
-        backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1)), url("https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070")` 
+        backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1)), url("https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070")` 
       }}>
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/40 to-purple-400/20 mix-blend-multiply"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/20 mix-blend-multiply"></div>
         <div className="absolute inset-0 flex flex-col justify-center p-20">
           <div className="max-w-md text-white">
-            <div className="glass-card mb-6 p-6 bg-white/10 backdrop-blur-sm border-white/10">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-12 h-12 rounded-full bg-white/20"></div>
-                <div>
-                  <div className="font-medium">Sarah Johnson</div>
-                  <div className="text-sm text-white/70">Director of Customer Success, TechCorp</div>
-                </div>
-              </div>
-              <p className="italic text-white/90">
-                "NESTCRM has completely transformed how we approach customer retention. We identified at-risk accounts weeks before they would have cancelled, saving over $300K in annual revenue."
-              </p>
-            </div>
-            <p className="text-sm text-white/80">
-              Join businesses improving their customer retention with NESTCRM
+            <span className="bg-white/20 backdrop-blur-sm text-white text-sm px-4 py-1 rounded-full">Welcome back</span>
+            <h2 className="text-3xl font-bold mt-6 mb-4">Access your customer insights</h2>
+            <p className="text-white/80 mb-8">
+              Sign in to see your customer data, AI-powered insights, and take action to improve retention.
             </p>
           </div>
         </div>
