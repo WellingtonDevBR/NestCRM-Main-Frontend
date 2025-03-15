@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             subdomain: orgData.subdomain,
             created_at: orgData.created_at,
             updated_at: orgData.updated_at,
-            // Convert settings to the correct type expected by the Organization interface
+            // Fix: Properly convert settings to the correct type with a colon after settings
             settings: orgData.settings ? (typeof orgData.settings === 'string' 
               ? JSON.parse(orgData.settings) 
               : orgData.settings as Record<string, any>)
