@@ -1,19 +1,11 @@
 
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { useEffect } from 'react';
 import type { Organization } from '@/types/supabase';
-import { 
-  getSubdomainFromUrl, 
-  isMainDomain 
-} from '@/utils/domainUtils';
-import { 
-  fetchOrganizationBySubdomain,
-  fetchUserOrganizations
-} from '@/services/organizationService';
-import {
-  getOrganizationFromUrl,
-  initializeIndexPageOrganization
-} from '@/utils/organizationUtils';
+import { useOrganizationInitializationState } from './useOrganizationInitializationState';
+import { useOrganizationAuthEffect } from './useOrganizationAuthEffect';
+import { useMainDomainInitialization } from './useMainDomainInitialization';
+import { initializeBySubdomain } from './useSubdomainInitialization';
+import { initializeUserOrganizations } from './useUserOrganizations';
 
 interface UseOrganizationInitializationProps {
   userId: string | undefined;
@@ -33,96 +25,50 @@ export function useOrganizationInitialization({
   setCurrentOrganization,
   setOrganizations
 }: UseOrganizationInitializationProps) {
-  const [loading, setLoading] = useState<boolean>(!skipInitialization);
-  const [initializationAttempts, setInitializationAttempts] = useState(0);
-  const [initialized, setInitialized] = useState(skipInitialization);
+  // Use the state hook
+  const {
+    loading,
+    setLoading,
+    initializationAttempts,
+    setInitializationAttempts,
+    initialized,
+    setInitialized
+  } = useOrganizationInitializationState(skipInitialization);
 
-  // CRITICAL FIX: Clear organization state when user logs out
-  useEffect(() => {
-    if (!isAuthenticated) {
-      console.log('User not authenticated, clearing organization state');
-      setCurrentOrganization(null);
-      setOrganizations([]);
-    }
-  }, [isAuthenticated, setCurrentOrganization, setOrganizations]);
+  // Apply auth effect
+  useOrganizationAuthEffect({
+    isAuthenticated,
+    setCurrentOrganization,
+    setOrganizations
+  });
 
   // Function to initialize organizations when the app loads
   useEffect(() => {
-    // Skip initialization if requested (for main domain optimization)
-    if (skipInitialization) {
-      console.log('Skipping organization initialization due to skipInitialization flag');
+    // Check if we can skip initialization
+    const canSkipInit = useMainDomainInitialization(skipInitialization);
+    if (canSkipInit) {
       setInitialized(true);
       setLoading(false);
       return;
     }
     
     const initializeOrganization = async () => {
-      // Check if this is the main index page - if so, it's okay to have no organization
-      const isIndexPage = initializeIndexPageOrganization();
-      if (isIndexPage) {
-        console.log('Initializing on index page - no organization needed');
-        setLoading(false);
-        setInitialized(true);
-        return;
-      }
-
       setLoading(true);
       try {
-        const subdomain = getSubdomainFromUrl();
-        const hostname = window.location.hostname;
+        // Handle subdomain-based initialization
+        await initializeBySubdomain({
+          isAuthenticated,
+          userId,
+          setCurrentOrganization
+        });
         
-        console.log(`Initializing organization with hostname: "${hostname}", subdomain: "${subdomain || 'none'}"`);
-        
-        // CRITICAL FIX: Never set an organization for unauthenticated users
-        if (!isAuthenticated) {
-          console.log('User not authenticated, clearing organization state');
-          setCurrentOrganization(null);
-          setOrganizations([]);
-          setInitialized(true);
-          setLoading(false);
-          return;
-        }
-        
-        // Only fetch organization by subdomain if we're on a tenant subdomain, not the main domain
-        if (subdomain && !isMainDomain(subdomain)) {
-          console.log(`Fetching organization by subdomain: ${subdomain}`);
-          
-          // Only fetch and set organization if user is authenticated
-          if (isAuthenticated && userId) {
-            const org = await fetchOrganizationBySubdomain(subdomain);
-            if (org) {
-              setCurrentOrganization(org);
-              console.log('Successfully set current organization:', org.name);
-            } else {
-              console.log('No organization found for subdomain:', subdomain);
-              // If no organization is found for this subdomain, don't set any organization
-              setCurrentOrganization(null);
-            }
-          } else {
-            // Not authenticated, don't set current organization
-            console.log('User not authenticated, not setting organization for subdomain');
-            setCurrentOrganization(null);
-          }
-        } else {
-          console.log('On main domain, not fetching by subdomain');
-        }
-        
-        // If authenticated, always fetch the user's organizations
-        if (isAuthenticated && userId) {
-          const orgs = await fetchUserOrganizations(userId);
-          setOrganizations(orgs);
-          
-          // If we're on main domain and user has orgs but no current org is set, use the first one
-          if (isMainDomain(subdomain) && orgs.length > 0 && !subdomain) {
-            // CRITICAL FIX: Do not automatically set current organization
-            console.log('User has organizations, but not setting current organization automatically');
-          }
-        } else {
-          setOrganizations([]);
-          if (isMainDomain(subdomain)) {
-            setCurrentOrganization(null);
-          }
-        }
+        // Fetch and handle user organizations
+        await initializeUserOrganizations({
+          isAuthenticated,
+          userId,
+          setOrganizations,
+          setCurrentOrganization
+        });
         
         setInitialized(true);
       } catch (error) {
@@ -145,7 +91,17 @@ export function useOrganizationInitialization({
       
       return () => clearTimeout(retryTimeout);
     }
-  }, [isAuthenticated, userId, initializationAttempts, skipInitialization, setCurrentOrganization, setOrganizations]);
+  }, [
+    isAuthenticated, 
+    userId, 
+    initializationAttempts, 
+    skipInitialization,
+    setCurrentOrganization,
+    setOrganizations,
+    setLoading,
+    setInitialized,
+    setInitializationAttempts
+  ]);
 
   return {
     loading,
