@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,12 +70,16 @@ const Navbar = () => {
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
-            </Link>
-            <Link to="/signup">
-              <Button className="button-gradient">Sign up</Button>
-            </Link>
+            {!isAuthenticated ? (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button className="button-gradient">Sign up</Button>
+                </Link>
+              </>
+            ) : null}
           </div>
 
           <button
@@ -121,16 +127,18 @@ const Navbar = () => {
             >
               Pricing
             </a>
-            <div className="flex flex-col space-y-2 pt-2">
-              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">
-                  Log in
-                </Button>
-              </Link>
-              <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button className="w-full button-gradient">Sign up</Button>
-              </Link>
-            </div>
+            {!isAuthenticated && (
+              <div className="flex flex-col space-y-2 pt-2">
+                <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button className="w-full button-gradient">Sign up</Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { redirectToOrganization } from "@/utils/organizationUtils";
 import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const OrganizationRedirectButton = () => {
   const { isAuthenticated } = useAuth();
@@ -18,28 +19,30 @@ export const OrganizationRedirectButton = () => {
   const handleRedirect = () => {
     // If there's a current organization, redirect to its subdomain
     if (currentOrganization) {
+      toast.info(`Redirecting to ${currentOrganization.name} dashboard...`);
       redirectToOrganization(currentOrganization);
       return;
     }
     
     // If user has organizations but no current one is set
     if (organizations.length > 0) {
-      // Redirect to the first organization
+      toast.info(`Redirecting to ${organizations[0].name} dashboard...`);
       redirectToOrganization(organizations[0]);
       return;
     }
     
     // If no organizations, go to organizations page
+    toast.info("Please select or create an organization first");
     navigate("/organizations");
   };
 
   return (
     <Button 
-      className="mt-4 flex items-center" 
+      className="mt-4 sm:mt-0 flex items-center gap-2 shadow-sm bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 transition-all" 
       onClick={handleRedirect}
     >
       Return to Dashboard
-      <ArrowRight className="ml-2 h-4 w-4" />
+      <ArrowRight className="h-4 w-4" />
     </Button>
   );
 };
