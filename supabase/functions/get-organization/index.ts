@@ -34,7 +34,9 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client with public anon key
+    console.log(`Looking up organization with subdomain: ${subdomain}`);
+
+    // Create Supabase client with service role key for bypassing RLS
     const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -47,7 +49,7 @@ serve(async (req) => {
       .single();
 
     if (error) {
-      console.error("Error fetching organization:", error);
+      console.error("Error fetching organization:", error.message);
       return new Response(
         JSON.stringify({ error: "Could not find organization" }),
         { 
@@ -60,6 +62,8 @@ serve(async (req) => {
       );
     }
 
+    console.log(`Found organization: ${organization.name}`);
+    
     return new Response(
       JSON.stringify({ organization }),
       { 

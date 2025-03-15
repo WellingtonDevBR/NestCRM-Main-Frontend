@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface TenantRedirectorProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ interface TenantRedirectorProps {
 export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const { getSubdomainFromUrl } = useOrganization();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { organizations, currentOrganization, loading: orgLoading } = useOrganization();
+  const { organizations, currentOrganization, loading: orgLoading, fetchOrganizations } = useOrganization();
   const location = useLocation();
   const navigate = useNavigate();
   const [isChecking, setIsChecking] = useState(true);
@@ -23,6 +24,15 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       const subdomain = getSubdomainFromUrl();
       const isRootDomain = !subdomain;
       const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
+      
+      console.log('TenantRedirector: Checking tenant', { 
+        subdomain, 
+        isRootDomain, 
+        isAuthPath, 
+        isAuthenticated, 
+        organizationsCount: organizations.length,
+        currentPath: location.pathname
+      });
       
       // On the root domain (no subdomain) and authenticated
       if (isRootDomain && isAuthenticated) {
@@ -38,8 +48,18 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       
       // On a subdomain but the organization doesn't exist or user doesn't have access
       if (subdomain && !currentOrganization) {
-        // TODO: In production, handle invalid subdomains better
-        console.log('Invalid tenant or no access');
+        console.log('Invalid tenant or no access for subdomain:', subdomain);
+        if (isAuthenticated) {
+          // If authenticated but no access, probably needs to be added to the org
+          toast.error('You do not have access to this organization');
+        }
+        // Even if we can't load the org data, we'll still render the page
+        // since some pages like login/signup should work on any subdomain
+      }
+
+      // Refresh organizations if authenticated and no organizations loaded
+      if (isAuthenticated && organizations.length === 0) {
+        await fetchOrganizations();
       }
 
       setIsChecking(false);
@@ -57,7 +77,9 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
 
   if (isChecking) {
     // Simple loading state while checking tenant
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>;
   }
 
   return <>{children}</>;
