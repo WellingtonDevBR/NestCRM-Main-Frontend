@@ -33,6 +33,7 @@ const Index = () => {
         toast.info("Redirecting to main site...");
         window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
       }
+      return;
     }
   }, [isAuthenticated, navigate]);
   

@@ -1,5 +1,5 @@
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useOrganization } from '@/hooks/useOrganization';
@@ -9,6 +9,7 @@ import { useSubdomainRedirect } from './hooks/useSubdomainRedirect';
 import { useCrossDomainAuth } from './hooks/useCrossDomainAuth';
 import { TenantChecker } from './TenantChecker';
 import { getSubdomainFromUrl, isMainDomain } from '@/utils/domainUtils';
+import { toast } from 'sonner';
 
 interface TenantRedirectorProps {
   children: ReactNode;
@@ -32,11 +33,37 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   useSubdomainRedirect({ skipIndexRedirect: false });
   useCrossDomainAuth();
 
+  // Get subdomain information
+  const subdomain = getSubdomainFromUrl();
+  const onMainDomain = isMainDomain(subdomain);
+  
+  // Enhanced subdomain access restriction
+  useEffect(() => {
+    // Only apply restrictions if we're on a subdomain (not main domain)
+    if (subdomain && !onMainDomain) {
+      // List of restricted routes that subdomain users shouldn't access
+      const restrictedRoutes = ['/login', '/signup', '/organizations', '/create-organization', '/onboarding'];
+      
+      // Check if current path is a restricted route
+      const isRestrictedRoute = restrictedRoutes.some(route => location.pathname === route);
+      
+      if (isRestrictedRoute) {
+        console.log(`🔒 Security: Blocking subdomain access to restricted route: ${location.pathname}`);
+        toast.error("This page is not available on organization subdomains");
+        
+        // Redirect to dashboard if authenticated, otherwise to main domain
+        if (isAuthenticated) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
+        }
+      }
+    }
+  }, [subdomain, onMainDomain, location.pathname, isAuthenticated, navigate]);
+
   // Enhanced main domain dashboard protection
   // If we're on the main domain and trying to access /dashboard, block it and redirect
   const isDashboardPath = location.pathname === '/dashboard' || location.pathname.startsWith('/dashboard/');
-  const subdomain = getSubdomainFromUrl();
-  const onMainDomain = isMainDomain(subdomain);
   
   if (isDashboardPath && onMainDomain) {
     // If authenticated but on main domain trying to access dashboard, redirect to organizations

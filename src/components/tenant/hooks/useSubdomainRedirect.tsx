@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getSubdomainFromUrl, isMainDomain, buildSubdomainUrl } from '@/utils/domainUtils';
@@ -22,12 +21,36 @@ export const useSubdomainRedirect = ({ skipIndexRedirect = false }: UseSubdomain
   useEffect(() => {
     const subdomain = getSubdomainFromUrl();
     
-    // If there's a valid subdomain and we're on the index page
-    if (subdomain && 
-        !isMainDomain(subdomain) && 
-        (location.pathname === '/' || location.pathname === '/index.html')) {
+    // If there's no subdomain or we're on the main domain, no need to restrict access
+    if (!subdomain || isMainDomain(subdomain)) {
+      return;
+    }
+    
+    // List of allowed paths for subdomain users
+    const allowedPaths = ['/dashboard', '/not-found'];
+    const isDashboardSubpath = location.pathname.startsWith('/dashboard/');
+    const isAllowedPath = allowedPaths.includes(location.pathname) || isDashboardSubpath;
+    
+    // For subdomain access to unauthorized pages
+    if (!isAllowedPath) {
+      console.log(`🔒 Security: Restricted subdomain access to path: ${location.pathname}`);
       
-      // Even if skipIndexRedirect is true, we want to enforce redirects for tenant subdomains
+      // If user is authenticated, redirect to dashboard
+      if (isAuthenticated) {
+        toast.info("Redirecting to dashboard...");
+        navigate('/dashboard', { replace: true });
+        return;
+      } 
+      // If not authenticated, redirect to main domain
+      else {
+        toast.info("Redirecting to main site...");
+        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
+        return;
+      }
+    }
+    
+    // Index page specific redirect (already handled above, but keeping for clarity)
+    if ((location.pathname === '/' || location.pathname === '/index.html')) {
       console.log('🔄 Subdomain on index: Redirecting tenant to dashboard', subdomain);
       
       if (isAuthenticated) {
