@@ -1,6 +1,7 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { Organization } from '@/types/supabase';
-import { getSubdomainFromUrl, buildSubdomainUrl } from './domainUtils';
+import { getSubdomainFromUrl, buildSubdomainUrl, MAIN_DOMAIN } from './domainUtils';
 
 /**
  * Redirects the user to the appropriate URL for their organization
