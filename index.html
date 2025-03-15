@@ -22,12 +22,28 @@
         }
       }
       
+      // Detect main domain
+      const hostname = window.location.hostname;
+      const isMainDomain = 
+        hostname === 'nestcrm.com.au' || 
+        hostname === 'www.nestcrm.com.au' || 
+        hostname.startsWith('www.');
+      
+      // Set global flag for main domain detection
+      window.__MAIN_DOMAIN_DETECTED = isMainDomain;
+      
       // Special handling for cross-domain authentication
       // This helps with Supabase auth cookie issues when redirecting between domains
       const hasAuthParam = window.location.search.includes('auth_redirect');
       if (hasAuthParam) {
         console.log('Detected cross-domain auth redirect, initializing auth state...');
-        // Will be handled by AuthContext initialization
+        // Store indicator in sessionStorage to maintain state during page refreshes
+        sessionStorage.setItem('auth_redirect', 'true');
+        
+        // Check for auth cookies and local storage to help debug cross-domain issues
+        const hasCookies = document.cookie.includes('sb-');
+        const hasLocalStorage = !!localStorage.getItem('supabase.auth.token');
+        console.log('Auth state check - Cookies exist:', hasCookies, 'LocalStorage exists:', hasLocalStorage);
       }
     })();
   </script>

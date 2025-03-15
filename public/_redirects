@@ -4,3 +4,9 @@
 
 # Special handling for the dashboard path
 /dashboard/*  /index.html  200
+
+# Explicit SPA route handling for dashboard path, to avoid 404s on direct access
+/dashboard  /index.html  200
+
+# Special handling for auth redirections
+/dashboard?auth_redirect=true  /index.html  200

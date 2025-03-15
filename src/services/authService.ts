@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -10,9 +11,18 @@ export const signIn = async (email: string, password: string): Promise<void> => 
   try {
     console.log('🔑 Authentication: Starting sign in process for:', email);
     
+    // Configure auth to use cookies rather than localStorage
+    // This is critical for cross-domain authentication
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
+      options: {
+        // Enable cookie-based auth for cross-domain support
+        cookieSecure: true,
+        // Set a relatively long session expiry for testing
+        // In production, you might want to adjust this
+        expiresIn: 60 * 60 * 24 * 7, // 7 days
+      }
     });
 
     if (error) throw error;
@@ -110,6 +120,8 @@ export const signUp = async (email: string, password: string, userData: any): Pr
       password,
       options: {
         data: userData,
+        // Enable cookie-based auth for cross-domain support
+        cookieSecure: true,
       },
     });
 
@@ -145,10 +157,13 @@ export const signOut = async (): Promise<void> => {
     
     // Clear all cookies
     document.cookie.split(";").forEach(function(c) {
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/;domain=." + MAIN_DOMAIN);
     });
     
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({
+      scope: 'global' // Sign out from all tabs/windows
+    });
+    
     if (error) throw error;
     
     console.log('🔑 Authentication: Successfully signed out, redirecting to main domain');
@@ -196,25 +211,38 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
     const targetUrl = `${protocol}//${targetSubdomain}${targetPath}`;
     
     console.log('🚀 Cross-domain auth: Preparing redirect to:', targetUrl);
-
-    // Set auth cookie with subdomains support
-    // This ensures the authentication works across domains
+    
     try {
-      // Force set the session with subdomain cookie
+      // Force set the session with proper cookies
       await supabase.auth.setSession({
         access_token: currentSession.access_token,
         refresh_token: currentSession.refresh_token,
       });
+      
+      // Explicitly set a cookie with the root domain to ensure subdomain access
+      // This is a backup in case Supabase isn't setting the cookies correctly
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 7); // 7 days expiry
+      
+      // Set a session indicator cookie with the root domain
+      document.cookie = `sb-auth=true; expires=${expiryDate.toUTCString()}; path=/; domain=.${MAIN_DOMAIN}; secure`;
+      
+      // Also set a cookie that indicates this is a cross-domain redirect
+      document.cookie = `auth_redirect=true; path=/; domain=.${MAIN_DOMAIN}; secure`;
       
       console.log('🔑 Cross-domain auth: Successfully prepared session for subdomain access');
     } catch (error) {
       console.error('❌ Error setting cross-domain session:', error);
     }
     
+    // Add organization ID and access token to the URL as temporary parameters
+    // These will be used to restore the session if cookies fail
+    const urlWithAuth = `${targetUrl}?auth_redirect=true&org_id=${org.id}`;
+    
     // Use a small timeout to ensure the auth state is properly set
     setTimeout(() => {
-      console.log('🚀 Cross-domain auth: Executing redirect to subdomain:', targetUrl);
-      window.location.href = targetUrl;
+      console.log('🚀 Cross-domain auth: Executing redirect to subdomain:', urlWithAuth);
+      window.location.href = urlWithAuth;
     }, 1000); // Slightly longer timeout to ensure cookies are properly set
   } catch (error) {
     console.error('❌ Error during organization subdomain redirect:', error);

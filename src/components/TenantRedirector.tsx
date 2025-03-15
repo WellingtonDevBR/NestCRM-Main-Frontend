@@ -51,6 +51,34 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     }
   }, [isAuthenticated]);
 
+  // Handle cross-domain authentication for redirects
+  useEffect(() => {
+    // Check if this is a subdomain auth redirect
+    const searchParams = new URLSearchParams(window.location.search);
+    const isAuthRedirect = searchParams.get('auth_redirect') === 'true';
+    const orgId = searchParams.get('org_id');
+    
+    if (isAuthRedirect && isAuthenticated) {
+      console.log('🔑 Cross-domain auth: Detected authentication redirect');
+      
+      // If we have a valid session already, clean up the URL
+      if (location.pathname === '/dashboard') {
+        console.log('🔑 Cross-domain auth: Cleaning up URL after successful redirect');
+        navigate('/dashboard', { replace: true });
+      }
+      
+      // If org_id is in URL and we don't have a current organization set
+      if (orgId && !currentOrganization && organizations.length > 0) {
+        console.log('🔑 Cross-domain auth: Setting organization from URL parameter');
+        const org = organizations.find(o => o.id === orgId);
+        if (org) {
+          // This will be handled by the organization context
+          console.log('🔑 Cross-domain auth: Found matching organization:', org.name);
+        }
+      }
+    }
+  }, [location.search, isAuthenticated, location.pathname, navigate, currentOrganization, organizations]);
+
   // Original tenant redirector logic
   useEffect(() => {
     // Early exit for main domain optimization
@@ -65,6 +93,15 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     const publicPaths = ['/', '/index.html', '/login', '/signup', '/not-found', '/organizations'];
     if (publicPaths.includes(location.pathname)) {
       console.log('🔍 Routing: Public path detected - bypassing tenant checks');
+      setIsChecking(false);
+      return;
+    }
+    
+    // Special handling for auth redirects - always render dashboard immediately
+    const searchParams = new URLSearchParams(window.location.search);
+    const isAuthRedirect = searchParams.get('auth_redirect') === 'true';
+    if (isAuthRedirect && location.pathname === '/dashboard') {
+      console.log('🔍 Routing: Auth redirect to dashboard detected - bypassing tenant checks');
       setIsChecking(false);
       return;
     }
@@ -131,7 +168,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
     checkAttempts,
     orgInitialized,
     hasRedirected,
-    navigate
+    navigate,
+    location.search
   ]);
 
   // Don't show loading spinner for public pages or when organization is initialized
