@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useOrganization } from '@/hooks/useOrganization';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -23,15 +23,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { PlusCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export function OrganizationSelector() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { 
     organizations, 
     currentOrganization, 
     switchOrganization, 
     createOrganization,
-    isValidSubdomain
+    isValidSubdomain,
+    fetchOrganizations
   } = useOrganization();
   
   const [open, setOpen] = useState(false);
@@ -39,6 +41,40 @@ export function OrganizationSelector() {
   const [subdomain, setSubdomain] = useState('');
   const [subdomainAvailable, setSubdomainAvailable] = useState<boolean | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [userOrganizations, setUserOrganizations] = useState(organizations);
+
+  // Fetch only organizations the current user is a member of
+  useEffect(() => {
+    const fetchUserOrganizations = async () => {
+      if (!isAuthenticated || !user?.id) return;
+      
+      try {
+        // Fetch organization memberships for current user
+        const { data: memberships, error: membershipError } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', user.id);
+          
+        if (membershipError) {
+          console.error('Error fetching user organization memberships:', membershipError);
+          return;
+        }
+        
+        if (memberships && memberships.length > 0) {
+          // Filter organizations list to only include organizations the user is a member of
+          const userOrgIds = memberships.map(m => m.organization_id);
+          const filteredOrgs = organizations.filter(org => userOrgIds.includes(org.id));
+          setUserOrganizations(filteredOrgs);
+        } else {
+          setUserOrganizations([]);
+        }
+      } catch (error) {
+        console.error('Error processing user organizations:', error);
+      }
+    };
+    
+    fetchUserOrganizations();
+  }, [isAuthenticated, user, organizations]);
 
   const handleSubdomainChange = async (value: string) => {
     setSubdomain(value.toLowerCase().replace(/[^a-z0-9-]/g, ''));
@@ -76,18 +112,36 @@ export function OrganizationSelector() {
         setSubdomain('');
         setSubdomainAvailable(null);
         
-        // In a production app, we'd redirect to the new subdomain here
-        // For demo purposes, we'll just show a success message
+        // Refresh the organizations list
+        await fetchOrganizations();
+        
+        // Redirect to the new organization
         toast.success('Organization created!', {
-          description: `Visit ${subdomain}.nestcrm.com.au to access it`,
+          description: `Redirecting to ${subdomain}.nestcrm.com.au...`,
         });
+        
+        setTimeout(() => {
+          window.location.href = `${window.location.protocol}//${subdomain}.nestcrm.com.au/dashboard`;
+        }, 2000);
       }
+    } catch (error) {
+      console.error('Error creating organization:', error);
+      toast.error('Failed to create organization');
     } finally {
       setIsCreating(false);
     }
   };
 
   if (!isAuthenticated) return null;
+  
+  // Only show selector if the user has multiple organizations
+  if (userOrganizations.length <= 1 && currentOrganization) {
+    return (
+      <div className="flex items-center">
+        <span className="text-sm font-medium">{currentOrganization.name}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -99,7 +153,7 @@ export function OrganizationSelector() {
           <SelectValue placeholder="Select organization" />
         </SelectTrigger>
         <SelectContent>
-          {organizations.map((org) => (
+          {userOrganizations.map((org) => (
             <SelectItem key={org.id} value={org.id}>
               {org.name}
             </SelectItem>

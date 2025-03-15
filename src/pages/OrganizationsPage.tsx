@@ -14,9 +14,11 @@ import {
 } from "@/components/ui/card";
 import { Building, ArrowRight, Plus } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import type { Organization } from "@/types/supabase";
 
 const OrganizationsPage = () => {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, user } = useAuth();
   const {
     organizations,
     loading: orgLoading,
@@ -26,12 +28,48 @@ const OrganizationsPage = () => {
   } = useOrganization();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [userOrganizations, setUserOrganizations] = useState<Organization[]>([]);
 
+  // Fetch only organizations the current user is a member of
   useEffect(() => {
+    const fetchUserOrganizations = async () => {
+      if (!isAuthenticated || !user?.id) return;
+      
+      try {
+        // Fetch organization memberships for current user
+        const { data: memberships, error: membershipError } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', user.id);
+          
+        if (membershipError) {
+          console.error('Error fetching user organization memberships:', membershipError);
+          return;
+        }
+        
+        if (memberships && memberships.length > 0) {
+          // Filter organizations list to only include organizations the user is a member of
+          const userOrgIds = memberships.map(m => m.organization_id);
+          const filteredOrgs = organizations.filter(org => userOrgIds.includes(org.id));
+          setUserOrganizations(filteredOrgs);
+          
+          // If there's only one organization, redirect to it directly
+          if (filteredOrgs.length === 1) {
+            console.log('User has only one organization, redirecting to it:', filteredOrgs[0].name);
+            handleSelectOrganization(filteredOrgs[0].id, filteredOrgs[0].subdomain);
+          }
+        } else {
+          setUserOrganizations([]);
+        }
+      } catch (error) {
+        console.error('Error processing user organizations:', error);
+      }
+    };
+    
     if (isAuthenticated && !orgLoading) {
-      fetchOrganizations();
+      fetchOrganizations().then(() => fetchUserOrganizations());
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, orgLoading, user, organizations]);
 
   // If not authenticated, redirect to login
   useEffect(() => {
@@ -94,8 +132,8 @@ const OrganizationsPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {organizations.length > 0 ? (
-            organizations.map((org) => (
+          {userOrganizations.length > 0 ? (
+            userOrganizations.map((org) => (
               <Card key={org.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <CardTitle>{org.name}</CardTitle>

@@ -81,10 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       toast.success('Signed in successfully!');
       
       // Fetch user's organizations to determine where to redirect
+      const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
+      
       const { data: organizations, error: orgError } = await supabase
         .from('organization_members')
         .select('organization_id')
-        .eq('user_id', user?.id || (await supabase.auth.getUser()).data.user?.id);
+        .eq('user_id', userId);
       
       if (orgError) {
         console.error('Error fetching user organizations:', orgError);
