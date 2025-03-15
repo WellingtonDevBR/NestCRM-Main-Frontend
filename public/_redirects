@@ -1,3 +1,4 @@
 
-# Redirects for SPA
+# Redirects for SPA - all routes should go to index.html
 /*  /index.html  200
+
