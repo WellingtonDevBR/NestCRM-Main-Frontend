@@ -207,10 +207,14 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
     
     try {
       // Force set the session with proper cookies
-      await supabase.auth.setSession({
+      const { error: sessionError } = await supabase.auth.setSession({
         access_token: currentSession.access_token,
         refresh_token: currentSession.refresh_token,
       });
+      
+      if (sessionError) {
+        console.error('❌ Error setting session:', sessionError);
+      }
       
       // Explicitly set a cookie with the root domain to ensure subdomain access
       // This is a backup in case Supabase isn't setting the cookies correctly

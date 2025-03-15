@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getSubdomainFromUrl, isMainDomain, buildSubdomainUrl } from '@/utils/domainUtils';
@@ -31,6 +32,13 @@ export const useSubdomainRedirect = ({ skipIndexRedirect = false }: UseSubdomain
     const isDashboardSubpath = location.pathname.startsWith('/dashboard/');
     const isAllowedPath = allowedPaths.includes(location.pathname) || isDashboardSubpath;
     
+    // Special case for login path - redirect to main domain login
+    if (location.pathname === '/login') {
+      console.log('🔒 Security: Login on subdomain - redirecting to main domain login');
+      window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
+      return;
+    }
+    
     // For subdomain access to unauthorized pages
     if (!isAllowedPath) {
       console.log(`🔒 Security: Restricted subdomain access to path: ${location.pathname}`);
@@ -41,25 +49,25 @@ export const useSubdomainRedirect = ({ skipIndexRedirect = false }: UseSubdomain
         navigate('/dashboard', { replace: true });
         return;
       } 
-      // If not authenticated, redirect to main domain
+      // If not authenticated, redirect to main domain login
       else {
-        toast.info("Redirecting to main site...");
-        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
+        toast.info("Redirecting to login...");
+        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
         return;
       }
     }
     
-    // Index page specific redirect (already handled above, but keeping for clarity)
-    if ((location.pathname === '/' || location.pathname === '/index.html')) {
+    // Index page specific redirect 
+    if ((location.pathname === '/' || location.pathname === '/index.html') && !skipIndexRedirect) {
       console.log('🔄 Subdomain on index: Redirecting tenant to dashboard', subdomain);
       
       if (isAuthenticated) {
         // Redirect authenticated users to dashboard
         navigate('/dashboard', { replace: true });
       } else {
-        // Redirect unauthenticated users to main domain
-        toast.info("Redirecting to main site...");
-        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
+        // Redirect unauthenticated users to main domain login
+        toast.info("Redirecting to login...");
+        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
       }
       return;
     }

@@ -28,10 +28,10 @@ const Index = () => {
         toast.info("Redirecting to your dashboard...");
         navigate("/dashboard", { replace: true });
       } else {
-        // If not authenticated, redirect to main domain
-        console.log("Unauthenticated user on tenant subdomain index - redirecting to main domain");
-        toast.info("Redirecting to main site...");
-        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}`;
+        // If not authenticated, redirect to main domain for login
+        console.log("Unauthenticated user on tenant subdomain index - redirecting to main domain for login");
+        toast.info("Redirecting to main site to login...");
+        window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
       }
       return;
     }

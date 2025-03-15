@@ -6,6 +6,8 @@ import LoginHeader from "@/components/auth/LoginHeader";
 import LoginForm from "@/components/auth/LoginForm";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import LoginHero from "@/components/auth/LoginHero";
+import { getSubdomainFromUrl, isMainDomain } from "@/utils/domainUtils";
+import { toast } from "sonner";
 
 const Login = () => {
   const {
@@ -25,6 +27,17 @@ const Login = () => {
   } = useLoginForm();
   
   const navigate = useNavigate();
+  
+  // Check if we're on a subdomain - redirect to main domain
+  useEffect(() => {
+    const subdomain = getSubdomainFromUrl();
+    if (subdomain && !isMainDomain(subdomain)) {
+      console.log('🔒 Security: Login page accessed on subdomain, redirecting to main domain');
+      toast.info("Redirecting to main site login...");
+      window.location.href = `${window.location.protocol}//${import.meta.env.PROD ? 'nestcrm.com.au' : 'localhost:5173'}/login`;
+      return;
+    }
+  }, []);
   
   // Log authentication state on component mount
   useEffect(() => {
