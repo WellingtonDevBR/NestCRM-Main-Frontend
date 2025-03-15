@@ -4,23 +4,11 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "routes": [
-    { 
-      "src": "/ping.txt",
-      "dest": "/ping.txt"
-    },
-    { 
-      "src": "/assets/(.*)", 
-      "dest": "/assets/$1" 
-    },
-    { 
-      "src": "/(.*)\\.(.+)", 
-      "dest": "/$1.$2" 
-    },
-    { 
-      "src": "/(.*)", 
-      "dest": "/index.html" 
-    }
+  "rewrites": [
+    { "source": "/ping.txt", "destination": "/ping.txt" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)\\.(.+)", "destination": "/$1.$2" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
     {
