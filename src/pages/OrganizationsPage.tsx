@@ -25,19 +25,20 @@ const OrganizationsPage = () => {
     loading: orgLoading,
     fetchOrganizations,
     switchOrganization,
-    getSubdomainFromUrl
   } = useOrganization();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [userOrganizations, setUserOrganizations] = useState<Organization[]>([]);
+  const [alreadyFetched, setAlreadyFetched] = useState(false);
 
   // Fetch only organizations the current user is a member of
   useEffect(() => {
     const fetchUserOrganizations = async () => {
-      if (!isAuthenticated || !user?.id) return;
+      if (!isAuthenticated || !user?.id || alreadyFetched) return;
       
       try {
         console.log('Fetching organization memberships for user:', user.id);
+        setAlreadyFetched(true);
         
         // Fetch organization memberships for current user
         const { data: memberships, error: membershipError } = await supabase
@@ -68,9 +69,6 @@ const OrganizationsPage = () => {
           
           console.log('Retrieved organizations:', validOrgs.length);
           setUserOrganizations(validOrgs);
-          
-          // CRITICAL FIX: Don't automatically redirect to the first organization
-          // Instead, let the user choose which organization to access
         } else {
           setUserOrganizations([]);
         }
@@ -79,10 +77,10 @@ const OrganizationsPage = () => {
       }
     };
     
-    if (isAuthenticated && !orgLoading) {
+    if (isAuthenticated && !orgLoading && !alreadyFetched) {
       fetchOrganizations().then(() => fetchUserOrganizations());
     }
-  }, [isAuthenticated, orgLoading, user, organizations]);
+  }, [isAuthenticated, orgLoading, user, organizations, alreadyFetched]);
 
   // If not authenticated, redirect to login
   useEffect(() => {

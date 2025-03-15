@@ -29,6 +29,16 @@ serve(async (req) => {
     
     console.log(`Edge function received: subdomain: "${subdomain}", hostname: "${hostname}"`);
 
+    // Extract subdomain from hostname if not explicitly provided
+    let effectiveSubdomain = subdomain;
+    if (!effectiveSubdomain && hostname && hostname.includes('.')) {
+      const parts = hostname.split('.');
+      if (parts.length >= 3 && !MAIN_DOMAIN_IDENTIFIERS.includes(parts[0])) {
+        effectiveSubdomain = parts[0];
+        console.log(`Extracted subdomain from hostname: ${effectiveSubdomain}`);
+      }
+    }
+
     // CRITICAL FIX: Improved development environment detection
     const isDevelopmentEnvironment = hostname?.includes('localhost') || 
         hostname?.includes('127.0.0.1') || 
@@ -40,8 +50,8 @@ serve(async (req) => {
       console.log(`Development/preview URL detected: ${hostname}`);
       
       // If on development environment but with a valid subdomain parameter
-      if (subdomain && subdomain !== '' && !MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
-        console.log(`Valid subdomain parameter in development: ${subdomain}`);
+      if (effectiveSubdomain && effectiveSubdomain !== '' && !MAIN_DOMAIN_IDENTIFIERS.includes(effectiveSubdomain)) {
+        console.log(`Valid subdomain parameter in development: ${effectiveSubdomain}`);
         
         // Create Supabase client with service role key for bypassing RLS
         const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
@@ -52,11 +62,11 @@ serve(async (req) => {
         const { data: organization, error } = await supabase
           .from('organizations')
           .select('*')
-          .eq('subdomain', subdomain)
+          .eq('subdomain', effectiveSubdomain)
           .maybeSingle();
           
         if (error || !organization) {
-          console.error("No organization found for subdomain in development:", subdomain);
+          console.error("No organization found for subdomain in development:", effectiveSubdomain);
           return new Response(
             JSON.stringify({ 
               error: "Could not find organization",
@@ -123,9 +133,19 @@ serve(async (req) => {
       );
     }
 
+    // Check for a subdomain in the hostname
+    if (hostname && hostname.includes('.')) {
+      const parts = hostname.split('.');
+      // If no explicit subdomain provided, try to extract it from the hostname
+      if (!effectiveSubdomain && parts.length >= 3 && parts[1] === 'nestcrm') {
+        effectiveSubdomain = parts[0];
+        console.log(`Extracted subdomain from hostname: ${effectiveSubdomain}`);
+      }
+    }
+
     // Empty subdomain or main domain identifiers are always treated as main domain
-    if (!subdomain || subdomain === '' || MAIN_DOMAIN_IDENTIFIERS.includes(subdomain)) {
-      console.log(`Empty subdomain or main domain identifier: ${subdomain}`);
+    if (!effectiveSubdomain || effectiveSubdomain === '' || MAIN_DOMAIN_IDENTIFIERS.includes(effectiveSubdomain)) {
+      console.log(`Empty subdomain or main domain identifier: ${effectiveSubdomain}`);
       return new Response(
         JSON.stringify({ 
           isMainDomain: true,
@@ -141,7 +161,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Looking up organization with subdomain: ${subdomain}`);
+    console.log(`Looking up organization with subdomain: ${effectiveSubdomain}`);
 
     // Create Supabase client with service role key for bypassing RLS
     const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
@@ -152,7 +172,7 @@ serve(async (req) => {
     const { data: organization, error } = await supabase
       .from('organizations')
       .select('*')
-      .eq('subdomain', subdomain)
+      .eq('subdomain', effectiveSubdomain)
       .maybeSingle();
 
     if (error || !organization) {
