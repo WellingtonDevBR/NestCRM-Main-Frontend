@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,7 @@ const Login = () => {
     
     try {
       await signIn(email, password);
-      // Navigation is handled in the signIn method and the useEffect above
+      // Navigation will be handled by the signIn method
     } catch (error) {
       // Error is handled in the signIn method
       setIsLoading(false);

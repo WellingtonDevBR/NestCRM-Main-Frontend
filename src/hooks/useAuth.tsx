@@ -79,8 +79,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       toast.success('Signed in successfully!');
       
-      // Instead of navigating directly to dashboard, navigate to organizations page
-      // The TenantRedirector will handle redirecting to the appropriate subdomain
+      // Fetch user's organizations to determine where to redirect
+      const { data: organizations, error: orgError } = await supabase
+        .from('organization_members')
+        .select('organization_id')
+        .eq('user_id', user?.id || (await supabase.auth.getUser()).data.user?.id);
+      
+      if (orgError) {
+        console.error('Error fetching user organizations:', orgError);
+        navigate('/organizations');
+        return;
+      }
+      
+      // If user has organizations, fetch the first one's details
+      if (organizations && organizations.length > 0) {
+        const { data: org, error: orgDetailsError } = await supabase
+          .from('organizations')
+          .select('*')
+          .eq('id', organizations[0].organization_id)
+          .single();
+        
+        if (orgDetailsError) {
+          console.error('Error fetching organization details:', orgDetailsError);
+          navigate('/organizations');
+          return;
+        }
+        
+        if (org) {
+          // Redirect to the organization's subdomain
+          redirectToOrganization(org);
+          return;
+        }
+      }
+      
+      // Fallback to organizations page if no org found or error occurred
       navigate('/organizations');
     } catch (error: any) {
       toast.error('Error signing in', {
