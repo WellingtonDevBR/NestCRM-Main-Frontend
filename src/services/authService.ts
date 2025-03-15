@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Organization } from '@/types/supabase';
@@ -16,11 +15,8 @@ export const signIn = async (email: string, password: string): Promise<void> => 
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        // Set a relatively long session expiry for testing
-        // In production, you might want to adjust this
-        expiresIn: 60 * 60 * 24 * 7, // 7 days
-      }
+      // Note: expiresIn is not supported in the options type
+      // We'll need to handle session duration differently
     });
 
     if (error) throw error;
@@ -247,3 +243,4 @@ export const redirectToOrganizationSubdomain = async (org: Organization): Promis
     });
   }
 };
+
