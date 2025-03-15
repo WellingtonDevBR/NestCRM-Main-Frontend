@@ -61,8 +61,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
       return;
     }
     
-    // CRITICAL FIX - Always render public paths immediately
-    const publicPaths = ['/', '/index.html', '/login', '/signup', '/not-found'];
+    // CRITICAL FIX - Always render public paths and organization page immediately
+    const publicPaths = ['/', '/index.html', '/login', '/signup', '/not-found', '/organizations'];
     if (publicPaths.includes(location.pathname)) {
       console.log('🔍 Routing: Public path detected - bypassing tenant checks');
       setIsChecking(false);
@@ -98,59 +98,13 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
         
         console.log(`🔍 Tenant: TenantRedirector checking - hostname: "${hostname}", subdomain: "${subdomain || 'none'}", attempt: ${checkAttempts + 1}`);
         
-        // CRITICAL FIX: If not authenticated and on a subdomain, redirect to login
-        if (subdomain && !isAuthenticated && location.pathname !== '/login' && location.pathname !== '/signup') {
-          console.log('🚀 Redirection: Unauthenticated user on subdomain, redirecting to login');
-          window.localStorage.removeItem('supabase.auth.token');
-          window.sessionStorage.removeItem('supabase.auth.token');
-          window.localStorage.clear();
-          window.sessionStorage.clear();
-          
-          // Clear any Supabase authentication data
-          await supabase.auth.signOut();
-          
-          // Redirect to main domain
-          window.location.href = `${window.location.protocol}//${MAIN_DOMAIN}/login`;
-          return;
-        }
-        
-        // Determine if we're on the main domain or a development environment
-        const isOnMainDomain = isMainDomain(subdomain);
-        const isAuthPath = location.pathname === '/login' || location.pathname === '/signup';
-        const isPublicPath = publicPaths.includes(location.pathname);
-        const isDevelopmentDomain = hostname.includes('localhost') || 
-                                    hostname.includes('127.0.0.1') || 
-                                    hostname.includes('lovableproject.com') ||
-                                    hostname.includes('netlify.app') || 
-                                    hostname.includes('vercel.app');
-        
-        console.log('🔍 Tenant: TenantRedirector check details:', { 
-          hostname,
-          subdomain: subdomain || 'none', 
-          isOnMainDomain, 
-          isAuthPath,
-          isPublicPath,
-          isDevelopmentDomain,
-          isAuthenticated, 
-          organizationsCount: organizations?.length || 0,
-          currentPath: location.pathname,
-          orgInitialized
-        });
-        
-        // Allow access on public paths
-        if (isPublicPath) {
-          console.log("🔍 Routing: Public path detected, allowing access");
-          setIsChecking(false);
-          return;
-        }
-        
-        // CRITICAL FIX: Never redirect from organization selection page
+        // CRITICAL: Organizations page should always be accessible without redirection
         if (location.pathname === '/organizations') {
-          console.log("🔍 Routing: On organizations page, allowing access without tenant checks");
+          console.log('🔍 Routing: On organizations page, allowing access without tenant checks');
           setIsChecking(false);
           return;
         }
-        
+
         // Handle 404 routing properly - allow NotFound page to render
         if (location.pathname === '/not-found') {
           console.log("🔍 Routing: 404 page detected, allowing access");
@@ -184,7 +138,8 @@ export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const isPublicPage = location.pathname === '/' || 
                        location.pathname === '/index.html' || 
                        location.pathname === '/login' || 
-                       location.pathname === '/signup';
+                       location.pathname === '/signup' || 
+                       location.pathname === '/organizations';
                        
   // Fast path for main domain - show content immediately
   if (window.__MAIN_DOMAIN_DETECTED && location.pathname === '/') {

@@ -39,7 +39,7 @@ serve(async (req) => {
       }
     }
 
-    // CRITICAL FIX: Improved development environment detection
+    // Development environment detection
     const isDevelopmentEnvironment = hostname?.includes('localhost') || 
         hostname?.includes('127.0.0.1') || 
         hostname?.includes('lovableproject.com') ||

@@ -89,39 +89,19 @@ const OrganizationsPage = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
-  const handleSelectOrganization = async (id: string, subdomain: string) => {
+  const handleSelectOrganization = async (id: string) => {
     setIsLoading(true);
     try {
       await switchOrganization(id);
       
-      toast.success(`Switching to ${subdomain} organization`, {
+      toast.success(`Organization selected`, {
         description: "Redirecting to dashboard..."
       });
       
-      // Direct redirection to subdomain
-      const protocol = window.location.protocol;
-      const host = window.location.host;
+      // Always navigate to dashboard on the current domain
+      // No redirection to subdomain to avoid cross-domain issues
+      navigate('/dashboard');
       
-      // If on localhost or development environment, use query parameter
-      if (host.includes('localhost') || 
-          host.includes('127.0.0.1') || 
-          host.includes('lovableproject.com') ||
-          host.includes('netlify.app') || 
-          host.includes('vercel.app')) {
-        console.log('Development environment detected, navigating with query parameter');
-        navigate(`/dashboard?subdomain=${subdomain}`);
-        return;
-      }
-      
-      // In production, redirect to the subdomain directly
-      console.log('Production environment detected, redirecting to subdomain');
-      const url = `${protocol}//${subdomain}.${MAIN_DOMAIN}/dashboard`;
-      console.log('Redirecting to:', url);
-      
-      // Use a small timeout to ensure the toast is visible
-      setTimeout(() => {
-        window.location.href = url;
-      }, 500);
     } catch (error) {
       console.error("Error selecting organization:", error);
       toast.error("Failed to select organization");
@@ -164,7 +144,7 @@ const OrganizationsPage = () => {
                 <CardFooter>
                   <Button
                     className="w-full"
-                    onClick={() => handleSelectOrganization(org.id, org.subdomain)}
+                    onClick={() => handleSelectOrganization(org.id)}
                     disabled={isLoading}
                   >
                     Access Dashboard <ArrowRight className="ml-2 h-4 w-4" />

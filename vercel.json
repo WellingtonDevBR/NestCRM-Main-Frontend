@@ -8,66 +8,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/login",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/signup",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/onboarding",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/dashboard/(.*)",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/organizations",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/create-organization",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/not-found",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/profile",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/settings",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/customers",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/products",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/sales",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/reports",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/help",
-      "destination": "/index.html"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
