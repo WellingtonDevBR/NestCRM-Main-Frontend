@@ -18,7 +18,7 @@ interface TenantRedirectorProps {
  */
 export const TenantRedirector = ({ children }: TenantRedirectorProps) => {
   const { isAuthenticated } = useAuth();
-  const { orgInitialized } = useOrganization();
+  const { initialized: orgInitialized } = useOrganization();
   const location = useLocation();
   
   // Apply all our custom hooks
