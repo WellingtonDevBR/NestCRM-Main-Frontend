@@ -12,7 +12,7 @@ import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import CreateOrganization from "./pages/CreateOrganization";
 import OrganizationsPage from "./pages/OrganizationsPage";
-import { AuthProvider } from "./hooks/useAuth";
+import { AuthProvider } from "./contexts/AuthContext";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { TenantRedirector } from "./components/TenantRedirector";
 
