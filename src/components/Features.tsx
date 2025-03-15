@@ -70,18 +70,18 @@ const Features = () => {
             </span>
           </h2>
           <p className="text-lg text-foreground/70">
-            ChurnWatcher combines powerful AI with intuitive tools to help you identify, understand, and address customer churn before it impacts your business.
+            NestCRM combines powerful AI with intuitive tools to help you identify, understand, and address customer churn before it impacts your business.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="feature-card"
-              style={{ 
-                animationDelay: `${index * 0.1}s`, 
-                animationFillMode: 'both' 
+              style={{
+                animationDelay: `${index * 0.1}s`,
+                animationFillMode: 'both'
               }}
             >
               <div className="flex items-center mb-4">
