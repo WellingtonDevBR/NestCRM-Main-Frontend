@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,6 +18,9 @@ interface OrganizationContextType {
 }
 
 const OrganizationContext = createContext<OrganizationContextType | undefined>(undefined);
+
+// Constants for edge function
+const EDGE_FUNCTION_URL = 'https://kfwysiwnacrkncgmkqpa.supabase.co/functions/v1/get-organization';
 
 export function OrganizationProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
@@ -55,11 +59,12 @@ export function OrganizationProvider({ children }: { children: ReactNode }) {
     try {
       console.log(`Fetching organization by subdomain: ${subdomain}`);
       
-      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/get-organization`, {
+      // Use the constant edge function URL instead of trying to access protected properties
+      const response = await fetch(EDGE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabase.supabaseKey}`
+          'Authorization': `Bearer ${supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`
         },
         body: JSON.stringify({ subdomain })
       });
