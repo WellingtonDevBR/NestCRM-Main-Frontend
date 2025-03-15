@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) throw error;
-      
+
       toast.success('Account created successfully!', {
         description: 'Please check your email to verify your account.',
       });
@@ -75,40 +75,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       if (error) throw error;
-      
+
       toast.success('Signed in successfully!');
-      
+
       const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
-      
+
       if (!userId) {
         navigate('/organizations');
         return;
       }
-      
+
       const { data: organizations, error: orgError } = await supabase
         .from('organization_members')
         .select('organization_id')
         .eq('user_id', userId);
-      
+
       if (orgError) {
         console.error('Error fetching user organizations:', orgError);
         navigate('/organizations');
         return;
       }
-      
+
       if (organizations && organizations.length > 0) {
         const { data: orgData, error: orgDetailsError } = await supabase
           .from('organizations')
           .select('*')
           .eq('id', organizations[0].organization_id)
           .single();
-        
+
         if (orgDetailsError) {
           console.error('Error fetching organization details:', orgDetailsError);
           navigate('/organizations');
           return;
         }
-        
+
         if (orgData) {
           const org: Organization = {
             id: orgData.id,
@@ -116,11 +116,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             subdomain: orgData.subdomain,
             created_at: orgData.created_at,
             updated_at: orgData.updated_at,
-            settings: orgData.settings ? (typeof orgData.settings === 'string' 
-              ? JSON.parse(orgData.settings) 
+            settings: orgData.settings ? (typeof orgData.settings === 'string'
+              ? JSON.parse(orgData.settings)
               : orgData.settings as Record<string, any>)
+              : {},
           };
-          
+
           redirectToOrganization(org);
           return;
         }
@@ -129,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         navigate('/onboarding');
         return;
       }
-      
+
       navigate('/organizations');
     } catch (error: any) {
       toast.error('Error signing in', {
