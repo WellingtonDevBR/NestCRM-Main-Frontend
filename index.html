@@ -15,7 +15,7 @@
     (function() {
       // Handle 404s in production by redirecting to index.html
       if (window.location.pathname !== '/' && !window.location.pathname.includes('.')) {
-        if (document.querySelector('body > div#root').childElementCount === 0) {
+        if (document.querySelector('body > div#root') && document.querySelector('body > div#root').childElementCount === 0) {
           console.log('Fixing SPA routing for path:', window.location.pathname);
           // We're on a direct URL that should be handled by the SPA router
           window.history.replaceState(null, '', window.location.pathname);
@@ -27,7 +27,11 @@
       const isMainDomain = 
         hostname === 'nestcrm.com.au' || 
         hostname === 'www.nestcrm.com.au' || 
-        hostname.startsWith('www.');
+        hostname.startsWith('www.') ||
+        hostname.includes('localhost') ||
+        hostname.includes('127.0.0.1') ||
+        hostname.includes('vercel.app') ||
+        hostname.includes('netlify.app');
       
       // Set global flag for main domain detection
       window.__MAIN_DOMAIN_DETECTED = isMainDomain;
@@ -45,6 +49,20 @@
         const hasLocalStorage = !!localStorage.getItem('supabase.auth.token');
         console.log('Auth state check - Cookies exist:', hasCookies, 'LocalStorage exists:', hasLocalStorage);
       }
+
+      // Handle page reload 404 errors
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && event.reason.message && event.reason.message.includes('Failed to fetch')) {
+          console.warn('Network error detected, might be a 404 on reload. Will attempt recovery...');
+          // Try to refresh the page if it seems like a 404 error
+          if (window.location.pathname !== '/' && !window.location.pathname.includes('.')) {
+            console.log('Attempting to recover from potential 404...');
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 2000);
+          }
+        }
+      });
     })();
   </script>
 </head>

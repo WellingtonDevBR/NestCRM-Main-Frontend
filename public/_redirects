@@ -11,6 +11,15 @@
 # Special handling for auth redirections with query parameters
 /dashboard?*  /index.html  200
 
+# Handle specific public routes
+/login  /index.html  200
+/signup  /index.html  200
+/organizations  /index.html  200
+/create-organization  /index.html  200
+/onboarding  /index.html  200
+
 # Handle all paths on all subdomains correctly
 https://*.nestcrm.com.au/*  /index.html  200
 
+# Fallback for any other routes (wildcard)
+/*  /index.html  200
