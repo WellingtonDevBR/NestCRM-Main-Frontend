@@ -78,13 +78,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       toast.success('Signed in successfully!');
 
-      const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
+      // Get current user ID
+      const userId = (await supabase.auth.getUser()).data.user?.id;
 
       if (!userId) {
+        console.log('No user ID found after login');
         navigate('/organizations');
         return;
       }
 
+      console.log('Fetching organizations for user:', userId);
+      
+      // Fetch user's organizations
       const { data: organizations, error: orgError } = await supabase
         .from('organization_members')
         .select('organization_id')
@@ -96,7 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      console.log('Organizations found:', organizations?.length || 0);
+
+      // If user has organizations, redirect to the first one
       if (organizations && organizations.length > 0) {
+        console.log('User has organizations, redirecting to first one:', organizations[0].organization_id);
+        
         const { data: orgData, error: orgDetailsError } = await supabase
           .from('organizations')
           .select('*')
@@ -110,23 +120,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (orgData) {
+          console.log('Organization details retrieved:', orgData.name);
+          
           const org: Organization = {
             id: orgData.id,
             name: orgData.name,
             subdomain: orgData.subdomain,
             created_at: orgData.created_at,
             updated_at: orgData.updated_at,
-            settings: orgData.settings ? (typeof orgData.settings === 'string'
-              ? JSON.parse(orgData.settings)
-              : orgData.settings as Record<string, any>)
-              : {},
+            settings: orgData.settings ? 
+              (typeof orgData.settings === 'string' 
+                ? JSON.parse(orgData.settings) 
+                : orgData.settings as Record<string, any>
+              ) : {}
           };
-
+          
+          console.log('Redirecting to organization subdomain:', org.subdomain);
           redirectToOrganization(org);
           return;
         }
       } else {
         // User has no organizations, redirect to onboarding
+        console.log('No organizations found, redirecting to onboarding');
         navigate('/onboarding');
         return;
       }

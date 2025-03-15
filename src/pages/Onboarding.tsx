@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { toast } from "sonner";
 import { useOrganization } from "@/hooks/useOrganization";
 import { useAuth } from "@/hooks/useAuth";
 import { redirectToOrganization } from "@/utils/organizationUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -26,18 +26,74 @@ const Onboarding = () => {
   // If not authenticated, redirect to login
   useEffect(() => {
     if (!isAuthenticated && !orgLoading) {
+      console.log("User not authenticated, redirecting to login");
       navigate("/login");
     }
   }, [isAuthenticated, orgLoading, navigate]);
 
-  // Check if user already has organizations
+  // Check if user already has organizations directly using Supabase
   useEffect(() => {
     const checkExistingOrganizations = async () => {
-      if (!isAuthenticated || !user) return;
+      if (!isAuthenticated || !user) {
+        setIsCheckingOrgs(false);
+        return;
+      }
+      
+      console.log("Checking if user has existing organizations...");
       
       try {
-        await fetchOrganizations();
+        setIsCheckingOrgs(true);
+        
+        // Direct query to Supabase to avoid any caching issues
+        const { data: memberData, error: memberError } = await supabase
+          .from('organization_members')
+          .select('organization_id')
+          .eq('user_id', user.id);
+          
+        if (memberError) {
+          console.error("Error checking organization memberships:", memberError);
+          setIsCheckingOrgs(false);
+          return;
+        }
+        
+        console.log(`Found ${memberData?.length || 0} organizations for user`);
+        
+        if (memberData && memberData.length > 0) {
+          // User has organizations, fetch the first one's details
+          const { data: orgData, error: orgError } = await supabase
+            .from('organizations')
+            .select('*')
+            .eq('id', memberData[0].organization_id)
+            .single();
+            
+          if (orgError) {
+            console.error("Error fetching organization details:", orgError);
+            setIsCheckingOrgs(false);
+            return;
+          }
+          
+          if (orgData) {
+            console.log("User already has an organization, redirecting to:", orgData.name);
+            toast.info("Redirecting to your organization");
+            
+            setTimeout(() => {
+              redirectToOrganization({
+                id: orgData.id,
+                name: orgData.name,
+                subdomain: orgData.subdomain,
+                created_at: orgData.created_at,
+                updated_at: orgData.updated_at,
+                settings: orgData.settings || {}
+              });
+            }, 500);
+            return;
+          }
+        }
+        
+        // If we get here, the user doesn't have organizations
+        console.log("User has no organizations, showing onboarding form");
         setIsCheckingOrgs(false);
+        
       } catch (error) {
         console.error("Error checking organizations:", error);
         setIsCheckingOrgs(false);
@@ -45,22 +101,7 @@ const Onboarding = () => {
     };
     
     checkExistingOrganizations();
-  }, [isAuthenticated, user, fetchOrganizations]);
-
-  // Redirect if user already has organizations
-  useEffect(() => {
-    if (!isCheckingOrgs && organizations.length > 0) {
-      console.log("User already has organizations, redirecting...");
-      toast.info("Redirecting to your organization");
-      
-      // Redirect to the first organization
-      if (organizations[0]) {
-        redirectToOrganization(organizations[0]);
-      } else {
-        navigate("/organizations");
-      }
-    }
-  }, [organizations, isCheckingOrgs, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubdomainChange = async (value: string) => {
     const cleaned = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
@@ -111,7 +152,7 @@ const Onboarding = () => {
     }
   };
 
-  if (isCheckingOrgs || (organizations.length > 0)) {
+  if (isCheckingOrgs) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-secondary/30">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
