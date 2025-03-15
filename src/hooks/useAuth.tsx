@@ -6,6 +6,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { useOrganization } from '@/hooks/useOrganization';
 import { redirectToOrganization } from '@/utils/organizationUtils';
+import type { Organization } from '@/types/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -93,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // If user has organizations, fetch the first one's details
       if (organizations && organizations.length > 0) {
-        const { data: org, error: orgDetailsError } = await supabase
+        const { data: orgData, error: orgDetailsError } = await supabase
           .from('organizations')
           .select('*')
           .eq('id', organizations[0].organization_id)
@@ -105,7 +106,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         
-        if (org) {
+        if (orgData) {
+          // Convert the Supabase data to Organization type
+          const org: Organization = {
+            id: orgData.id,
+            name: orgData.name,
+            subdomain: orgData.subdomain,
+            created_at: orgData.created_at,
+            updated_at: orgData.updated_at,
+            // Convert settings to the correct type expected by the Organization interface
+            settings: orgData.settings ? (typeof orgData.settings === 'string' 
+              ? JSON.parse(orgData.settings) 
+              : orgData.settings as Record<string, any>)
+          };
+          
           // Redirect to the organization's subdomain
           redirectToOrganization(org);
           return;
