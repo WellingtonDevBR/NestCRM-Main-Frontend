@@ -1,4 +1,3 @@
-
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,14 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -80,7 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       toast.success('Signed in successfully!');
       
-      // Fetch user's organizations to determine where to redirect
       const userId = user?.id || (await supabase.auth.getUser()).data.user?.id;
       
       const { data: organizations, error: orgError } = await supabase
@@ -94,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       
-      // If user has organizations, fetch the first one's details
       if (organizations && organizations.length > 0) {
         const { data: orgData, error: orgDetailsError } = await supabase
           .from('organizations')
@@ -109,26 +104,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         if (orgData) {
-          // Convert the Supabase data to Organization type
           const org: Organization = {
             id: orgData.id,
             name: orgData.name,
             subdomain: orgData.subdomain,
             created_at: orgData.created_at,
             updated_at: orgData.updated_at,
-            // Fix: Properly convert settings to the correct type with a colon after settings
             settings: orgData.settings ? (typeof orgData.settings === 'string' 
               ? JSON.parse(orgData.settings) 
               : orgData.settings as Record<string, any>)
           };
           
-          // Redirect to the organization's subdomain
           redirectToOrganization(org);
           return;
         }
       }
       
-      // Fallback to organizations page if no org found or error occurred
       navigate('/organizations');
     } catch (error: any) {
       toast.error('Error signing in', {
@@ -142,7 +133,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      // Navigate to the main domain after sign out
       window.location.href = `${window.location.protocol}//${window.location.host.split('.').slice(-2).join('.')}`;
     } catch (error: any) {
       toast.error('Error signing out', {
