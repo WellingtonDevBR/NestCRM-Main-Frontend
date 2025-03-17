@@ -29,6 +29,11 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
     <div className="w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border flex flex-col">
       <div className="p-4 border-b border-sidebar-border">
         <Link to="/" className="flex items-center">
+          <img 
+            src="/lovable-uploads/f331213a-aeba-40ff-a2df-5d1da1bc386f.png" 
+            alt="NestCRM Logo" 
+            className="h-7 w-7 mr-2" 
+          />
           <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sidebar-primary to-sidebar-accent">NESTCRM</span>
         </Link>
       </div>

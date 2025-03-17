@@ -7,9 +7,14 @@ const LoginHeader = () => {
     <div className="mb-10">
       <Link
         to="/"
-        className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent"
+        className="flex items-center"
       >
-        NESTCRM
+        <img 
+          src="/lovable-uploads/f331213a-aeba-40ff-a2df-5d1da1bc386f.png" 
+          alt="NestCRM Logo" 
+          className="h-8 w-8 mr-2" 
+        />
+        <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">NESTCRM</span>
       </Link>
       <h2 className="mt-6 text-3xl font-bold tracking-tight">
         Sign in to your account
