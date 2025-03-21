@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -19,6 +20,7 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
+  const navigate = useNavigate();
   const { signIn, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -94,8 +96,8 @@ export function useLoginForm() {
       console.log('🔍 Form Submission: Calling signIn with email:', email);
       await signIn(email, password);
       console.log('🔍 Form Submission: signIn completed successfully');
-      // The redirection is now handled directly in the signIn method
-      // within authService.ts to ensure a more reliable flow
+      navigate('/');
+      toast.success('Login successful!');
     } catch (error: any) {
       console.error('❌ Form Submission: Login error:', error);
       const errorMessage = error?.message || "Failed to sign in. Please try again.";
@@ -103,15 +105,9 @@ export function useLoginForm() {
       toast.error("Login failed", {
         description: errorMessage,
       });
+    } finally {
       setIsLoading(false);
     }
-  };
-
-  // This function is kept for compatibility with components that use it
-  // But redirection is now primarily handled in authService.ts
-  const determineRedirectPath = () => {
-    console.log('🚀 Redirection: determineRedirectPath called (legacy method)');
-    return '/organizations';
   };
 
   return {
@@ -124,7 +120,6 @@ export function useLoginForm() {
     isLoading,
     handleSubmit,
     isAuthenticated,
-    determineRedirectPath,
     errors,
     handleBlur,
     touched

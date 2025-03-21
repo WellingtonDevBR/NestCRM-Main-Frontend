@@ -1,66 +1,52 @@
 
-import { useState, useEffect, createContext, ReactNode } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
-interface AuthContextType {
+type AuthContextType = {
   user: User | null;
   session: Session | null;
-  loading: boolean;
   isAuthenticated: boolean;
-}
+  loading: boolean;
+};
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // On mount, check if there's a session
-    const checkSession = async () => {
-      setLoading(true);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
-      } catch (error) {
-        console.error("Error checking session:", error);
-        // Clear any potentially corrupt session state
-        setSession(null);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkSession();
-
-    // Subscribe to auth changes
+    // Set up authentication listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const isAuthenticated = !!user;
+  const value = {
+    user,
+    session,
+    isAuthenticated: !!user,
+    loading,
+  };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        isAuthenticated,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
