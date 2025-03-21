@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -20,7 +19,6 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
-  const navigate = useNavigate();
   const { signIn, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -30,12 +28,6 @@ export function useLoginForm() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
-  
-  // Determine where to redirect after login
-  const determineRedirectPath = () => {
-    // For now, always redirect to home
-    return '/';
-  };
   
   // Validate field when it's touched or on submission
   const validateField = (field: 'email' | 'password', value: string) => {
@@ -102,7 +94,6 @@ export function useLoginForm() {
       console.log('🔍 Form Submission: Calling signIn with email:', email);
       await signIn(email, password);
       console.log('🔍 Form Submission: signIn completed successfully');
-      navigate('/');
       toast.success('Login successful!');
     } catch (error: any) {
       console.error('❌ Form Submission: Login error:', error);
@@ -126,7 +117,6 @@ export function useLoginForm() {
     isLoading,
     handleSubmit,
     isAuthenticated,
-    determineRedirectPath,
     errors,
     handleBlur,
     touched

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,6 @@ const SignUp = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [company, setCompany] = useState("");
   const [password, setPassword] = useState("");
   
   const navigate = useNavigate();
@@ -26,7 +26,6 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      // Call the signUp method from our auth context
       // Only pass first_name and last_name as they are the only accepted fields
       await signUp(email, password, {
         first_name: firstName,
@@ -112,19 +111,6 @@ const SignUp = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     autoComplete="email"
-                    required
-                    className="bg-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company name</Label>
-                  <Input
-                    id="company"
-                    name="company"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    autoComplete="organization"
                     required
                     className="bg-white"
                   />

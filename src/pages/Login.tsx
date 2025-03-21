@@ -18,7 +18,6 @@ const Login = () => {
     isLoading,
     handleSubmit,
     isAuthenticated,
-    determineRedirectPath,
     errors,
     handleBlur,
     touched
@@ -31,14 +30,13 @@ const Login = () => {
     console.log('🔑 Authentication: Login page mounted, authentication state:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
   }, []);
   
-  // Redirect authenticated users based on context
+  // Redirect authenticated users to home
   useEffect(() => {
     if (isAuthenticated) {
-      const redirectPath = determineRedirectPath();
-      console.log('🚀 Redirection: User is authenticated, redirecting to:', redirectPath);
-      navigate(redirectPath);
+      console.log('🚀 Redirection: User is authenticated, redirecting to home');
+      navigate('/');
     }
-  }, [isAuthenticated, navigate, determineRedirectPath]);
+  }, [isAuthenticated, navigate]);
 
   return (
     <div className="min-h-screen flex bg-secondary/30">
