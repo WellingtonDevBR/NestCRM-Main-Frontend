@@ -31,6 +31,12 @@ export function useLoginForm() {
   
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
+  // Determine where to redirect after login
+  const determineRedirectPath = () => {
+    // For now, always redirect to home
+    return '/';
+  };
+  
   // Validate field when it's touched or on submission
   const validateField = (field: 'email' | 'password', value: string) => {
     try {
@@ -120,6 +126,7 @@ export function useLoginForm() {
     isLoading,
     handleSubmit,
     isAuthenticated,
+    determineRedirectPath,
     errors,
     handleBlur,
     touched

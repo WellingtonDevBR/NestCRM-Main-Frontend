@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 const SignUp = () => {
@@ -28,18 +27,19 @@ const SignUp = () => {
     
     try {
       // Call the signUp method from our auth context
+      // Only pass first_name and last_name as they are the only accepted fields
       await signUp(email, password, {
         first_name: firstName,
-        last_name: lastName,
-        company: company
+        last_name: lastName
       });
       
-      // After successful signup, redirect to onboarding
-      // Note: In a real app with email verification, you might redirect to a confirmation page
-      navigate("/onboarding");
+      toast.success("Account created successfully!");
+      navigate("/");
     } catch (error: any) {
       console.error("Signup error:", error);
-      // Error is handled in the signUp method
+      toast.error("Failed to create account", {
+        description: error.message || "Please try again later."
+      });
     } finally {
       setIsLoading(false);
     }
