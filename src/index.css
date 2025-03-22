@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 224 71.4% 4.1%;
     
-    --primary: 221.2 83.2% 53.3%;
+    --primary: 265 83.2% 53.3%;
     --primary-foreground: 210 20% 98%;
     
     --secondary: 220 14.3% 95.9%;
@@ -25,7 +25,7 @@
     --muted: 220 14.3% 95.9%;
     --muted-foreground: 220 8.9% 46.1%;
     
-    --accent: 220 14.3% 95.9%;
+    --accent: 263 14.3% 95.9%;
     --accent-foreground: 220.9 39.3% 11%;
     
     --destructive: 0 84.2% 60.2%;
@@ -36,6 +36,13 @@
     --ring: 224 71.4% 4.1%;
     
     --radius: 0.75rem;
+    
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 224 71.4% 4.1%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-accent: 265 83.2% 93%;
+    --sidebar-accent-foreground: 265 83.2% 45%;
+    --sidebar-ring: 265 83.2% 53.3%;
   }
 
   .dark {
@@ -76,6 +83,17 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Custom utility classes */
+@layer components {
+  .button-gradient {
+    @apply bg-gradient-to-r from-purple-600 to-purple-400 text-white hover:opacity-90 shadow-md;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
 }
 

@@ -1,11 +1,12 @@
 
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/layout/Navbar";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ChurnMetrics from "@/components/dashboard/ChurnMetrics";
 import CustomerList from "@/components/dashboard/CustomerList";
-import { isOnDashboardSubdomain, redirectToMainDomain } from "@/utils/subdomain";
+import { isOnDashboardSubdomain } from "@/utils/subdomain";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -24,15 +25,19 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <DashboardLayout>
-        <div className="space-y-8">
-          <ChurnMetrics />
-          <CustomerList />
-        </div>
-      </DashboardLayout>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <DashboardSidebar />
+        <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300">
+          <DashboardLayout>
+            <div className="space-y-8">
+              <ChurnMetrics />
+              <CustomerList />
+            </div>
+          </DashboardLayout>
+        </main>
+      </div>
+    </SidebarProvider>
   );
 };
 
