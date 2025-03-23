@@ -1,7 +1,7 @@
 
 import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
-import { signIn, signUp, signOut, redirectToTenantDomain } from '@/services/authService';
+import { authService } from '@/services/authService';
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -11,10 +11,10 @@ export function useAuth() {
   
   return {
     ...context,
-    signIn,
-    signUp,
-    signOut,
-    redirectToTenantDomain
+    signIn: authService.signIn.bind(authService),
+    signUp: authService.signUp.bind(authService),
+    signOut: authService.signOut.bind(authService),
+    redirectToTenantDomain: authService.redirectToTenantDomain.bind(authService)
   };
 }
 

@@ -1,140 +1,136 @@
 
 import { toast } from "sonner";
-
-export interface TenantInfo {
-  company: string;
-  subdomain: string;
-  domain: string;
-}
-
-export interface LoginResponse {
-  message: string;
-  token: string;
-  tenant: TenantInfo;
-}
-
-export interface SignUpResponse {
-  message: string;
-  token: string;
-  instanceId: string;
-  tenant: TenantInfo;
-}
+import { authApi } from "@/infrastructure/api/authApi";
+import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
+import { 
+  LoginCredentials, 
+  SignUpData, 
+  AuthResult, 
+  TenantInfo, 
+  AuthenticatedSession 
+} from "@/domain/auth/types";
 
 /**
- * Sign in a user with their email and password
+ * Service for handling authentication
  */
-export const signIn = async (email: string, password: string): Promise<LoginResponse> => {
-  try {
-    const response = await fetch('https://nestcrm.com.au/api/tenants/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to sign in');
+class AuthService {
+  /**
+   * Sign in a user with their email and password
+   */
+  async signIn(email: string, password: string): Promise<AuthResult> {
+    try {
+      const credentials: LoginCredentials = { email, password };
+      const response = await authApi.login(credentials);
+      
+      // Store the auth token and tenant info
+      tokenStorage.saveAuthData(response.token, response.tenant);
+      
+      return {
+        success: true,
+        session: response
+      };
+    } catch (error: any) {
+      console.error('Error signing in:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message || 'An unexpected error occurred during sign in',
+          code: 'auth/sign-in-error'
+        }
+      };
     }
-
-    const data = await response.json();
-    
-    // Store the auth token in localStorage
-    localStorage.setItem('auth_token', data.token);
-    localStorage.setItem('tenant_info', JSON.stringify(data.tenant));
-    
-    return data;
-  } catch (error: any) {
-    console.error('Error signing in:', error);
-    throw error;
   }
-};
 
-/**
- * Sign up a new user/tenant
- */
-export const signUp = async (
-  firstName: string,
-  lastName: string,
-  companyName: string,
-  email: string,
-  subdomain: string,
-  password: string
-): Promise<SignUpResponse> => {
-  try {
-    // Construct the domain from the subdomain
-    const domain = `${subdomain}.nestcrm.com.au`;
-    
-    const response = await fetch('https://nestcrm.com.au/api/tenants/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+  /**
+   * Sign up a new user/tenant
+   */
+  async signUp(
+    firstName: string,
+    lastName: string,
+    companyName: string,
+    email: string,
+    subdomain: string,
+    password: string
+  ): Promise<AuthResult> {
+    try {
+      const signUpData: SignUpData = {
         firstName,
         lastName,
         companyName,
         email,
         subdomain,
-        domain,
         password
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to sign up');
+      };
+      
+      const response = await authApi.signup(signUpData);
+      
+      // Store the auth token and tenant info
+      tokenStorage.saveAuthData(response.token, response.tenant);
+      
+      return {
+        success: true,
+        session: response
+      };
+    } catch (error: any) {
+      console.error('Error signing up:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message || 'An unexpected error occurred during sign up',
+          code: 'auth/sign-up-error'
+        }
+      };
     }
-
-    const data = await response.json();
-    
-    // Store the auth token in localStorage
-    localStorage.setItem('auth_token', data.token);
-    localStorage.setItem('tenant_info', JSON.stringify(data.tenant));
-    
-    return data;
-  } catch (error: any) {
-    console.error('Error signing up:', error);
-    throw error;
   }
-};
 
-/**
- * Sign out the current user
- */
-export const signOut = async (): Promise<void> => {
-  try {
-    // Clear the auth token and tenant info from localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('tenant_info');
-    
-    toast.success("Logged out successfully");
-  } catch (error: any) {
-    console.error('Error signing out:', error);
-    throw error;
+  /**
+   * Sign out the current user
+   */
+  async signOut(): Promise<void> {
+    try {
+      // Clear the auth token and tenant info from localStorage
+      tokenStorage.clearAuthData();
+      
+      toast.success("Logged out successfully");
+    } catch (error: any) {
+      console.error('Error signing out:', error);
+      toast.error("Failed to log out");
+      throw error;
+    }
   }
-};
 
-/**
- * Check if user is authenticated
- */
-export const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('auth_token');
-};
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    return tokenStorage.isAuthenticated();
+  }
 
-/**
- * Get the current tenant information
- */
-export const getCurrentTenant = (): TenantInfo | null => {
-  const tenantInfo = localStorage.getItem('tenant_info');
-  return tenantInfo ? JSON.parse(tenantInfo) : null;
-};
+  /**
+   * Get the current tenant information
+   */
+  getCurrentTenant(): TenantInfo | null {
+    return tokenStorage.getTenant();
+  }
 
-/**
- * Redirect to tenant subdomain with token
- */
-export const redirectToTenantDomain = (tenant: TenantInfo, token: string): void => {
-  // Redirect to the tenant domain with the token
-  window.location.href = `${tenant.domain}?token=${token}`;
-};
+  /**
+   * Redirect to tenant subdomain with token
+   */
+  redirectToTenantDomain(tenant: TenantInfo, token: string): void {
+    // Redirect to the tenant domain with the token
+    const protocol = window.location.protocol;
+    window.location.href = `${protocol}//${tenant.domain}?token=${token}`;
+  }
+}
+
+// Export a singleton instance
+export const authService = new AuthService();
+
+// Re-export types for convenience
+export type { 
+  TenantInfo, 
+  LoginCredentials, 
+  SignUpData, 
+  AuthResult,
+  AuthenticatedSession
+} from "@/domain/auth/types";

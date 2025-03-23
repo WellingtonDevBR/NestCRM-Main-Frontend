@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
+import { AuthResult } from "@/services/authService";
 
 const SignUpForm = () => {
   const { signUp, redirectToTenantDomain } = useAuth();
@@ -27,7 +28,7 @@ const SignUpForm = () => {
     setIsLoading(true);
     
     try {
-      const response = await signUp(
+      const result: AuthResult = await signUp(
         firstName,
         lastName,
         companyName,
@@ -36,10 +37,16 @@ const SignUpForm = () => {
         password
       );
       
-      toast.success("Account created successfully!");
-      
-      // Redirect to tenant subdomain
-      redirectToTenantDomain(response.tenant, response.token);
+      if (result.success && result.session) {
+        toast.success("Account created successfully!");
+        
+        // Redirect to tenant subdomain
+        redirectToTenantDomain(result.session.tenant, result.session.token.token);
+      } else {
+        toast.error("Failed to create account", {
+          description: result.error?.message || "Please try again later."
+        });
+      }
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error("Failed to create account", {

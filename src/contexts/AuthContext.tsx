@@ -1,6 +1,6 @@
 
 import { createContext, useEffect, useState } from 'react';
-import { isAuthenticated, getCurrentTenant, TenantInfo } from '@/services/authService';
+import { authService, TenantInfo } from '@/services/authService';
 
 type AuthContextType = {
   isAuthenticated: boolean;
@@ -16,17 +16,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Check for existing auth token
-    const authState = isAuthenticated();
+    const authState = authService.isAuthenticated();
     if (authState) {
-      const tenantInfo = getCurrentTenant();
+      const tenantInfo = authService.getCurrentTenant();
       setTenant(tenantInfo);
     }
     setLoading(false);
 
     // Listen for storage events to sync auth state across tabs
     const handleStorageChange = () => {
-      const authState = isAuthenticated();
-      const tenantInfo = getCurrentTenant();
+      const authState = authService.isAuthenticated();
+      const tenantInfo = authService.getCurrentTenant();
       setTenant(authState ? tenantInfo : null);
     };
 
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const value = {
-    isAuthenticated: isAuthenticated(),
+    isAuthenticated: authService.isAuthenticated(),
     tenant,
     loading,
   };
