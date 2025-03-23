@@ -5,9 +5,24 @@ import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();
+  // Use try/catch to prevent app crashes if auth context is not available
+  let isAuthenticated = false;
+  
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+    
+    // Log authentication state on component mount for debugging
+    useEffect(() => {
+      console.log('Index page - Authentication state:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
+    }, [isAuthenticated]);
+  } catch (error) {
+    console.error('Error accessing auth context:', error);
+    // Continue rendering the page without auth features
+  }
   
   return (
     <div className="min-h-screen bg-background">
