@@ -2,6 +2,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { authService } from '@/services/authService';
+import { SignUpData } from '@/domain/auth/types';
 
 export function useAuth() {
   const context = useContext(AuthContext);
