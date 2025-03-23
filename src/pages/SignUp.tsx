@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 const SignUp = () => {
-  const { signUp } = useAuth();
+  const { signUp, redirectToTenantDomain } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
@@ -18,22 +18,26 @@ const SignUp = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [company, setCompany] = useState("");
+  const [subdomain, setSubdomain] = useState("");
   
-  const navigate = useNavigate();
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Only pass first_name and last_name as they are the only accepted fields
-      await signUp(email, password, {
+      // Pass company and subdomain to the signUp function
+      const response = await signUp(email, password, {
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        company,
+        subdomain
       });
       
       toast.success("Account created successfully!");
-      navigate("/");
+      
+      // Redirect to tenant subdomain
+      redirectToTenantDomain(response.tenant, response.token);
     } catch (error: any) {
       console.error("Signup error:", error);
       toast.error("Failed to create account", {
@@ -114,6 +118,38 @@ const SignUp = () => {
                     required
                     className="bg-white"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company name</Label>
+                  <Input
+                    id="company"
+                    name="company"
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    required
+                    className="bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="subdomain">Subdomain</Label>
+                  <div className="flex items-center">
+                    <Input
+                      id="subdomain"
+                      name="subdomain"
+                      type="text"
+                      value={subdomain}
+                      onChange={(e) => setSubdomain(e.target.value)}
+                      required
+                      className="bg-white"
+                    />
+                    <span className="ml-2 text-foreground/70">.nestcrm.com.au</span>
+                  </div>
+                  <p className="text-xs text-foreground/70">
+                    This will be your unique URL for accessing your account
+                  </p>
                 </div>
 
                 <div className="space-y-2">

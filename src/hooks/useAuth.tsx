@@ -1,7 +1,7 @@
 
 import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
-import { signIn, signUp, signOut } from '@/services/authService';
+import { signIn, signUp, signOut, redirectToTenantDomain } from '@/services/authService';
 
 export function useAuth() {
   const context = useContext(AuthContext);
@@ -13,7 +13,8 @@ export function useAuth() {
     ...context,
     signIn,
     signUp,
-    signOut
+    signOut,
+    redirectToTenantDomain
   };
 }
 

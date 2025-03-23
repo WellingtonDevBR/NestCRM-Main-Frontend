@@ -1,50 +1,44 @@
 
 import { createContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { isAuthenticated, getCurrentTenant, TenantInfo } from '@/services/authService';
 
 type AuthContextType = {
-  user: User | null;
-  session: Session | null;
   isAuthenticated: boolean;
+  tenant: TenantInfo | null;
   loading: boolean;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up authentication listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    // Check for existing auth token
+    const authState = isAuthenticated();
+    if (authState) {
+      const tenantInfo = getCurrentTenant();
+      setTenant(tenantInfo);
+    }
+    setLoading(false);
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Listen for storage events to sync auth state across tabs
+    const handleStorageChange = () => {
+      const authState = isAuthenticated();
+      const tenantInfo = getCurrentTenant();
+      setTenant(authState ? tenantInfo : null);
+    };
 
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      subscription.unsubscribe();
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
   const value = {
-    user,
-    session,
-    isAuthenticated: !!user,
+    isAuthenticated: isAuthenticated(),
+    tenant,
     loading,
   };
 

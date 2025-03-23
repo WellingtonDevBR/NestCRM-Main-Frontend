@@ -1,7 +1,6 @@
 /**
  * Simplified domain utilities
- * All organization and subdomain functionality has been removed
+ * All organization and subdomain functionality now handled by custom API
  */
 
-// This file is kept as a placeholder in case we need domain utilities in the future
-// No active functionality is currently implemented
+// This file is kept as a placeholder for any future domain utilities
