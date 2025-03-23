@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 export interface TenantInfo {
@@ -25,7 +24,7 @@ export interface SignUpResponse {
  */
 export const signIn = async (email: string, password: string): Promise<LoginResponse> => {
   try {
-    const response = await fetch('nestcrm.com.au/api/tenants/login', {
+    const response = await fetch('https://nestcrm.com.au/api/tenants/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,7 +64,7 @@ export const signUp = async (
   }
 ): Promise<SignUpResponse> => {
   try {
-    const response = await fetch('nestcrm.com.au/api/tenants/signup', {
+    const response = await fetch('https://nestcrm.com.au/api/tenants/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
