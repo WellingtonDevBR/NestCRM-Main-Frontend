@@ -1,43 +1,26 @@
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ChurnMetrics from "@/components/dashboard/ChurnMetrics";
 import CustomerList from "@/components/dashboard/CustomerList";
-import { isOnDashboardSubdomain, redirectToMainDomain } from "@/utils/subdomain";
+import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
-import { useDashboardData } from "@/hooks/useDashboardData";
-import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
-  const { data, isLoading: dataLoading, error } = useDashboardData();
   
-  useEffect(() => {
-    // If not on a subdomain, redirect to login
-    if (!isOnDashboardSubdomain()) {
-      navigate("/login");
-    }
-  }, [navigate]);
-
-  // Handle data loading error
-  useEffect(() => {
-    if (error) {
-      toast.error("Failed to load dashboard data. Please try again later.");
-    }
-  }, [error]);
-
   // If not on subdomain, don't render dashboard content
   if (!isOnDashboardSubdomain()) {
     return null;
   }
 
   // Show loading state
-  if (authLoading || dataLoading) {
+  if (authLoading) {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
@@ -57,6 +40,8 @@ const Dashboard: React.FC = () => {
       </SidebarProvider>
     );
   }
+
+  // If not authenticated, the useAuth hook will handle the redirect
 
   return (
     <SidebarProvider>
