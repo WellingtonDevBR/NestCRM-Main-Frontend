@@ -79,14 +79,19 @@ const SignUpForm = () => {
       setSetupStage("Creating your account...");
       setShowSetupProgress(true);
       
-      const result: AuthResult = await signUp({
+      // Create signup data object with the correct structure
+      const signupData = {
         firstName,
         lastName,
         companyName,
         email,
         subdomain,
         password
-      });
+      };
+      
+      console.log('Submitting signup data:', signupData);
+      
+      const result: AuthResult = await signUp(signupData);
       
       if (result.success && result.session) {
         toast.success("Account created successfully!");

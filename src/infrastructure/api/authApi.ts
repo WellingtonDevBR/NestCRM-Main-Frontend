@@ -34,20 +34,25 @@ export class AuthApi {
     // Construct the domain from the subdomain
     const domain = `${data.subdomain}.nestcrm.com.au`;
     
+    // Format the data correctly according to the required structure
+    const signupPayload = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      companyName: data.companyName,
+      email: data.email,
+      subdomain: data.subdomain,
+      domain: domain,
+      password: data.password
+    };
+    
+    console.log('Signup payload:', signupPayload);
+    
     const response = await fetch(`${this.baseUrl}/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        companyName: data.companyName,
-        email: data.email,
-        subdomain: data.subdomain,
-        domain: domain,
-        password: data.password
-      }),
+      body: JSON.stringify(signupPayload),
     });
 
     if (!response.ok) {

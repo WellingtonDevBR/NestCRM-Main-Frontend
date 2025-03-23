@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
@@ -48,23 +47,10 @@ class AuthService {
   /**
    * Sign up a new user/tenant
    */
-  async signUp(
-    firstName: string,
-    lastName: string,
-    companyName: string,
-    email: string,
-    subdomain: string,
-    password: string
-  ): Promise<AuthResult> {
+  async signUp(signUpData: SignUpData): Promise<AuthResult> {
     try {
-      const signUpData: SignUpData = {
-        firstName,
-        lastName,
-        companyName,
-        email,
-        subdomain,
-        password
-      };
+      // Log the signup data for debugging
+      console.log('Signup data:', signUpData);
       
       const response = await authApi.signup(signUpData);
       
