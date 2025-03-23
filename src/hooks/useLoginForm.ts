@@ -19,7 +19,7 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
-  const { signIn, isAuthenticated, redirectToTenantDomain } = useAuth();
+  const { signIn, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -75,9 +75,22 @@ export function useLoginForm() {
   };
 
   // Determine where to redirect after successful login
-  const determineRedirectPath = (tenant: any, token: string) => {
-    // Redirect to tenant subdomain
-    redirectToTenantDomain(tenant, token);
+  const determineRedirectPath = (response: any): void => {
+    if (response && response.success && response.session) {
+      const tenant = response.session.tenant;
+      const token = response.session.token?.token;
+      
+      if (tenant && token) {
+        // Redirect to tenant subdomain
+        const protocol = window.location.protocol;
+        window.location.href = `${protocol}//${tenant.domain}?token=${token}`;
+      } else {
+        console.error('Invalid tenant or token in response');
+        throw new Error('Invalid authentication response');
+      }
+    } else {
+      throw new Error(response?.error?.message || 'Authentication failed');
+    }
   };
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -99,11 +112,21 @@ export function useLoginForm() {
     try {
       console.log('🔍 Form Submission: Calling signIn with email:', email);
       const response = await signIn(email, password);
-      console.log('🔍 Form Submission: signIn completed successfully');
-      toast.success('Login successful!');
+      console.log('🔍 Form Submission: signIn response:', response);
       
-      // Redirect to tenant subdomain
-      determineRedirectPath(response.tenant, response.token);
+      if (response.success && response.session) {
+        toast.success('Login successful!');
+        
+        try {
+          // Redirect to tenant subdomain
+          determineRedirectPath(response);
+        } catch (redirectError: any) {
+          console.error('❌ Redirect Error:', redirectError);
+          setErrors((prev) => ({ ...prev, form: 'Error during redirect. Please try again.' }));
+        }
+      } else {
+        throw new Error(response.error?.message || 'Login failed with unknown error');
+      }
     } catch (error: any) {
       console.error('❌ Form Submission: Login error:', error);
       const errorMessage = error?.message || "Failed to sign in. Please try again.";
@@ -128,7 +151,6 @@ export function useLoginForm() {
     isAuthenticated,
     errors,
     handleBlur,
-    touched,
-    determineRedirectPath
+    touched
   };
 }

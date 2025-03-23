@@ -23,13 +23,16 @@ class AuthService {
       const response = await authApi.login(credentials);
       
       // Store the auth token and tenant info
-      // Fix: Pass the token string, not the token object
-      tokenStorage.saveAuthData(response.token.token, response.tenant);
-      
-      return {
-        success: true,
-        session: response
-      };
+      if (response && response.token && response.tenant) {
+        tokenStorage.saveAuthData(response.token.token, response.tenant);
+        
+        return {
+          success: true,
+          session: response
+        };
+      } else {
+        throw new Error("Invalid response format from server");
+      }
     } catch (error: any) {
       console.error('Error signing in:', error);
       return {
@@ -66,13 +69,16 @@ class AuthService {
       const response = await authApi.signup(signUpData);
       
       // Store the auth token and tenant info
-      // Fix: Pass the token string, not the token object
-      tokenStorage.saveAuthData(response.token.token, response.tenant);
-      
-      return {
-        success: true,
-        session: response
-      };
+      if (response && response.token && response.tenant) {
+        tokenStorage.saveAuthData(response.token.token, response.tenant);
+        
+        return {
+          success: true,
+          session: response
+        };
+      } else {
+        throw new Error("Invalid response format from server");
+      }
     } catch (error: any) {
       console.error('Error signing up:', error);
       return {
@@ -118,7 +124,13 @@ class AuthService {
   /**
    * Redirect to tenant subdomain with token
    */
-  redirectToTenantDomain(tenant: TenantInfo, token: string): void {
+  redirectToTenantDomain(tenant: TenantInfo | null, token: string | null): void {
+    // Only redirect if both tenant and token are valid
+    if (!tenant || !token) {
+      console.error('Cannot redirect: missing tenant or token');
+      return;
+    }
+    
     // Redirect to the tenant domain with the token
     const protocol = window.location.protocol;
     window.location.href = `${protocol}//${tenant.domain}?token=${token}`;
