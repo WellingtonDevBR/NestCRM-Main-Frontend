@@ -15,7 +15,8 @@ export function useAuth() {
     signIn: authService.signIn.bind(authService),
     signUp: authService.signUp.bind(authService),
     signOut: authService.signOut.bind(authService),
-    redirectToTenantDomain: authService.redirectToTenantDomain.bind(authService)
+    redirectToTenantDomain: authService.redirectToTenantDomain.bind(authService),
+    getCurrentToken: authService.getCurrentToken.bind(authService)
   };
 }
 

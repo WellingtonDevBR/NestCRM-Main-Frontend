@@ -22,9 +22,16 @@ class AuthService {
       const credentials: LoginCredentials = { email, password };
       const response = await authApi.login(credentials);
       
+      console.log('Login response:', response);
+      
       // Store the auth token and tenant info
       if (response && response.token && response.tenant) {
-        tokenStorage.saveAuthData(response.token, response.tenant);
+        // Handle string token from login response
+        const tokenValue = typeof response.token === 'string' 
+          ? response.token 
+          : response.token.token;
+          
+        tokenStorage.saveAuthData(tokenValue, response.tenant);
         
         return {
           success: true,
@@ -116,14 +123,23 @@ class AuthService {
   }
 
   /**
+   * Get the current auth token
+   */
+  getCurrentToken(): string | null {
+    return tokenStorage.getToken();
+  }
+
+  /**
    * Redirect to tenant subdomain with token
    */
   redirectToTenantDomain(tenant: TenantInfo | null, token: string | null): void {
     // Only redirect if both tenant and token are valid
     if (!tenant || !token) {
-      console.error('Cannot redirect: missing tenant or token');
+      console.error('Cannot redirect: missing tenant or token', { tenant, token });
       return;
     }
+    
+    console.log('Redirecting to tenant domain:', tenant.domain, 'with token');
     
     // Redirect to the tenant domain with the token as a query parameter
     const protocol = window.location.protocol;

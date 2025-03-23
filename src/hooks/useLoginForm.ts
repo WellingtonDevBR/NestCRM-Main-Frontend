@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
@@ -19,7 +18,7 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, redirectToTenantDomain } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -78,14 +77,19 @@ export function useLoginForm() {
   const determineRedirectPath = (response: any): void => {
     if (response && response.success && response.session) {
       const tenant = response.session.tenant;
-      const token = response.session.token?.token;
+      
+      // Get token either from session.token (string) or session.token.token (object)
+      const token = typeof response.session.token === 'string' 
+        ? response.session.token 
+        : response.session.token?.token;
+      
+      console.log('Redirect info:', { tenant, tokenExists: !!token });
       
       if (tenant && token) {
-        // Redirect to tenant subdomain
-        const protocol = window.location.protocol;
-        window.location.href = `${protocol}//${tenant.domain}?token=${token}`;
+        // Use the auth service to handle the redirect
+        redirectToTenantDomain(tenant, token);
       } else {
-        console.error('Invalid tenant or token in response');
+        console.error('Invalid tenant or token in response', response.session);
         throw new Error('Invalid authentication response');
       }
     } else {
@@ -148,7 +152,7 @@ export function useLoginForm() {
     togglePasswordVisibility,
     isLoading,
     handleSubmit,
-    isAuthenticated,
+    isAuthenticated: false,
     errors,
     handleBlur,
     touched
