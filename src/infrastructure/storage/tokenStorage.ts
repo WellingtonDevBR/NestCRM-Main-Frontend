@@ -1,6 +1,4 @@
 
-import { TenantInfo } from "@/domain/auth/types";
-
 /**
  * Service for handling tenant storage
  */
