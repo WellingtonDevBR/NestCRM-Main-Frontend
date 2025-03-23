@@ -64,16 +64,7 @@ export async function apiRequest<T>({
         errorData = { message: "An unknown error occurred" };
       }
       
-      // Handle auth errors specially
-      if (response.status === 401) {
-        if (!suppressToast) {
-          toast.error("Session expired. Please log in again.");
-        }
-        // Redirect to login if needed
-        window.location.href = "https://nestcrm.com.au/login";
-        throw new Error("Authentication failed");
-      }
-      
+      // We don't redirect on 401 anymore - just throw an error
       throw new Error(errorData.message || "Request failed");
     }
 

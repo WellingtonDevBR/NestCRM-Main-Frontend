@@ -43,16 +43,7 @@ export function useAuth(): AuthState {
           error: null,
         });
       } else if (isError) {
-        // Authentication failed
-        if (isOnDashboardSubdomain()) {
-          toast.error("Your session has expired. Please log in again.");
-          
-          // Only redirect if we're not already in the process of handling an auth error
-          if (window.location.pathname !== "/login") {
-            window.location.href = "https://nestcrm.com.au/login";
-          }
-        }
-        
+        // Authentication failed, but we don't redirect - just update state
         setAuthState({
           isAuthenticated: false,
           user: null,

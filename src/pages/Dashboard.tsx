@@ -9,15 +9,25 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { toast } from "sonner";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isError: dashboardError } = useDashboardData();
   
   // If not on subdomain, don't render dashboard content
   if (!isOnDashboardSubdomain()) {
     return null;
   }
+
+  // Handle dashboard data error (but don't redirect)
+  React.useEffect(() => {
+    if (dashboardError) {
+      toast.error("Unable to load dashboard data. Please try refreshing the page.");
+    }
+  }, [dashboardError]);
 
   // Show loading state
   if (authLoading) {
@@ -40,8 +50,6 @@ const Dashboard: React.FC = () => {
       </SidebarProvider>
     );
   }
-
-  // If not authenticated, the useAuth hook will handle the redirect
 
   return (
     <SidebarProvider>
