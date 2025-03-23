@@ -36,10 +36,13 @@ export function useDashboardData() {
     queryKey: ["dashboardData"],
     queryFn: async () => {
       try {
-        // Get dashboard data - successful response means user is authenticated
+        // This API call now serves dual purpose:
+        // 1. Get dashboard data
+        // 2. Validate user authentication (will fail with 401 if not authenticated)
         return api.get<DashboardData>("/data");
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
+        // If this fails, it means user is not authenticated or there's a server error
         throw error;
       }
     },
