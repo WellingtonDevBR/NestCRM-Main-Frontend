@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
@@ -113,11 +112,6 @@ class AuthService {
       return `Please check your internet connection and try again.`;
     }
     
-    // Check if the error is a SyntaxError from parsing JSON
-    if (error instanceof SyntaxError && errorMessage.includes('Unexpected token')) {
-      return `We're having trouble communicating with our servers. Please try again later.`;
-    }
-    
     // Return the original error message if it seems user-friendly enough,
     // otherwise provide a generic message
     return errorMessage || `An unexpected error occurred during ${action}. Please try again.`;
@@ -140,27 +134,7 @@ class AuthService {
   }
 
   /**
-   * Check if user is authenticated by checking with the api/data endpoint
-   */
-  async checkAuthentication(): Promise<boolean> {
-    try {
-      // First check if we have tenant info stored
-      const hasTenantInfo = tokenStorage.hasTenantInfo();
-      
-      if (!hasTenantInfo) {
-        return false;
-      }
-      
-      // Then verify with the server
-      return await authApi.checkAuthStatus();
-    } catch (error) {
-      console.error('Error checking authentication:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Check if user is authenticated (synchronous, local check only)
+   * Check if user is authenticated
    */
   isAuthenticated(): boolean {
     // Since we're using cookies, we can only check if tenant info exists
