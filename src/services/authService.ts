@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
@@ -38,10 +37,14 @@ class AuthService {
       }
     } catch (error: any) {
       console.error('Error signing in:', error);
+      
+      // Provide a user-friendly error message
+      const friendlyMessage = this.getFriendlyErrorMessage(error, 'sign in');
+      
       return {
         success: false,
         error: {
-          message: error.message || 'An unexpected error occurred during sign in',
+          message: friendlyMessage,
           code: 'auth/sign-in-error'
         }
       };
@@ -74,14 +77,44 @@ class AuthService {
       }
     } catch (error: any) {
       console.error('Error signing up:', error);
+      
+      // Provide a user-friendly error message
+      const friendlyMessage = this.getFriendlyErrorMessage(error, 'sign up');
+      
       return {
         success: false,
         error: {
-          message: error.message || 'An unexpected error occurred during sign up',
+          message: friendlyMessage,
           code: 'auth/sign-up-error'
         }
       };
     }
+  }
+
+  /**
+   * Convert technical errors to user-friendly messages
+   */
+  private getFriendlyErrorMessage(error: any, action: string): string {
+    // Extract the error message
+    const errorMessage = error.message || '';
+    
+    // Check for specific error conditions and provide friendly messages
+    if (errorMessage.includes('Server error')) {
+      return `Our servers are currently experiencing issues. Please try again later.`;
+    }
+    
+    if (errorMessage.includes('Invalid response format')) {
+      return `We're having trouble communicating with our servers. Please try again later.`;
+    }
+    
+    if (errorMessage.toLowerCase().includes('network') || 
+        errorMessage.toLowerCase().includes('connection')) {
+      return `Please check your internet connection and try again.`;
+    }
+    
+    // Return the original error message if it seems user-friendly enough,
+    // otherwise provide a generic message
+    return errorMessage || `An unexpected error occurred during ${action}. Please try again.`;
   }
 
   /**

@@ -124,18 +124,24 @@ export function useLoginForm() {
         } catch (redirectError: any) {
           console.error('❌ Redirect Error:', redirectError);
           setErrors((prev) => ({ ...prev, form: 'Error during redirect. Please try again.' }));
+          setIsLoading(false);
         }
       } else {
-        throw new Error(response.error?.message || 'Login failed with unknown error');
+        // Display the error message from the response
+        const errorMessage = response.error?.message || "Failed to sign in. Please try again.";
+        setErrors((prev) => ({ ...prev, form: errorMessage }));
+        toast.error("Login failed", {
+          description: errorMessage,
+        });
+        setIsLoading(false);
       }
     } catch (error: any) {
       console.error('❌ Form Submission: Login error:', error);
-      const errorMessage = error?.message || "Failed to sign in. Please try again.";
+      const errorMessage = "An unexpected error occurred. Please try again later.";
       setErrors((prev) => ({ ...prev, form: errorMessage }));
       toast.error("Login failed", {
         description: errorMessage,
       });
-    } finally {
       setIsLoading(false);
     }
   };

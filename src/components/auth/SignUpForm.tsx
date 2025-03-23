@@ -12,6 +12,7 @@ import SubmitButton from "@/components/auth/form/SubmitButton";
 import FormDivider from "@/components/auth/form/FormDivider";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 const SignUpForm = () => {
   const { signUp, redirectToTenantDomain } = useAuth();
@@ -19,6 +20,7 @@ const SignUpForm = () => {
   const [setupProgress, setSetupProgress] = useState(0);
   const [setupStage, setSetupStage] = useState("");
   const [showSetupProgress, setShowSetupProgress] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -73,6 +75,7 @@ const SignUpForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
     
     try {
       // Start showing first stage before API call
@@ -104,16 +107,20 @@ const SignUpForm = () => {
         }, 5000); // Allow the progress to show for a while before redirecting
       } else {
         setShowSetupProgress(false);
+        const errorMsg = result.error?.message || "Please try again later.";
+        setErrorMessage(errorMsg);
         toast.error("Failed to create account", {
-          description: result.error?.message || "Please try again later."
+          description: errorMsg
         });
         setIsLoading(false);
       }
     } catch (error: any) {
       console.error("Signup error:", error);
       setShowSetupProgress(false);
+      const errorMsg = "Our services are currently unavailable. Please try again later.";
+      setErrorMessage(errorMsg);
       toast.error("Failed to create account", {
-        description: error.message || "Please try again later."
+        description: errorMsg
       });
       setIsLoading(false);
     }
@@ -136,6 +143,13 @@ const SignUpForm = () => {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          
           <PersonalInfoFields
             firstName={firstName}
             setFirstName={setFirstName}
