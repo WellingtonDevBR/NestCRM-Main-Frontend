@@ -34,7 +34,7 @@ export function useAuth(): AuthState {
       } catch (err) {
         // If not authenticated and on subdomain, go back to main site
         if (isOnDashboardSubdomain()) {
-          toast.error("Authentication required");
+          toast.error("Authentication required. Please log in again.");
           window.location.href = "https://nestcrm.com.au/login";
         }
         throw err;
@@ -42,9 +42,18 @@ export function useAuth(): AuthState {
     },
     // Don't retry too many times to avoid spamming the server
     retry: 1,
-    // Only run this query on dashboard subdomain
+    // Always run this query when on dashboard subdomain
     enabled: isOnDashboardSubdomain(),
   });
+
+  // Handle authentication errors
+  useEffect(() => {
+    if (error) {
+      console.error("Authentication error:", error);
+      toast.error("Your session has expired. Please log in again.");
+      window.location.href = "https://nestcrm.com.au/login";
+    }
+  }, [error]);
 
   // Set default state
   const authState: AuthState = {
