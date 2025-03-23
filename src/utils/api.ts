@@ -12,6 +12,7 @@ interface ApiOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   body?: any;
   headers?: Record<string, string>;
+  suppressToast?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export async function apiRequest<T>({
   method = "GET",
   body = undefined,
   headers = {},
+  suppressToast = false,
 }: ApiOptions): Promise<T> {
   const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
   
@@ -50,14 +52,23 @@ export async function apiRequest<T>({
       // Try to parse error response
       let errorData;
       try {
-        errorData = await response.json();
+        // Check if the content type is JSON
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+          errorData = await response.json();
+        } else {
+          // Handle HTML or other non-JSON responses
+          errorData = { message: "Unexpected server response format" };
+        }
       } catch (e) {
         errorData = { message: "An unknown error occurred" };
       }
       
       // Handle auth errors specially
       if (response.status === 401) {
-        toast.error("Session expired. Please log in again.");
+        if (!suppressToast) {
+          toast.error("Session expired. Please log in again.");
+        }
         // Redirect to login if needed
         window.location.href = "https://nestcrm.com.au/login";
         throw new Error("Authentication failed");
@@ -66,11 +77,24 @@ export async function apiRequest<T>({
       throw new Error(errorData.message || "Request failed");
     }
 
-    // Parse and return JSON data
-    const data = await response.json();
-    return data as T;
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      return data as T;
+    } else {
+      // Handle non-JSON responses
+      console.error("Received non-JSON response:", await response.text().catch(() => "Unable to read response text"));
+      throw new Error("Unexpected server response format");
+    }
   } catch (error) {
     console.error("API request failed:", error);
+    
+    // Show a toast unless suppressed
+    if (!suppressToast) {
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
+    }
+    
     // Re-throw to allow handling by the caller
     throw error;
   }
@@ -80,15 +104,15 @@ export async function apiRequest<T>({
  * Convenience methods for common HTTP verbs
  */
 export const api = {
-  get: <T>(endpoint: string, headers?: Record<string, string>) => 
-    apiRequest<T>({ endpoint, method: "GET", headers }),
+  get: <T>(endpoint: string, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "GET", headers, suppressToast }),
   
-  post: <T>(endpoint: string, body: any, headers?: Record<string, string>) => 
-    apiRequest<T>({ endpoint, method: "POST", body, headers }),
+  post: <T>(endpoint: string, body: any, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "POST", body, headers, suppressToast }),
   
-  put: <T>(endpoint: string, body: any, headers?: Record<string, string>) => 
-    apiRequest<T>({ endpoint, method: "PUT", body, headers }),
+  put: <T>(endpoint: string, body: any, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "PUT", body, headers, suppressToast }),
   
-  delete: <T>(endpoint: string, headers?: Record<string, string>) => 
-    apiRequest<T>({ endpoint, method: "DELETE", headers }),
+  delete: <T>(endpoint: string, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "DELETE", headers, suppressToast }),
 };

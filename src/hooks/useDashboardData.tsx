@@ -29,9 +29,20 @@ export function useDashboardData() {
   return useQuery({
     queryKey: ["dashboardData"],
     queryFn: async () => {
-      return api.get<DashboardData>("/data");
+      try {
+        return api.get<DashboardData>("/data");
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+        throw error;
+      }
     },
     // Refresh data every 5 minutes
     refetchInterval: 5 * 60 * 1000,
+    // Add proper error handling
+    meta: {
+      onError: (error: Error) => {
+        console.error("Dashboard data fetch error:", error);
+      }
+    }
   });
 }

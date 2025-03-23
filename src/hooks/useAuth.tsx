@@ -29,13 +29,20 @@ export function useAuth(): AuthState {
     queryKey: ["auth"],
     queryFn: async () => {
       try {
-        const result = await api.get<{ user: User }>("/auth/status");
+        // Use suppressToast to avoid duplicate toasts
+        const result = await api.get<{ user: User }>("/auth/status", undefined, true);
         return result.user;
       } catch (err) {
         // If not authenticated and on subdomain, go back to main site
         if (isOnDashboardSubdomain()) {
-          toast.error("Authentication required. Please log in again.");
-          window.location.href = "https://nestcrm.com.au/login";
+          // Don't show error toast here as the api utility already does
+          if (err instanceof Error && err.message !== "Authentication failed") {
+            toast.error("Authentication required. Please log in again.");
+          }
+          // Only redirect if we're not already in the process of handling an auth error
+          if (window.location.pathname !== "/login") {
+            window.location.href = "https://nestcrm.com.au/login";
+          }
         }
         throw err;
       }
@@ -50,8 +57,15 @@ export function useAuth(): AuthState {
   useEffect(() => {
     if (error) {
       console.error("Authentication error:", error);
-      toast.error("Your session has expired. Please log in again.");
-      window.location.href = "https://nestcrm.com.au/login";
+      // Only show toast if it's not already an auth error (which is handled in the API utility)
+      if (error instanceof Error && error.message !== "Authentication failed") {
+        toast.error("Your session has expired. Please log in again.");
+      }
+      
+      // Only redirect if we're not already in the process of handling an auth error
+      if (window.location.pathname !== "/login") {
+        window.location.href = "https://nestcrm.com.au/login";
+      }
     }
   }, [error]);
 
