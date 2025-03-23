@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 export interface TenantInfo {
@@ -54,25 +55,30 @@ export const signIn = async (email: string, password: string): Promise<LoginResp
  * Sign up a new user/tenant
  */
 export const signUp = async (
-  email: string, 
-  password: string, 
-  userData: { 
-    first_name?: string; 
-    last_name?: string;
-    company: string;
-    subdomain: string;
-  }
+  firstName: string,
+  lastName: string,
+  companyName: string,
+  email: string,
+  subdomain: string,
+  password: string
 ): Promise<SignUpResponse> => {
   try {
+    // Construct the domain from the subdomain
+    const domain = `${subdomain}.nestcrm.com.au`;
+    
     const response = await fetch('https://nestcrm.com.au/api/tenants/signup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        firstName,
+        lastName,
+        companyName,
         email,
-        password,
-        ...userData
+        subdomain,
+        domain,
+        password
       }),
     });
 

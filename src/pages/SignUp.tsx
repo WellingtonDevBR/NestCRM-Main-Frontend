@@ -18,7 +18,7 @@ const SignUp = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [company, setCompany] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [subdomain, setSubdomain] = useState("");
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -26,13 +26,14 @@ const SignUp = () => {
     setIsLoading(true);
     
     try {
-      // Pass company and subdomain to the signUp function
-      const response = await signUp(email, password, {
-        first_name: firstName,
-        last_name: lastName,
-        company,
-        subdomain
-      });
+      const response = await signUp(
+        firstName,
+        lastName,
+        companyName,
+        email,
+        subdomain,
+        password
+      );
       
       toast.success("Account created successfully!");
       
@@ -126,8 +127,8 @@ const SignUp = () => {
                     id="company"
                     name="company"
                     type="text"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
                     required
                     className="bg-white"
                   />
