@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
@@ -23,7 +24,7 @@ class AuthService {
       
       // Store the auth token and tenant info
       if (response && response.token && response.tenant) {
-        tokenStorage.saveAuthData(response.token.token, response.tenant);
+        tokenStorage.saveAuthData(response.token, response.tenant);
         
         return {
           success: true,
@@ -54,9 +55,16 @@ class AuthService {
       
       const response = await authApi.signup(signUpData);
       
+      console.log('Signup response:', response);
+      
       // Store the auth token and tenant info
       if (response && response.token && response.tenant) {
-        tokenStorage.saveAuthData(response.token.token, response.tenant);
+        // For signup, token might be a string instead of an object
+        const tokenValue = typeof response.token === 'string' 
+          ? response.token 
+          : response.token.token;
+          
+        tokenStorage.saveAuthData(tokenValue, response.tenant);
         
         return {
           success: true,
@@ -117,9 +125,9 @@ class AuthService {
       return;
     }
     
-    // Redirect to the tenant domain with the token
+    // Redirect to the tenant domain with the token as a query parameter
     const protocol = window.location.protocol;
-    window.location.href = `${protocol}//${tenant.domain}?token=${token}`;
+    window.location.href = `${protocol}//${tenant.domain}/dashboard?token=${token}`;
   }
 }
 

@@ -60,7 +60,14 @@ export class AuthApi {
       throw new Error(errorData.message || 'Failed to sign up');
     }
 
-    return await response.json();
+    const responseData = await response.json();
+    
+    // Convert the API response to match our internal AuthenticatedSession type
+    return {
+      token: responseData.token,
+      tenant: responseData.tenant,
+      message: responseData.message
+    };
   }
 }
 

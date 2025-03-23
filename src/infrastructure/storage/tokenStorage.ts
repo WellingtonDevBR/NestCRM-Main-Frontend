@@ -11,8 +11,10 @@ export class TokenStorage {
   /**
    * Save authentication data to local storage
    */
-  saveAuthData(token: string, tenant: TenantInfo): void {
-    localStorage.setItem(this.tokenKey, token);
+  saveAuthData(token: string | AuthToken, tenant: TenantInfo): void {
+    // Handle both string tokens and AuthToken objects
+    const tokenString = typeof token === 'string' ? token : token.token;
+    localStorage.setItem(this.tokenKey, tokenString);
     localStorage.setItem(this.tenantKey, JSON.stringify(tenant));
   }
 
