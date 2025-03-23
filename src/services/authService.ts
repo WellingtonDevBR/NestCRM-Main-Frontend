@@ -24,14 +24,10 @@ class AuthService {
       
       console.log('Login response:', response);
       
-      // Store the auth token and tenant info
-      if (response && response.token && response.tenant) {
-        // Handle string token from login response
-        const tokenValue = typeof response.token === 'string' 
-          ? response.token 
-          : response.token.token;
-          
-        tokenStorage.saveAuthData(tokenValue, response.tenant);
+      // Store the tenant info
+      if (response && response.tenant) {
+        // Token is now handled by cookies, just store the tenant info
+        tokenStorage.saveTenantInfo(response.tenant);
         
         return {
           success: true,
@@ -64,14 +60,10 @@ class AuthService {
       
       console.log('Signup response:', response);
       
-      // Store the auth token and tenant info
-      if (response && response.token && response.tenant) {
-        // For signup, token might be a string instead of an object
-        const tokenValue = typeof response.token === 'string' 
-          ? response.token 
-          : response.token.token;
-          
-        tokenStorage.saveAuthData(tokenValue, response.tenant);
+      // Store the tenant info
+      if (response && response.tenant) {
+        // Token is now handled by cookies, just store the tenant info
+        tokenStorage.saveTenantInfo(response.tenant);
         
         return {
           success: true,
@@ -97,7 +89,7 @@ class AuthService {
    */
   async signOut(): Promise<void> {
     try {
-      // Clear the auth token and tenant info from localStorage
+      // Clear tenant info from localStorage
       tokenStorage.clearAuthData();
       
       toast.success("Logged out successfully");
@@ -112,7 +104,8 @@ class AuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    return tokenStorage.isAuthenticated();
+    // Since we're using cookies, we can only check if tenant info exists
+    return tokenStorage.hasTenantInfo();
   }
 
   /**
@@ -123,27 +116,27 @@ class AuthService {
   }
 
   /**
-   * Get the current auth token
+   * Get the current auth token - Now returns null as cookies handle this
    */
   getCurrentToken(): string | null {
-    return tokenStorage.getToken();
+    return null; // Token is now handled by cookies
   }
 
   /**
-   * Redirect to tenant subdomain with token
+   * Redirect to tenant subdomain (cookies will be sent automatically)
    */
-  redirectToTenantDomain(tenant: TenantInfo | null, token: string | null): void {
-    // Only redirect if both tenant and token are valid
-    if (!tenant || !token) {
-      console.error('Cannot redirect: missing tenant or token', { tenant, token });
+  redirectToTenantDomain(tenant: TenantInfo | null): void {
+    // Only redirect if tenant is valid
+    if (!tenant) {
+      console.error('Cannot redirect: missing tenant', { tenant });
       return;
     }
     
-    console.log('Redirecting to tenant domain:', tenant.domain, 'with token');
+    console.log('Redirecting to tenant domain:', tenant.domain);
     
-    // Redirect to the tenant domain with the token as a query parameter
+    // Redirect to the tenant domain - cookies will be sent automatically
     const protocol = window.location.protocol;
-    window.location.href = `${protocol}//${tenant.domain}/dashboard?token=${token}`;
+    window.location.href = `${protocol}//${tenant.domain}/dashboard`;
   }
 }
 

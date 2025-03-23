@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
@@ -18,7 +19,7 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
-  const { signIn, redirectToTenantDomain } = useAuth();
+  const { signIn, redirectToTenantDomain, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -73,23 +74,19 @@ export function useLoginForm() {
     return isValid;
   };
 
-  // Determine where to redirect after successful login
-  const determineRedirectPath = (response: any): void => {
-    if (response && response.success && response.session) {
+  // Handle successful login and redirection
+  const handleSuccessfulAuth = (response: any): void => {
+    if (response && response.success && response.session && response.session.tenant) {
       const tenant = response.session.tenant;
       
-      // Get token either from session.token (string) or session.token.token (object)
-      const token = typeof response.session.token === 'string' 
-        ? response.session.token 
-        : response.session.token?.token;
+      console.log('Redirect info:', { tenant });
       
-      console.log('Redirect info:', { tenant, tokenExists: !!token });
-      
-      if (tenant && token) {
+      if (tenant) {
         // Use the auth service to handle the redirect
-        redirectToTenantDomain(tenant, token);
+        // Cookies will be sent automatically
+        redirectToTenantDomain(tenant);
       } else {
-        console.error('Invalid tenant or token in response', response.session);
+        console.error('Invalid tenant in response', response.session);
         throw new Error('Invalid authentication response');
       }
     } else {
@@ -122,8 +119,8 @@ export function useLoginForm() {
         toast.success('Login successful!');
         
         try {
-          // Redirect to tenant subdomain
-          determineRedirectPath(response);
+          // Redirect to tenant subdomain (cookies will be sent automatically)
+          handleSuccessfulAuth(response);
         } catch (redirectError: any) {
           console.error('❌ Redirect Error:', redirectError);
           setErrors((prev) => ({ ...prev, form: 'Error during redirect. Please try again.' }));
@@ -152,7 +149,7 @@ export function useLoginForm() {
     togglePasswordVisibility,
     isLoading,
     handleSubmit,
-    isAuthenticated: false,
+    isAuthenticated,
     errors,
     handleBlur,
     touched

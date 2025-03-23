@@ -1,20 +1,16 @@
 
-import { TenantInfo, AuthToken } from "@/domain/auth/types";
+import { TenantInfo } from "@/domain/auth/types";
 
 /**
- * Service for handling token and tenant storage
+ * Service for handling tenant storage
  */
 export class TokenStorage {
-  private readonly tokenKey = 'auth_token';
   private readonly tenantKey = 'tenant_info';
 
   /**
-   * Save authentication data to local storage
+   * Save tenant information to local storage
    */
-  saveAuthData(token: string | AuthToken, tenant: TenantInfo): void {
-    // Handle both string tokens and AuthToken objects
-    const tokenString = typeof token === 'string' ? token : token.token;
-    localStorage.setItem(this.tokenKey, tokenString);
+  saveTenantInfo(tenant: TenantInfo): void {
     localStorage.setItem(this.tenantKey, JSON.stringify(tenant));
   }
 
@@ -22,15 +18,9 @@ export class TokenStorage {
    * Clear authentication data from local storage
    */
   clearAuthData(): void {
-    localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.tenantKey);
-  }
-
-  /**
-   * Get the current auth token
-   */
-  getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    // Note: To clear cookies, a backend endpoint would be needed
+    // as frontend JavaScript can't clear HttpOnly cookies
   }
 
   /**
@@ -42,10 +32,10 @@ export class TokenStorage {
   }
 
   /**
-   * Check if a user is authenticated
+   * Check if tenant information exists
    */
-  isAuthenticated(): boolean {
-    return !!this.getToken();
+  hasTenantInfo(): boolean {
+    return !!localStorage.getItem(this.tenantKey);
   }
 }
 

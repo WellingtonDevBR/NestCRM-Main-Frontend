@@ -99,8 +99,8 @@ const SignUpForm = () => {
         // Continue showing progress animation
         // The animation will continue until the redirect happens
         setTimeout(() => {
-          // Redirect to tenant subdomain
-          redirectToTenantDomain(result.session.tenant, result.session.token.token);
+          // Redirect to tenant subdomain - cookies will be sent automatically
+          redirectToTenantDomain(result.session.tenant);
         }, 5000); // Allow the progress to show for a while before redirecting
       } else {
         setShowSetupProgress(false);

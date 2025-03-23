@@ -17,6 +17,7 @@ export class AuthApi {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
+      credentials: 'include', // This is crucial for cookies to be sent and received
     });
 
     if (!response.ok) {
@@ -28,9 +29,8 @@ export class AuthApi {
     
     console.log('Login API response:', responseData);
     
-    // Convert the API response to match our internal AuthenticatedSession type
+    // Return the tenant information from the response
     return {
-      token: responseData.token,
       tenant: responseData.tenant,
       message: responseData.message
     };
@@ -62,6 +62,7 @@ export class AuthApi {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(signupPayload),
+      credentials: 'include', // This is crucial for cookies to be sent and received
     });
 
     if (!response.ok) {
@@ -70,10 +71,10 @@ export class AuthApi {
     }
 
     const responseData = await response.json();
+    console.log('Signup API response:', responseData);
     
-    // Convert the API response to match our internal AuthenticatedSession type
+    // Return the tenant information from the response
     return {
-      token: responseData.token,
       tenant: responseData.tenant,
       message: responseData.message
     };
