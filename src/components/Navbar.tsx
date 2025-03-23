@@ -8,7 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, tenant, redirectToTenantDomain } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +24,12 @@ const Navbar = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  // Handle dashboard button click
+  const handleDashboardClick = () => {
+    console.log('Dashboard button clicked, redirecting to tenant domain');
+    redirectToTenantDomain(tenant);
+  };
 
   // Don't show the dashboard button when auth is loading
   // This prevents flash of unauthorized content
@@ -82,7 +88,7 @@ const Navbar = () => {
             {showAuthButtons && (
               isAuthenticated ? (
                 <Button 
-                  onClick={() => {}} 
+                  onClick={handleDashboardClick} 
                   className="button-gradient"
                 >
                   Dashboard
@@ -149,7 +155,7 @@ const Navbar = () => {
               isAuthenticated ? (
                 <div className="pt-2">
                   <Button 
-                    onClick={() => {}} 
+                    onClick={handleDashboardClick} 
                     className="w-full button-gradient"
                   >
                     Dashboard

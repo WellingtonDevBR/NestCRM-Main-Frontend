@@ -16,7 +16,7 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   
-  // Safely bind authService methods or provide fallbacks
+  // Make sure authService methods are safely accessed
   const safeAuthService = {
     signIn: authService?.signIn?.bind(authService) || 
       (() => {
@@ -34,13 +34,14 @@ export function useAuth() {
         return Promise.resolve();
       }),
     redirectToTenantDomain: authService?.redirectToTenantDomain?.bind(authService) || 
-      (() => {
+      ((tenant) => {
         console.error('redirectToTenantDomain method not available');
-      }),
-    getCurrentTenant: authService?.getCurrentTenant?.bind(authService) || 
-      (() => {
-        console.error('getCurrentTenant method not available');
-        return null;
+        // Fallback implementation of redirect if authService is not available
+        if (tenant && tenant.domain) {
+          console.log('Fallback redirection to tenant domain:', tenant.domain);
+          const protocol = window.location.protocol;
+          window.location.href = `${protocol}//${tenant.domain}/dashboard`;
+        }
       })
   };
   

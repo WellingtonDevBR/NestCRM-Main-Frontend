@@ -18,7 +18,10 @@ const Index = () => {
     // Log authentication state on component mount for debugging
     useEffect(() => {
       console.log('Index page - Authentication state:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
-    }, [isAuthenticated]);
+      if (auth.tenant) {
+        console.log('User has tenant:', auth.tenant);
+      }
+    }, [isAuthenticated, auth.tenant]);
   } catch (error) {
     console.error('Error accessing auth context:', error);
     // Continue rendering the page without auth features
