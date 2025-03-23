@@ -23,7 +23,7 @@ export interface AuthToken {
 export interface AuthenticatedSession {
   user?: User;
   tenant: TenantInfo;
-  token: AuthToken;
+  token?: AuthToken; // Make token optional since we're using cookies
   message: string;
 }
 

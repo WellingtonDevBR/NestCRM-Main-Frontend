@@ -1,6 +1,6 @@
 
 import { useContext } from 'react';
-import { AuthContext } from '@/contexts/AuthContext';
+import { AuthContext, AuthProvider as ContextAuthProvider } from '@/contexts/AuthContext';
 import { authService } from '@/services/authService';
 
 export function useAuth() {
@@ -23,4 +23,4 @@ export function useAuth() {
 }
 
 // Re-export the provider for convenience
-export { AuthProvider } from '@/contexts/AuthContext';
+export const AuthProvider = ContextAuthProvider;
