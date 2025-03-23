@@ -23,7 +23,8 @@ class AuthService {
       const response = await authApi.login(credentials);
       
       // Store the auth token and tenant info
-      tokenStorage.saveAuthData(response.token, response.tenant);
+      // Fix: Pass the token string, not the token object
+      tokenStorage.saveAuthData(response.token.token, response.tenant);
       
       return {
         success: true,
@@ -65,7 +66,8 @@ class AuthService {
       const response = await authApi.signup(signUpData);
       
       // Store the auth token and tenant info
-      tokenStorage.saveAuthData(response.token, response.tenant);
+      // Fix: Pass the token string, not the token object
+      tokenStorage.saveAuthData(response.token.token, response.tenant);
       
       return {
         success: true,
