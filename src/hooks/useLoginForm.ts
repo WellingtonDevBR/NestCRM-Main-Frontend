@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -19,13 +19,32 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
-  const { signIn, redirectToTenantDomain, isAuthenticated } = useAuth();
+  const { signIn, redirectToTenantDomain, isAuthenticated, checkAuthentication } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginFormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [authChecked, setAuthChecked] = useState(false);
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(isAuthenticated);
+  
+  // Check authentication status with API on mount
+  useEffect(() => {
+    const verifyAuth = async () => {
+      try {
+        const isAuth = await checkAuthentication();
+        console.log('🔍 Auth Verification: API check result:', isAuth);
+        setIsUserAuthenticated(isAuth);
+      } catch (error) {
+        console.error('Error verifying authentication:', error);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+    
+    verifyAuth();
+  }, [checkAuthentication]);
   
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
   
@@ -155,9 +174,10 @@ export function useLoginForm() {
     togglePasswordVisibility,
     isLoading,
     handleSubmit,
-    isAuthenticated,
+    isAuthenticated: isUserAuthenticated,
     errors,
     handleBlur,
-    touched
+    touched,
+    authChecked
   };
 }

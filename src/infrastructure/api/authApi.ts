@@ -120,6 +120,26 @@ export class AuthApi {
       throw error;
     }
   }
+
+  /**
+   * Check if user is still authenticated by making a request to /api/data
+   * If the request returns 200, the user is authenticated
+   */
+  async checkAuthStatus(): Promise<boolean> {
+    try {
+      // Use the current domain's /api/data endpoint to check auth status
+      const response = await fetch('/api/data', {
+        method: 'GET',
+        credentials: 'include', // Send cookies with the request
+      });
+      
+      // If response is 200, user is authenticated
+      return response.status === 200;
+    } catch (error) {
+      console.error('Auth status check error:', error);
+      return false; // Assume not authenticated if there's an error
+    }
+  }
 }
 
 // Create a singleton instance

@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginForm } from "@/hooks/useLoginForm";
 import LoginHeader from "@/components/auth/LoginHeader";
@@ -24,19 +24,46 @@ const Login = () => {
   } = useLoginForm();
   
   const navigate = useNavigate();
+  const [checking, setChecking] = useState(true);
   
   // Log authentication state on component mount
   useEffect(() => {
     console.log('🔑 Authentication: Login page mounted, authentication state:', isAuthenticated ? 'Authenticated' : 'Not authenticated');
+    
+    // Check if user is authenticated using the API
+    const checkAuth = async () => {
+      try {
+        // We're already checking in the useLoginForm hook, 
+        // so we just need to wait for that to complete
+        setChecking(false);
+      } catch (error) {
+        console.error('Failed to check authentication status:', error);
+        setChecking(false);
+      }
+    };
+    
+    checkAuth();
   }, []);
   
   // Redirect authenticated users to home
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!checking && isAuthenticated) {
       console.log('🚀 Redirection: User is authenticated, redirecting to home');
       navigate('/');
     }
-  }, [isAuthenticated, navigate]);
+  }, [checking, isAuthenticated, navigate]);
+
+  // Show loading state while checking auth
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
+        <div className="text-center">
+          <div className="spinner mb-4"></div>
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-secondary/30">
