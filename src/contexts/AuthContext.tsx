@@ -14,6 +14,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Add debugging log
+  console.log('AuthProvider initialized');
+  
   useEffect(() => {
     // Check for existing auth token
     const authState = authService.isAuthenticated();
@@ -22,6 +25,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setTenant(tenantInfo);
     }
     setLoading(false);
+    
+    console.log('AuthProvider: auth state loaded', { authState });
 
     // Listen for storage events to sync auth state across tabs
     const handleStorageChange = () => {
@@ -41,6 +46,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     tenant,
     loading,
   };
+
+  // Add debugging log
+  console.log('AuthProvider rendering with value:', value);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
