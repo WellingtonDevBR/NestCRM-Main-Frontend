@@ -8,4 +8,15 @@ export interface CustomerRiskData {
   value: string;
   riskScore: number;
   status: 'High Risk' | 'Medium Risk' | 'Low Risk';
+  customFields?: Record<string, any>;
+}
+
+export interface ColumnVisibility {
+  name: boolean;
+  email: boolean;
+  industry: boolean;
+  value: boolean;
+  riskScore: boolean;
+  status: boolean;
+  [key: string]: boolean;
 }
