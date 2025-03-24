@@ -21,7 +21,7 @@ const SidebarToggleButton = () => {
     <Button 
       variant="outline" 
       size="icon"
-      className={`fixed top-4 left-4 z-50 shadow-md bg-white ${state === 'open' ? 'hidden' : 'block'} md:hidden`}
+      className={`fixed top-4 left-4 z-50 shadow-md bg-white ${state === 'collapsed' ? 'block' : 'hidden'} md:block md:${state === 'expanded' ? 'hidden' : 'block'}`}
       onClick={() => {
         const event = new CustomEvent("sidebar:toggle");
         window.dispatchEvent(event);
