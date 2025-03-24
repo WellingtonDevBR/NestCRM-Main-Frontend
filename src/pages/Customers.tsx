@@ -5,11 +5,13 @@ import CustomersTable from "@/components/customers/CustomersTable";
 import CustomerDialog from "@/components/customers/CustomerDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useCustomFields } from "@/hooks/useCustomFields";
 
 const Customers: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const [isEditMode, setIsEditMode] = React.useState(false);
   const [currentCustomer, setCurrentCustomer] = React.useState<Customer | null>(null);
+  const { isLoading: isLoadingCustomFields } = useCustomFields();
 
   const handleAddNewCustomer = () => {
     setCurrentCustomer(null);

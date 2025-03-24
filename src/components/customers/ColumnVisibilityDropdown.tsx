@@ -11,10 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { CustomField } from "@/domain/models/customer";
 
 interface ColumnVisibilityDropdownProps {
   columnVisibility: Record<string, boolean>;
-  customFields: string[];
+  customFields: CustomField[];
   onToggleColumn: (column: string) => void;
 }
 
@@ -35,6 +36,7 @@ const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
         <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          {/* Basic columns */}
           <DropdownMenuCheckboxItem
             checked={columnVisibility.name}
             onCheckedChange={() => onToggleColumn('name')}
@@ -60,15 +62,20 @@ const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
             Created Date
           </DropdownMenuCheckboxItem>
           
-          {/* Custom fields column toggles */}
+          {/* Custom fields from settings */}
           {customFields.length > 0 && <DropdownMenuSeparator />}
+          {customFields.length > 0 && (
+            <DropdownMenuLabel className="text-xs text-muted-foreground pt-2">
+              Custom Fields
+            </DropdownMenuLabel>
+          )}
           {customFields.map(field => (
             <DropdownMenuCheckboxItem
-              key={field}
-              checked={columnVisibility[field]}
-              onCheckedChange={() => onToggleColumn(field)}
+              key={field.key}
+              checked={columnVisibility[field.key]}
+              onCheckedChange={() => onToggleColumn(field.key)}
             >
-              {field}
+              {field.label}
             </DropdownMenuCheckboxItem>
           ))}
         </DropdownMenuGroup>

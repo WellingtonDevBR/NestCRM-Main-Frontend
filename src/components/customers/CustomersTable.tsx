@@ -9,6 +9,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { useCustomers } from "@/hooks/useCustomers";
+import { useCustomFields } from "@/hooks/useCustomFields";
 import { toast } from "sonner";
 import { Customer } from "@/domain/models/customer";
 import SearchInput from "./SearchInput";
@@ -23,6 +24,7 @@ interface CustomersTableProps {
 
 const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   const { customers, isLoading, error, deleteCustomer } = useCustomers();
+  const { customFields, isLoading: isLoadingFields } = useCustomFields();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -47,39 +49,20 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
     }
   }, [customers, searchTerm]);
 
-  // Find all unique custom fields from all customers
-  const customFields = React.useMemo(() => {
-    if (!customers?.length) return [];
-    
-    const allFields = new Set<string>();
-    customers.forEach(customer => {
-      if (customer.customFields) {
-        Object.keys(customer.customFields).forEach(key => {
-          allFields.add(key);
-        });
-      }
-    });
-    
-    return Array.from(allFields);
-  }, [customers]);
-
-  // Initialize column visibility for custom fields
+  // Initialize column visibility for custom fields from settings
   useEffect(() => {
-    const initialCustomFieldVisibility: Record<string, boolean> = {};
-    customFields.forEach(field => {
-      // If not in state yet, default to visible
-      if (columnVisibility[field] === undefined) {
-        initialCustomFieldVisibility[field] = true;
-      }
-    });
-    
-    if (Object.keys(initialCustomFieldVisibility).length > 0) {
+    if (customFields?.length) {
+      const customFieldVisibility: Record<string, boolean> = {};
+      customFields.forEach(field => {
+        customFieldVisibility[field.key] = true;
+      });
+      
       setColumnVisibility(prev => ({
         ...prev,
-        ...initialCustomFieldVisibility
+        ...customFieldVisibility
       }));
     }
-  }, [customFields, columnVisibility]);
+  }, [customFields]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -116,8 +99,12 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
     .filter(([_, isVisible]) => isVisible)
     .map(([column]) => column);
 
-  // Filter custom fields to only display the visible ones
-  const visibleCustomFields = customFields.filter(field => columnVisibility[field]);
+  // Get custom field keys that should be visible
+  const visibleCustomFieldKeys = customFields
+    ? customFields
+        .filter(field => columnVisibility[field.key])
+        .map(field => field.key)
+    : [];
 
   if (error) {
     return (
@@ -134,7 +121,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
         <SearchInput searchTerm={searchTerm} onSearch={handleSearch} />
         <ColumnVisibilityDropdown 
           columnVisibility={columnVisibility}
-          customFields={customFields}
+          customFields={customFields || []}
           onToggleColumn={toggleColumnVisibility}
         />
       </div>
@@ -146,18 +133,23 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
               {columnVisibility.name && <TableHead>Name</TableHead>}
               {columnVisibility.email && <TableHead>Email</TableHead>}
               {columnVisibility.phone && <TableHead>Phone</TableHead>}
-              {visibleCustomFields.map(field => (
-                <TableHead key={field}>{field}</TableHead>
-              ))}
+              
+              {/* Custom fields from settings */}
+              {customFields?.map(field => 
+                columnVisibility[field.key] && (
+                  <TableHead key={field.key}>{field.label}</TableHead>
+                )
+              )}
+              
               {columnVisibility.createdAt && <TableHead>Created</TableHead>}
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoading || isLoadingFields ? (
               <CustomerTableSkeleton 
                 visibleColumns={columnVisibility}
-                visibleCustomFields={visibleCustomFields}
+                visibleCustomFields={customFields || []}
               />
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
@@ -174,7 +166,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
                   key={customer.id}
                   customer={customer}
                   visibleColumns={columnVisibility}
-                  visibleCustomFields={visibleCustomFields}
+                  customFields={customFields || []}
                   onEdit={onEdit}
                   onDelete={handleDelete}
                 />

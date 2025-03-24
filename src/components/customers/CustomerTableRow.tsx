@@ -11,12 +11,12 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
-import { Customer } from "@/domain/models/customer";
+import { Customer, CustomField } from "@/domain/models/customer";
 
 interface CustomerTableRowProps {
   customer: Customer;
   visibleColumns: Record<string, boolean>;
-  visibleCustomFields: string[];
+  customFields: CustomField[];
   onEdit: (customer: Customer) => void;
   onDelete: (customerId: string) => void;
 }
@@ -24,25 +24,51 @@ interface CustomerTableRowProps {
 const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
   customer,
   visibleColumns,
-  visibleCustomFields,
+  customFields,
   onEdit,
   onDelete
 }) => {
+  // Function to format custom field values based on their type
+  const formatCustomFieldValue = (field: CustomField, value: any) => {
+    if (!value && value !== 0) return "-";
+    
+    if (field.type === "number") {
+      return typeof value === "number" ? value.toLocaleString() : value;
+    } else if (field.type === "date") {
+      try {
+        return new Date(value).toLocaleDateString();
+      } catch (e) {
+        return value;
+      }
+    }
+    
+    return value;
+  };
+
   return (
     <TableRow key={customer.id}>
       {visibleColumns.name && <TableCell>{customer.name}</TableCell>}
       {visibleColumns.email && <TableCell>{customer.email}</TableCell>}
       {visibleColumns.phone && <TableCell>{customer.phone}</TableCell>}
-      {visibleCustomFields.map(field => (
-        <TableCell key={field}>
-          {customer.customFields?.[field] || "-"}
-        </TableCell>
-      ))}
+      
+      {/* Custom fields from settings */}
+      {customFields.map(field => 
+        visibleColumns[field.key] && (
+          <TableCell key={field.key}>
+            {formatCustomFieldValue(
+              field, 
+              customer.customFields?.[field.key]
+            )}
+          </TableCell>
+        )
+      )}
+      
       {visibleColumns.createdAt && (
         <TableCell>
           {new Date(customer.createdAt).toLocaleDateString()}
         </TableCell>
       )}
+      
       <TableCell className="text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
