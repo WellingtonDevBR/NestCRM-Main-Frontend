@@ -20,11 +20,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     try {
-      // Check for existing auth token
-      const authState = authService?.isAuthenticated?.() || false;
+      // Use the verification method to check auth state
+      const authState = authService?.verifyAuthentication?.() || false;
       if (authState) {
         const tenantInfo = authService?.getCurrentTenant?.() || null;
         setTenant(tenantInfo);
+      } else {
+        // Ensure tenant is cleared if verification fails
+        setTenant(null);
       }
       setIsAuthenticated(authState);
       setLoading(false);
@@ -38,7 +41,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Listen for storage events to sync auth state across tabs
     const handleStorageChange = () => {
       try {
-        const authState = authService?.isAuthenticated?.() || false;
+        // Use verification method for storage events too
+        const authState = authService?.verifyAuthentication?.() || false;
         const tenantInfo = authService?.getCurrentTenant?.() || null;
         setTenant(authState ? tenantInfo : null);
         setIsAuthenticated(authState);

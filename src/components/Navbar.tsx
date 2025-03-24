@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,10 @@ const Navbar = () => {
     }
   };
 
+  // Get current auth state when rendering, don't just rely on context
+  // This ensures we always have the most up-to-date auth state
   const showAuthButtons = !loading;
+  console.log('Navbar rendering, authentication state:', isAuthenticated);
 
   return (
     <header
@@ -86,7 +90,7 @@ const Navbar = () => {
 
           <div className="hidden md:flex items-center space-x-4">
             {showAuthButtons && (
-              isAuthenticated ? (
+              isAuthenticated && tenant ? (
                 <Button 
                   onClick={handleDashboardClick} 
                   className="button-gradient"
@@ -151,7 +155,7 @@ const Navbar = () => {
               Pricing
             </a>
             {showAuthButtons && (
-              isAuthenticated ? (
+              isAuthenticated && tenant ? (
                 <div className="pt-2">
                   <Button 
                     onClick={handleDashboardClick} 

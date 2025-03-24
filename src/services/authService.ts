@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
@@ -137,8 +138,20 @@ class AuthService {
    * Check if user is authenticated
    */
   isAuthenticated(): boolean {
-    // Since we're using cookies, we can only check if tenant info exists
-    return tokenStorage.hasTenantInfo();
+    try {
+      // Get tenant info and verify it still exists
+      const tenant = this.getCurrentTenant();
+      if (!tenant) {
+        console.log('No tenant info found, user is not authenticated');
+        return false;
+      }
+      
+      // For more security, you could add additional token validation here
+      return true;
+    } catch (error) {
+      console.error('Error checking authentication status:', error);
+      return false;
+    }
   }
 
   /**
@@ -230,6 +243,29 @@ class AuthService {
       toast.error("Your account is being set up", {
         description: "Please try again in a few moments."
       });
+    }
+  }
+
+  /**
+   * Verify if the user's authentication is still valid
+   * This handles cases where the token might have been cleared or expired
+   */
+  verifyAuthentication(): boolean {
+    try {
+      // Check if tenant info exists
+      const isTenantValid = tokenStorage.hasTenantInfo();
+      
+      if (!isTenantValid) {
+        console.log('Authentication verification failed: No valid tenant info');
+        // Clean up any leftover data
+        this.signOut().catch(err => console.error('Error signing out during verification:', err));
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error verifying authentication:', error);
+      return false;
     }
   }
 }
