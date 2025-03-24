@@ -14,8 +14,7 @@ import {
   ChartBar,
   User,
   LogOut,
-  PanelLeft,
-  Database
+  PanelLeft
 } from "lucide-react";
 import {
   Sidebar,
@@ -29,11 +28,27 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-  SidebarTrigger,
   useSidebar
 } from "@/components/ui/sidebar";
 import { logout } from "@/utils/api";
 import { Button } from "@/components/ui/button";
+
+// Separate component for the sidebar toggle button
+export const SidebarToggleButton: React.FC = () => {
+  const { state, toggleSidebar } = useSidebar();
+  
+  return (
+    <Button 
+      variant="outline" 
+      size="icon"
+      className={`fixed top-4 left-4 z-50 shadow-md bg-white ${state === 'collapsed' ? 'block' : 'hidden'}`}
+      onClick={toggleSidebar}
+    >
+      <PanelLeft className="h-4 w-4" />
+      <span className="sr-only">Toggle Sidebar</span>
+    </Button>
+  );
+};
 
 const DashboardSidebar: React.FC = () => {
   const subdomain = getSubdomain();

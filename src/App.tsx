@@ -11,6 +11,7 @@ import React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import Settings from "./pages/Settings";
 import CustomFields from "./pages/CustomFields";
+import AppLayout from "./components/dashboard/AppLayout";
 
 // Create a function component for our app
 const App: React.FC = () => {
@@ -35,11 +36,27 @@ const App: React.FC = () => {
             {/* Redirect root to dashboard */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
-            {/* Dashboard routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/settings/custom-fields" element={<CustomFields />} />
+            {/* Dashboard routes - now using AppLayout */}
+            <Route path="/dashboard" element={
+              <AppLayout>
+                <Dashboard />
+              </AppLayout>
+            } />
+            <Route path="/customers" element={
+              <AppLayout>
+                <Customers />
+              </AppLayout>
+            } />
+            <Route path="/settings" element={
+              <AppLayout>
+                <Settings />
+              </AppLayout>
+            } />
+            <Route path="/settings/custom-fields" element={
+              <AppLayout>
+                <CustomFields />
+              </AppLayout>
+            } />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
