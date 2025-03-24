@@ -17,12 +17,10 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
 // Convert domain model to API request format
 const mapToApiRequest = (customerData: CustomerFormData): CustomerApiRequest => {
   return {
-    customer: {
-      name: customerData.name,
-      email: customerData.email,
-      phone: customerData.phone,
-      customFields: customerData.customFields || {}
-    }
+    name: customerData.name,
+    email: customerData.email,
+    phone: customerData.phone,
+    customFields: customerData.customFields || {}
   };
 };
 
