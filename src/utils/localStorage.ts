@@ -1,5 +1,5 @@
 
-import { CustomField } from "@/types/customer";
+import { CustomField } from "@/domain/models/customer";
 
 // Storage keys
 export const STORAGE_KEYS = {
