@@ -41,7 +41,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
             <Input 
               {...getFieldProps(
                 field, 
-                formData.customFields[field.key] ?? "", 
+                formData.customFields[field.label] ?? "", 
                 onFieldChange
               )} 
             />
@@ -55,7 +55,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
             <Input 
               {...getFieldProps(
                 field, 
-                formData.customFields[field.key] ?? "", 
+                formData.customFields[field.label] ?? "", 
                 onFieldChange
               )} 
             />

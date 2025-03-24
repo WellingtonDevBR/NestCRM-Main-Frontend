@@ -45,6 +45,11 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
     return value;
   };
 
+  // Lookup custom field definitions by key
+  const getCustomFieldByLabel = (label: string): CustomField | undefined => {
+    return customFields.find(field => field.label === label);
+  };
+
   return (
     <TableRow key={customer.id}>
       {visibleColumns.name && <TableCell>{customer.name}</TableCell>}
@@ -57,7 +62,7 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
           <TableCell key={field.key}>
             {formatCustomFieldValue(
               field, 
-              customer.customFields?.[field.key]
+              customer.customFields?.[field.label]
             )}
           </TableCell>
         )

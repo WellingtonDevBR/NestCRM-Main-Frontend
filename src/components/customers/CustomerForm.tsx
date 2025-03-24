@@ -47,11 +47,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       // Pre-populate required fields with empty values
       customFields.forEach(field => {
         if (field.type === 'number') {
-          initialCustomFields[field.key] = null;
+          initialCustomFields[field.label] = null;
         } else if (field.type === 'date') {
-          initialCustomFields[field.key] = "";
+          initialCustomFields[field.label] = "";
         } else {
-          initialCustomFields[field.key] = "";
+          initialCustomFields[field.label] = "";
         }
       });
       
@@ -71,7 +71,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       ...prev,
       customFields: {
         ...prev.customFields,
-        [field.key]: processedValue
+        [field.label]: processedValue
       }
     }));
   };
@@ -83,7 +83,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     const missingRequiredFields = customFields
       .filter(field => field.required)
       .filter(field => {
-        const value = formData.customFields[field.key];
+        const value = formData.customFields[field.label];
         return value === undefined || value === null || value === "";
       });
 

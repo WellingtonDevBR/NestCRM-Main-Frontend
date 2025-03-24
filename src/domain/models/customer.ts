@@ -26,3 +26,26 @@ export interface Customer {
     [key: string]: string | number | null;
   };
 }
+
+// API interfaces to match the server response format
+export interface CustomerApiResponse {
+  CustomerID: string;
+  Name: string;
+  Email: string;
+  Phone: string;
+  CreatedAt: string;
+  CustomFields: {
+    [key: string]: string | number | null;
+  };
+}
+
+export interface CustomerApiRequest {
+  customer: {
+    Name: string;
+    Email: string;
+    Phone: string;
+    CustomFields: {
+      [key: string]: string | number | null;
+    };
+  };
+}
