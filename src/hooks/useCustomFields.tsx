@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { CustomField } from "@/types/customer";
+import { CustomField } from "@/domain/models/customer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { fetchCustomFields, saveCustomFields } from "@/utils/customFieldsApi";

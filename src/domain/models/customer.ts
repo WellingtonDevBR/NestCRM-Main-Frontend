@@ -1,4 +1,5 @@
 
+// Customer domain models
 export interface CustomField {
   key: string;
   label: string;
@@ -11,6 +12,17 @@ export interface CustomerFormData {
   email: string;
   phone: string;
   customFields: {
+    [key: string]: string | number | null;
+  };
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+  customFields?: {
     [key: string]: string | number | null;
   };
 }

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
@@ -12,7 +11,7 @@ import CustomersTable from "@/components/customers/CustomersTable";
 import CustomerDialog from "@/components/customers/CustomerDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
-import { Customer } from "@/hooks/useCustomers";
+import { Customer } from "@/domain/models/customer";
 
 const Customers: React.FC = () => {
   const navigate = useNavigate();
@@ -21,17 +20,14 @@ const Customers: React.FC = () => {
   const [isEditMode, setIsEditMode] = React.useState(false);
   const [currentCustomer, setCurrentCustomer] = React.useState<Customer | null>(null);
   
-  // If not on subdomain, don't render dashboard content
   if (!isOnDashboardSubdomain()) {
     return null;
   }
 
-  // Handle auth errors
   if (authError && authError.message === "Invalid tenant or subdomain") {
     return null;
   }
 
-  // Show loading state
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -50,7 +46,6 @@ const Customers: React.FC = () => {
     );
   }
 
-  // If not authenticated, don't render
   if (!isAuthenticated) {
     return null;
   }
@@ -72,7 +67,6 @@ const Customers: React.FC = () => {
       <div className="min-h-screen flex w-full">
         <DashboardSidebar />
         <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300 relative">
-          {/* Floating button to show sidebar when collapsed */}
           <Button 
             variant="outline" 
             size="icon"

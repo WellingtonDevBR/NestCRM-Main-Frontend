@@ -2,27 +2,10 @@ import { useState, useEffect } from "react";
 import { api } from "@/utils/api";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Customer, CustomerFormData } from "@/domain/models/customer";
 
 // Define types
-export interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  createdAt: string;
-  customFields?: {
-    [key: string]: string | number | null;
-  };
-}
-
-export interface CustomerCreateInput {
-  name: string;
-  email: string;
-  phone: string;
-  customFields?: {
-    [key: string]: string | number | null;
-  };
-}
+export type { Customer, CustomerFormData };
 
 // Mock data to use until backend is integrated
 const MOCK_CUSTOMERS: Customer[] = [
