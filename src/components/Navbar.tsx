@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -25,14 +25,14 @@ const Navbar = () => {
     };
   }, []);
 
-  // Handle dashboard button click
   const handleDashboardClick = () => {
     console.log('Dashboard button clicked, redirecting to tenant domain');
-    redirectToTenantDomain(tenant);
+    if (tenant) {
+      toast.loading("Connecting to your dashboard...");
+      redirectToTenantDomain(tenant);
+    }
   };
 
-  // Don't show the dashboard button when auth is loading
-  // This prevents flash of unauthorized content
   const showAuthButtons = !loading;
 
   return (
@@ -119,7 +119,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-md animate-fade-in">
           <div className="container-custom py-4 flex flex-col space-y-4">

@@ -37,7 +37,7 @@ const SignUpForm = () => {
       "Creating your account...",
       "Setting up your tenant...",
       "Configuring your workspace...",
-      "Almost there...",
+      "Checking tenant status...",
       "Preparing to redirect..."
     ];
 
@@ -50,7 +50,7 @@ const SignUpForm = () => {
         return;
       }
 
-      progress += 5;
+      progress += 2; // Slower progress increment
       setSetupProgress(progress);
 
       // Update stage message at certain progress points
@@ -99,12 +99,15 @@ const SignUpForm = () => {
       if (result.success && result.session) {
         toast.success("Account created successfully!");
         
-        // Continue showing progress animation
-        // The animation will continue until the redirect happens
-        setTimeout(() => {
-          // Redirect to tenant subdomain - cookies will be sent automatically
-          redirectToTenantDomain(result.session.tenant);
-        }, 5000); // Allow the progress to show for a while before redirecting
+        // Instead of using setTimeout for arbitrary delay,
+        // we'll continue showing the progress animation
+        // while the redirectToTenantDomain method performs status checks
+        
+        // Redirect will handle status checks and retries
+        redirectToTenantDomain(result.session.tenant);
+        
+        // Let the progress bar continue running during the redirect process
+        // No need to manually set isLoading to false as page will redirect
       } else {
         setShowSetupProgress(false);
         const errorMsg = result.error?.message || "Please try again later.";
