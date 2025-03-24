@@ -1,12 +1,12 @@
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
-import { 
-  LoginCredentials, 
-  SignUpData, 
-  AuthResult, 
-  TenantInfo, 
-  AuthenticatedSession 
+import {
+  LoginCredentials,
+  SignUpData,
+  AuthResult,
+  TenantInfo,
+  AuthenticatedSession
 } from "@/domain/auth/types";
 
 /**
@@ -20,14 +20,14 @@ class AuthService {
     try {
       const credentials: LoginCredentials = { email, password };
       const response = await authApi.login(credentials);
-      
+
       console.log('Login response:', response);
-      
+
       // Store the tenant info
       if (response && response.tenant) {
         // Token is now handled by cookies, just store the tenant info
         tokenStorage.saveTenantInfo(response.tenant);
-        
+
         return {
           success: true,
           session: response
@@ -37,10 +37,10 @@ class AuthService {
       }
     } catch (error: any) {
       console.error('Error signing in:', error);
-      
+
       // Provide a user-friendly error message
       const friendlyMessage = this.getFriendlyErrorMessage(error, 'sign in');
-      
+
       return {
         success: false,
         error: {
@@ -58,16 +58,16 @@ class AuthService {
     try {
       // Log the signup data for debugging
       console.log('Signup data:', signUpData);
-      
+
       const response = await authApi.signup(signUpData);
-      
+
       console.log('Signup response:', response);
-      
+
       // Store the tenant info
       if (response && response.tenant) {
         // Token is now handled by cookies, just store the tenant info
         tokenStorage.saveTenantInfo(response.tenant);
-        
+
         return {
           success: true,
           session: response
@@ -77,10 +77,10 @@ class AuthService {
       }
     } catch (error: any) {
       console.error('Error signing up:', error);
-      
+
       // Provide a user-friendly error message
       const friendlyMessage = this.getFriendlyErrorMessage(error, 'sign up');
-      
+
       return {
         success: false,
         error: {
@@ -97,21 +97,21 @@ class AuthService {
   private getFriendlyErrorMessage(error: any, action: string): string {
     // Extract the error message
     const errorMessage = error.message || '';
-    
+
     // Check for specific error conditions and provide friendly messages
     if (errorMessage.includes('Server error')) {
       return `Our servers are currently experiencing issues. Please try again later.`;
     }
-    
+
     if (errorMessage.includes('Invalid response format')) {
       return `We're having trouble communicating with our servers. Please try again later.`;
     }
-    
-    if (errorMessage.toLowerCase().includes('network') || 
-        errorMessage.toLowerCase().includes('connection')) {
+
+    if (errorMessage.toLowerCase().includes('network') ||
+      errorMessage.toLowerCase().includes('connection')) {
       return `Please check your internet connection and try again.`;
     }
-    
+
     // Return the original error message if it seems user-friendly enough,
     // otherwise provide a generic message
     return errorMessage || `An unexpected error occurred during ${action}. Please try again.`;
@@ -124,7 +124,7 @@ class AuthService {
     try {
       // Clear tenant info from localStorage
       tokenStorage.clearAuthData();
-      
+
       toast.success("Logged out successfully");
     } catch (error: any) {
       console.error('Error signing out:', error);
@@ -180,7 +180,7 @@ class AuthService {
       return false;
     }
   }
-  
+
   /**
    * Redirect to tenant subdomain with status check
    * @param tenant The tenant information
@@ -188,25 +188,25 @@ class AuthService {
    * @param retryDelay Delay between retries in ms
    */
   async redirectToTenantDomain(
-    tenant: TenantInfo | null, 
-    maxRetries = 10, 
-    retryDelay = 2000
+    tenant: TenantInfo | null,
+    maxRetries = 10,
+    retryDelay = 5000
   ): Promise<void> {
     // Only redirect if tenant is valid
     if (!tenant) {
       console.error('Cannot redirect: missing tenant', { tenant });
       return;
     }
-    
+
     console.log('Attempting to redirect to tenant domain:', tenant.domain);
-    
+
     // Try to check tenant status with retries
     let retries = 0;
     let isReady = false;
-    
+
     while (retries < maxRetries && !isReady) {
       isReady = await this.checkTenantStatus(tenant);
-      
+
       if (isReady) {
         // Redirect to the tenant domain - cookies will be sent automatically
         console.log('Tenant is ready, redirecting to:', tenant.domain);
@@ -214,16 +214,16 @@ class AuthService {
         window.location.href = `${protocol}//${tenant.domain}/dashboard`;
         return;
       }
-      
+
       retries++;
       console.log(`Tenant not ready yet, retry ${retries}/${maxRetries}`);
-      
+
       if (retries < maxRetries) {
         // Wait before next retry
         await new Promise(resolve => setTimeout(resolve, retryDelay));
       }
     }
-    
+
     // If we get here, max retries reached but tenant still not ready
     if (!isReady) {
       console.error('Tenant not ready after maximum retries');
@@ -238,10 +238,10 @@ class AuthService {
 export const authService = new AuthService();
 
 // Re-export types for convenience
-export type { 
-  TenantInfo, 
-  LoginCredentials, 
-  SignUpData, 
+export type {
+  TenantInfo,
+  LoginCredentials,
+  SignUpData,
   AuthResult,
   AuthenticatedSession
 } from "@/domain/auth/types";
