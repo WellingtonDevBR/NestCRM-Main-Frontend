@@ -6,23 +6,35 @@ import ChurnMetrics from "@/components/dashboard/ChurnMetrics";
 import CustomerList from "@/components/dashboard/CustomerList";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading, error: authError } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+// Separate component for the sidebar toggle button to properly use the useSidebar hook
+const SidebarToggleButton = () => {
+  const { state } = useSidebar();
   
-  // If not on subdomain, don't render dashboard content
-  if (!isOnDashboardSubdomain()) {
-    return null;
-  }
+  return (
+    <Button 
+      variant="outline" 
+      size="icon"
+      className={`fixed top-4 left-4 z-50 shadow-md bg-white md:hidden ${state === 'collapsed' ? 'md:flex' : 'hidden'}`}
+      onClick={() => {
+        const event = new CustomEvent("sidebar:toggle");
+        window.dispatchEvent(event);
+      }}
+    >
+      <PanelLeft className="h-4 w-4" />
+    </Button>
+  );
+};
 
+const DashboardContent = () => {
+  const { isAuthenticated, loading: authLoading, error: authError } = useAuth();
+  
   // Handle auth errors (including 404 "Invalid tenant or subdomain")
   // The API utility will already handle the redirect for this specific error
   // This is just an extra safeguard
@@ -57,32 +69,34 @@ const Dashboard: React.FC = () => {
   }
 
   return (
+    <div className="min-h-screen flex w-full">
+      <DashboardSidebar />
+      <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300 relative">
+        {/* The SidebarToggleButton is now a separate component that has access to sidebar context */}
+        <SidebarToggleButton />
+        
+        <DashboardLayout>
+          <div className="space-y-8">
+            <ChurnMetrics />
+            <CustomerList />
+          </div>
+        </DashboardLayout>
+      </main>
+    </div>
+  );
+};
+
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // If not on subdomain, don't render dashboard content
+  if (!isOnDashboardSubdomain()) {
+    return null;
+  }
+
+  return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <DashboardSidebar />
-        <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300 relative">
-          {/* Floating button to show sidebar when collapsed */}
-          <Button 
-            variant="outline" 
-            size="icon"
-            className="fixed top-4 left-4 z-50 shadow-md bg-white md:hidden group-data-[state=collapsed]:block lg:group-data-[state=collapsed]:block" 
-            onClick={() => {
-              // This is handled by the SidebarTrigger, but we need this button for mobile
-              const event = new CustomEvent("sidebar:toggle");
-              window.dispatchEvent(event);
-            }}
-          >
-            <PanelLeft className="h-4 w-4" />
-          </Button>
-          
-          <DashboardLayout>
-            <div className="space-y-8">
-              <ChurnMetrics />
-              <CustomerList />
-            </div>
-          </DashboardLayout>
-        </main>
-      </div>
+      <DashboardContent />
     </SidebarProvider>
   );
 };
