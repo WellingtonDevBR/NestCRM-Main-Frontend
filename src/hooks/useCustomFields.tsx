@@ -1,34 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { CustomField } from "@/types/customer";
-import { api } from "@/utils/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-// Storage key for custom fields (fallback when API is unavailable)
-const STORAGE_KEY = "customer_custom_fields";
-
-// Fallback storage functions
-const getStoredFields = (): CustomField[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch (e) {
-    console.error("Error reading custom fields from localStorage:", e);
-    return [];
-  }
-};
-
-const storeFields = (fields: CustomField[]): void => {
-  try {
-    // Validate fields before storage
-    const validFields = fields.filter(field => field.key && field.label);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(validFields));
-  } catch (e) {
-    console.error("Error storing custom fields in localStorage:", e);
-    throw new Error("Failed to save custom fields to localStorage");
-  }
-};
+import { fetchCustomFields, saveCustomFields } from "@/utils/customFieldsApi";
+import { getStoredCustomFields, storeCustomFields } from "@/utils/localStorage";
 
 export function useCustomFields() {
   const queryClient = useQueryClient();
@@ -43,23 +19,23 @@ export function useCustomFields() {
     queryKey: ["customerCustomFields"],
     queryFn: async () => {
       try {
-        // Try to fetch from API first - the response is a direct array of CustomField objects
-        const fields = await api.get<CustomField[]>("/settings/custom-fields")
+        // Try to fetch from API first
+        const fields = await fetchCustomFields()
           .catch(() => {
             console.log("API fetch failed, falling back to localStorage");
-            return getStoredFields();
+            return getStoredCustomFields();
           });
         
-        // If we have data, also update localStorage as a cache
+        // Update localStorage as a cache
         if (Array.isArray(fields)) {
-          storeFields(fields);
+          storeCustomFields(fields);
         }
         
-        return Array.isArray(fields) ? fields : [];
+        return fields;
       } catch (error) {
         console.error("Failed to fetch custom fields:", error);
         // Fallback to localStorage on error
-        return getStoredFields();
+        return getStoredCustomFields();
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -69,24 +45,21 @@ export function useCustomFields() {
   const { mutateAsync: updateCustomFields, isPending: isUpdating } = useMutation({
     mutationFn: async (fields: CustomField[]) => {
       try {
-        // Send the fields in the expected format: { fields: [...] }
-        const payload = { fields };
-        
         // Try to update via API
-        const response = await api.post<CustomField[]>("/settings/custom-fields", payload)
+        const response = await saveCustomFields(fields)
           .catch((error) => {
             console.log("API update failed, falling back to localStorage", error);
-            storeFields(fields);
+            storeCustomFields(fields);
             return fields;
           });
         
         // Always update localStorage as cache
-        storeFields(Array.isArray(response) ? response : fields);
+        storeCustomFields(Array.isArray(response) ? response : fields);
         return Array.isArray(response) ? response : fields;
       } catch (error) {
         console.error("Failed to update custom fields:", error);
         // Fallback to local storage on error
-        storeFields(fields);
+        storeCustomFields(fields);
         throw error;
       }
     },
