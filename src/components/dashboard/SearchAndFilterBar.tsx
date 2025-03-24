@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Search, Filter } from 'lucide-react';
 import { CustomField } from '@/domain/models/customer';
 import { ColumnVisibility } from '@/domain/models/customerRisk';
 
@@ -53,7 +53,7 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
                 checked={columnVisibility.name}
                 onCheckedChange={() => onToggleColumn('name')}
               >
-                Company
+                Company Name
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={columnVisibility.email}
@@ -87,8 +87,8 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
               </DropdownMenuCheckboxItem>
               
               {/* Custom fields column toggles */}
-              {customFields?.length > 0 && <DropdownMenuSeparator />}
-              {customFields?.map(field => (
+              {customFields.length > 0 && <DropdownMenuSeparator />}
+              {customFields.map(field => (
                 <DropdownMenuCheckboxItem
                   key={field.key}
                   checked={columnVisibility[field.key] ?? false}
@@ -102,15 +102,19 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
         </DropdownMenu>
       </div>
       <div className="flex items-center gap-2">
-        <Input 
-          placeholder="Search customers..." 
-          value={searchTerm} 
-          onChange={onSearch}
-          className="w-full sm:w-64"
-        />
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Search customers..." 
+            value={searchTerm} 
+            onChange={onSearch}
+            className="w-full pl-8 sm:w-64"
+          />
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="gap-1">
+              <Filter className="h-4 w-4" />
               {filterStatus === 'All' ? 'All Risks' : filterStatus}
             </Button>
           </DropdownMenuTrigger>

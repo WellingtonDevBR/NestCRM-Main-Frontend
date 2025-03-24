@@ -6,6 +6,7 @@ import { useCustomFields } from '@/hooks/useCustomFields';
 import SearchAndFilterBar from './SearchAndFilterBar';
 import CustomerRiskRow from './CustomerRiskRow';
 import { ColumnVisibility } from '@/domain/models/customerRisk';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const CustomerList: React.FC = () => {
   const { customFields, isLoading: isLoadingFields } = useCustomFields();
@@ -50,6 +51,22 @@ const CustomerList: React.FC = () => {
     }));
   };
 
+  if (isLoadingFields) {
+    return (
+      <Card className="shadow-md">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">Customer Risk Assessment</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-md">
       <CardHeader className="pb-2">
@@ -60,7 +77,7 @@ const CustomerList: React.FC = () => {
           onFilterChange={handleStatusFilter}
           columnVisibility={columnVisibility}
           onToggleColumn={toggleColumnVisibility}
-          customFields={customFields}
+          customFields={customFields || []}
         />
       </CardHeader>
       <CardContent>
@@ -71,7 +88,7 @@ const CustomerList: React.FC = () => {
                 {columnVisibility.name && (
                   <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Company</th>
                 )}
-                {columnVisibility.email && (
+                {!columnVisibility.name && columnVisibility.email && (
                   <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
                 )}
                 {columnVisibility.industry && (
@@ -87,7 +104,7 @@ const CustomerList: React.FC = () => {
                   <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
                 )}
                 
-                {/* Display custom field columns */}
+                {/* Display custom field columns - only display if column visibility is enabled */}
                 {customFields?.map(field => 
                   columnVisibility[field.key] && (
                     <th key={field.key} className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -100,14 +117,22 @@ const CustomerList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {filteredCustomers.map((customer) => (
-                <CustomerRiskRow 
-                  key={customer.id} 
-                  customer={customer} 
-                  columnVisibility={columnVisibility}
-                  customFields={customFields}
-                />
-              ))}
+              {filteredCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan={Object.values(columnVisibility).filter(Boolean).length + 1} className="py-4 text-center text-muted-foreground">
+                    No customers found matching your criteria
+                  </td>
+                </tr>
+              ) : (
+                filteredCustomers.map((customer) => (
+                  <CustomerRiskRow 
+                    key={customer.id} 
+                    customer={customer} 
+                    columnVisibility={columnVisibility}
+                    customFields={customFields || []}
+                  />
+                ))
+              )}
             </tbody>
           </table>
         </div>

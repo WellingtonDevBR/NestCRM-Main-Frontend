@@ -18,5 +18,5 @@ export interface ColumnVisibility {
   value: boolean;
   riskScore: boolean;
   status: boolean;
-  [key: string]: boolean;
+  [key: string]: boolean; // Allow dynamic custom field keys
 }

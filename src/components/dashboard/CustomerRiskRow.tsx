@@ -5,6 +5,7 @@ import { CustomerRiskData, ColumnVisibility } from '@/domain/models/customerRisk
 import { CustomField } from '@/domain/models/customer';
 import StatusBadge from './StatusBadge';
 import RiskScoreBar from './RiskScoreBar';
+import { Edit } from 'lucide-react';
 
 interface CustomerRiskRowProps {
   customer: CustomerRiskData;
@@ -56,7 +57,7 @@ const CustomerRiskRow: React.FC<CustomerRiskRowProps> = ({
       )}
       
       {/* Display custom field values */}
-      {customFields?.map(field => (
+      {customFields.map(field => (
         columnVisibility[field.key] && (
           <td key={field.key} className="py-4 text-sm">
             {customer.customFields?.[field.key] || "-"}
@@ -65,7 +66,10 @@ const CustomerRiskRow: React.FC<CustomerRiskRowProps> = ({
       ))}
       
       <td className="py-4 text-sm text-right">
-        <Button variant="ghost" size="sm">Contact</Button>
+        <Button variant="ghost" size="sm">
+          <Edit className="h-4 w-4 mr-2" />
+          Details
+        </Button>
       </td>
     </tr>
   );
