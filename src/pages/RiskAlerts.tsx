@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import AlertCard from "@/components/risk-alerts/AlertCard";
 import { toast } from "sonner";
+import { RiskAlert } from "@/domain/models/riskAlert";
 
 const RiskAlerts: React.FC = () => {
   const { 
@@ -17,18 +18,19 @@ const RiskAlerts: React.FC = () => {
     error 
   } = useRiskAlerts();
 
-  const handleUpdateStatus = async (alertId: string, status: string) => {
+  const handleUpdateStatus = async (alertId: string, status: RiskAlert['status']) => {
     try {
       await updateAlertStatus({ alertId, status });
       
       // Show success toast
-      const statusMessages = {
+      const statusMessages: Record<RiskAlert['status'], string> = {
         acknowledged: "Alert acknowledged",
         resolved: "Alert marked as resolved",
-        dismissed: "Alert dismissed"
+        dismissed: "Alert dismissed",
+        new: "Alert marked as new"
       };
       
-      toast.success(statusMessages[status as keyof typeof statusMessages] || "Status updated");
+      toast.success(statusMessages[status] || "Status updated");
     } catch (error) {
       toast.error("Failed to update alert status");
       console.error(error);

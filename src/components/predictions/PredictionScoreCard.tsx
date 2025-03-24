@@ -46,8 +46,7 @@ const PredictionScoreCard: React.FC<PredictionScoreCardProps> = ({
         <div className="mt-2">
           <Progress 
             value={percentage} 
-            className="h-2" 
-            indicatorClassName={getProgressColorClass()} 
+            className={`h-2 bg-secondary ${getProgressColorClass()} [&>div]:${getProgressColorClass()}`}
           />
         </div>
       </div>
