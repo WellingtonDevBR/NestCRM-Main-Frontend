@@ -43,8 +43,8 @@ export function useCustomFields() {
     queryKey: ["customerCustomFields"],
     queryFn: async () => {
       try {
-        // Try to fetch from API first
-        const data = await api.get<CustomField[]>("/api/settings/custom-fields")
+        // Try to fetch from API first - Fixed the double /api issue
+        const data = await api.get<CustomField[]>("/settings/custom-fields")
           .catch(() => {
             console.log("API fetch failed, falling back to localStorage");
             return getStoredFields();
@@ -69,8 +69,8 @@ export function useCustomFields() {
   const { mutateAsync: updateCustomFields, isPending: isUpdating } = useMutation({
     mutationFn: async (fields: CustomField[]) => {
       try {
-        // Try to update via API
-        const response = await api.post<CustomField[]>("/api/settings/custom-fields", fields)
+        // Try to update via API - Fixed the double /api issue
+        const response = await api.post<CustomField[]>("/settings/custom-fields", fields)
           .catch((error) => {
             console.log("API update failed, falling back to localStorage", error);
             storeFields(fields);
