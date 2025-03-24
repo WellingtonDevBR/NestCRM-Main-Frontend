@@ -12,7 +12,8 @@ import {
   HelpCircle,
   FileText,
   ChartBar,
-  User
+  User,
+  LogOut
 } from "lucide-react";
 import {
   Sidebar,
@@ -28,9 +29,17 @@ import {
   SidebarSeparator,
   SidebarTrigger
 } from "@/components/ui/sidebar";
+import { logout } from "@/utils/api";
+import { Button } from "@/components/ui/button";
 
 const DashboardSidebar: React.FC = () => {
   const subdomain = getSubdomain();
+
+  // Handle logout click
+  const handleLogout = async () => {
+    await logout();
+    // The logout function already handles the redirect
+  };
 
   // Main navigation items
   const mainNavItems = [
@@ -115,15 +124,26 @@ const DashboardSidebar: React.FC = () => {
       <SidebarFooter>
         <SidebarGroup>
           <SidebarGroupContent>
-            <Link to="/profile" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-purple-50 transition-colors">
-              <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
-                <User size={16} className="text-purple-700" />
-              </div>
-              <div>
-                <div className="text-sm font-medium">Admin User</div>
-                <div className="text-xs text-muted-foreground">View Profile</div>
-              </div>
-            </Link>
+            <div className="flex flex-col gap-3 px-3 py-3">
+              <Link to="/profile" className="flex items-center gap-3 rounded-md hover:bg-purple-50 transition-colors py-2">
+                <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <User size={16} className="text-purple-700" />
+                </div>
+                <div>
+                  <div className="text-sm font-medium">Admin User</div>
+                  <div className="text-xs text-muted-foreground">View Profile</div>
+                </div>
+              </Link>
+              
+              <Button 
+                variant="ghost" 
+                className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2"
+                onClick={handleLogout}
+              >
+                <LogOut size={16} className="mr-2" />
+                <span>Logout</span>
+              </Button>
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarFooter>
