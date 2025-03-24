@@ -115,6 +115,12 @@ export async function apiRequest<T>({
  */
 export async function logout() {
   try {
+    // Send logout request to current subdomain API
+    await fetch(`${API_BASE_URL}/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+    
     // Send logout request to main domain API
     await fetch(`https://nestcrm.com.au/api/logout`, {
       method: "POST",
