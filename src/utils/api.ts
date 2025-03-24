@@ -74,7 +74,17 @@ export async function apiRequest<T>({
         throw new Error("Authentication failed");
       }
       
-      throw new Error(errorData.message || "Request failed");
+      // Handle 404 with "Invalid tenant or subdomain" message
+      if (response.status === 404 && errorData.error === "Invalid tenant or subdomain") {
+        if (!suppressToast) {
+          toast.error("Invalid tenant or subdomain. Redirecting to main site.");
+        }
+        // Redirect to main site
+        window.location.href = "https://nestcrm.com.au";
+        throw new Error("Invalid tenant or subdomain");
+      }
+      
+      throw new Error(errorData.message || errorData.error || "Request failed");
     }
 
     // Check if response is JSON before parsing

@@ -35,24 +35,22 @@ export function useDashboardData() {
   return useQuery({
     queryKey: ["dashboardData"],
     queryFn: async () => {
-      try {
-        // This API call now serves dual purpose:
-        // 1. Get dashboard data
-        // 2. Validate user authentication (will fail with 401 if not authenticated)
-        return api.get<DashboardData>("/data");
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-        // If this fails, it means user is not authenticated or there's a server error
-        throw error;
-      }
+      // The API call will handle 404 "Invalid tenant or subdomain" errors
+      // and redirect to the main site
+      return api.get<DashboardData>("/data");
     },
     // Refresh data every 5 minutes
     refetchInterval: 5 * 60 * 1000,
-    // Add proper error handling
-    meta: {
-      onError: (error: Error) => {
-        console.error("Dashboard data fetch error:", error);
+    // Error handling is managed by the API utility
+    // We don't need special handling here as the API utility will redirect
+    // for "Invalid tenant or subdomain" errors
+    retry: (failureCount, error) => {
+      // Don't retry for invalid tenant errors (these are handled by the API utility)
+      if (error instanceof Error && error.message === "Invalid tenant or subdomain") {
+        return false;
       }
+      // For other errors, retry a few times
+      return failureCount < 3;
     }
   });
 }

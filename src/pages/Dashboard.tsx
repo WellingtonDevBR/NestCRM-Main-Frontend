@@ -13,10 +13,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { isAuthenticated, loading: authLoading, error: authError } = useAuth();
   
   // If not on subdomain, don't render dashboard content
   if (!isOnDashboardSubdomain()) {
+    return null;
+  }
+
+  // Handle auth errors (including 404 "Invalid tenant or subdomain")
+  // The API utility will already handle the redirect for this specific error
+  // This is just an extra safeguard
+  if (authError && authError.message === "Invalid tenant or subdomain") {
+    // The API utility will handle the redirect, so we can just return null
     return null;
   }
 
