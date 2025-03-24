@@ -14,7 +14,10 @@ import {
   ChartBar,
   User,
   LogOut,
-  PanelLeft
+  PanelLeft,
+  ShoppingCart,
+  CreditCard,
+  LifeBuoy
 } from "lucide-react";
 import {
   Sidebar,
@@ -70,9 +73,12 @@ const DashboardSidebar: React.FC = () => {
   const mainNavItems = [
     { title: "Dashboard", icon: LayoutDashboard, path: "/dashboard" },
     { title: "Customers", icon: Users, path: "/customers" },
+    { title: "Orders", icon: ShoppingCart, path: "/orders" },
+    { title: "Payments", icon: CreditCard, path: "/payments" },
+    { title: "Interactions", icon: MessageSquare, path: "/interactions" },
+    { title: "Support", icon: LifeBuoy, path: "/support" },
     { title: "Predictions", icon: TrendingUp, path: "/predictions" },
     { title: "Risk Alerts", icon: AlertTriangle, path: "/risk-alerts" },
-    { title: "Customer Feedback", icon: MessageSquare, path: "/feedback" },
     { title: "Analytics", icon: ChartBar, path: "/analytics" },
   ];
 

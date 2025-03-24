@@ -6,6 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
+import Orders from "./pages/Orders";
+import Payments from "./pages/Payments";
+import Interactions from "./pages/Interactions";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
 import React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
@@ -45,6 +49,26 @@ const App: React.FC = () => {
             <Route path="/customers" element={
               <AppLayout>
                 <Customers />
+              </AppLayout>
+            } />
+            <Route path="/orders" element={
+              <AppLayout>
+                <Orders />
+              </AppLayout>
+            } />
+            <Route path="/payments" element={
+              <AppLayout>
+                <Payments />
+              </AppLayout>
+            } />
+            <Route path="/interactions" element={
+              <AppLayout>
+                <Interactions />
+              </AppLayout>
+            } />
+            <Route path="/support" element={
+              <AppLayout>
+                <Support />
               </AppLayout>
             } />
             <Route path="/settings" element={
