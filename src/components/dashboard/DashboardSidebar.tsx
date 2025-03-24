@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { getSubdomain } from "@/utils/subdomain";
 import {
   LayoutDashboard,
@@ -14,7 +14,8 @@ import {
   ChartBar,
   User,
   LogOut,
-  PanelLeft
+  PanelLeft,
+  Database
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ import { Button } from "@/components/ui/button";
 const DashboardSidebar: React.FC = () => {
   const subdomain = getSubdomain();
   const { state } = useSidebar();
+  const location = useLocation();
 
   // Handle logout click
   const handleLogout = async () => {
@@ -60,6 +62,11 @@ const DashboardSidebar: React.FC = () => {
     { title: "Settings", icon: Settings, path: "/settings" },
     { title: "Help & Support", icon: HelpCircle, path: "/support" },
   ];
+
+  // Check if the current path is or starts with a specific path
+  const isPathActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+  };
 
   return (
     <Sidebar className="border-r border-purple-100" data-sidebar="sidebar">
@@ -91,9 +98,13 @@ const DashboardSidebar: React.FC = () => {
             <SidebarMenu>
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    tooltip={item.title}
+                    isActive={isPathActive(item.path)}
+                  >
                     <Link to={item.path}>
-                      <item.icon className="text-purple-500" />
+                      <item.icon className={isPathActive(item.path) ? "text-purple-700" : "text-purple-500"} />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -111,9 +122,13 @@ const DashboardSidebar: React.FC = () => {
             <SidebarMenu>
               {secondaryNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild tooltip={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    tooltip={item.title}
+                    isActive={isPathActive(item.path)}
+                  >
                     <Link to={item.path}>
-                      <item.icon className="text-purple-500" />
+                      <item.icon className={isPathActive(item.path) ? "text-purple-700" : "text-purple-500"} />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>

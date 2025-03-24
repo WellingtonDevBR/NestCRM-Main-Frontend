@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -9,13 +9,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PanelLeft, Plus, Trash2 } from "lucide-react";
+import { PanelLeft, Plus, Trash2, ChevronLeft } from "lucide-react";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { CustomField } from "@/types/customer";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const CustomFields = () => {
-  const { customFields, updateCustomFields } = useCustomFields();
-  const [fields, setFields] = useState<CustomField[]>(customFields);
+  const { customFields, updateCustomFields, isLoading } = useCustomFields();
+  const [fields, setFields] = useState<CustomField[]>([]);
+
+  useEffect(() => {
+    if (customFields) {
+      setFields(customFields);
+    }
+  }, [customFields]);
 
   const addField = () => {
     setFields([
@@ -36,6 +44,29 @@ const CustomFields = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    const invalidFields = fields.filter(field => !field.key || !field.label);
+    if (invalidFields.length > 0) {
+      toast.error("Please fill in all field keys and labels");
+      return;
+    }
+    
+    // Check for duplicate keys
+    const keys = fields.map(field => field.key);
+    const hasDuplicates = keys.some((key, index) => keys.indexOf(key) !== index);
+    if (hasDuplicates) {
+      toast.error("Field keys must be unique");
+      return;
+    }
+    
+    // Validate key format (alphanumeric and underscores only)
+    const invalidKeyFormat = fields.some(field => !/^[a-zA-Z0-9_]+$/.test(field.key));
+    if (invalidKeyFormat) {
+      toast.error("Field keys must contain only letters, numbers, and underscores");
+      return;
+    }
+    
     const validFields = fields.filter(field => field.key && field.label);
     await updateCustomFields(validFields);
   };
@@ -58,9 +89,18 @@ const CustomFields = () => {
 
           <DashboardLayout>
             <div className="space-y-6">
-              <div>
-                <h1 className="text-2xl font-bold">Customer Custom Fields</h1>
-                <p className="text-muted-foreground">Configure custom fields for your customers</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" asChild>
+                      <Link to="/settings">
+                        <ChevronLeft className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <h1 className="text-2xl font-bold">Customer Custom Fields</h1>
+                  </div>
+                  <p className="text-muted-foreground">Configure custom fields for your customers</p>
+                </div>
               </div>
 
               <Card>

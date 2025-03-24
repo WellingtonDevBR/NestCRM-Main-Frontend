@@ -9,6 +9,8 @@ import Customers from "./pages/Customers";
 import NotFound from "./pages/NotFound";
 import React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
+import Settings from "./pages/Settings";
+import CustomFields from "./pages/CustomFields";
 
 // Create a function component for our app
 const App: React.FC = () => {
@@ -36,6 +38,8 @@ const App: React.FC = () => {
             {/* Dashboard routes */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/customers" element={<Customers />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings/custom-fields" element={<CustomFields />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
