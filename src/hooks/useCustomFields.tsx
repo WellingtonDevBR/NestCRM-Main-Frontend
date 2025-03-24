@@ -33,9 +33,9 @@ const storeFields = (fields: CustomField[]): void => {
 export function useCustomFields() {
   const queryClient = useQueryClient();
 
-  const {
-    data: customFields = [],
-    isLoading,
+  const { 
+    data: customFields = [], 
+    isLoading, 
     error,
     isError,
     isFetching
@@ -44,20 +44,20 @@ export function useCustomFields() {
     queryFn: async () => {
       try {
         // Try to fetch from API first
-        const data = await api.get<{ fields: CustomField[] }>("/api/settings/custom-fields")
+        const data = await api.get<{fields: CustomField[]}>("/settings/custom-fields")
           .catch(() => {
             console.log("API fetch failed, falling back to localStorage");
             return { fields: getStoredFields() };
           });
-
+        
         // Extract fields from response or use empty array
         const fields = data.fields || [];
-
+        
         // If we have data, also update localStorage as a cache
         if (Array.isArray(fields)) {
           storeFields(fields);
         }
-
+        
         return Array.isArray(fields) ? fields : [];
       } catch (error) {
         console.error("Failed to fetch custom fields:", error);
@@ -74,18 +74,18 @@ export function useCustomFields() {
       try {
         // Format payload according to expected structure
         const payload = { fields };
-
+        
         // Try to update via API
-        const response = await api.post<{ fields: CustomField[] }>("/api/settings/custom-fields", payload)
+        const response = await api.post<{fields: CustomField[]}>("/settings/custom-fields", payload)
           .catch((error) => {
             console.log("API update failed, falling back to localStorage", error);
             storeFields(fields);
             return { fields };
           });
-
+        
         // Extract fields from response
         const updatedFields = response.fields || fields;
-
+        
         // Always update localStorage as cache
         storeFields(Array.isArray(updatedFields) ? updatedFields : fields);
         return updatedFields;

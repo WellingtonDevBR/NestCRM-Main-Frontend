@@ -15,21 +15,21 @@ const Settings = () => {
       title: "Profile Settings",
       description: "Manage your profile information and account details",
       icon: User,
-      path: "/api/settings/profile",
+      path: "/settings/profile",
       disabled: true,
     },
     {
       title: "Customer Data Fields",
       description: "Customize what information you collect about your customers",
       icon: Database,
-      path: "/api/settings/custom-fields",
+      path: "/settings/custom-fields",
       disabled: false,
     },
     {
       title: "General Settings",
       description: "Configure general system preferences and appearance",
       icon: Sliders,
-      path: "/api/settings/general",
+      path: "/settings/general",
       disabled: true,
     },
   ];
@@ -39,10 +39,10 @@ const Settings = () => {
       <div className="min-h-screen flex">
         <DashboardSidebar />
         <main className="flex-1 p-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300">
-          <Button
-            variant="outline"
+          <Button 
+            variant="outline" 
             size="icon"
-            className="fixed top-4 left-4 z-50 shadow-md bg-white md:hidden"
+            className="fixed top-4 left-4 z-50 shadow-md bg-white md:hidden" 
             onClick={() => {
               window.dispatchEvent(new CustomEvent("sidebar:toggle"));
             }}
@@ -76,8 +76,8 @@ const Settings = () => {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <Button
-                      className="w-full bg-purple-600 hover:bg-purple-700 mt-2"
+                    <Button 
+                      className="w-full bg-purple-600 hover:bg-purple-700 mt-2" 
                       disabled={category.disabled}
                       asChild={!category.disabled}
                     >
