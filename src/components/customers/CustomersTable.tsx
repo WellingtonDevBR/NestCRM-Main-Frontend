@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Table, 
@@ -7,52 +8,28 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  DropdownMenu,
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuGroup
-} from "@/components/ui/dropdown-menu";
-import { Edit, MoreHorizontal, Trash, Settings } from "lucide-react";
 import { useCustomers } from "@/hooks/useCustomers";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Customer } from "@/domain/models/customer";
+import SearchInput from "./SearchInput";
+import ColumnVisibilityDropdown from "./ColumnVisibilityDropdown";
+import CustomerTableRow from "./CustomerTableRow";
+import CustomerTableSkeleton from "./CustomerTableSkeleton";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 interface CustomersTableProps {
-  onEdit: (customer: any) => void;
+  onEdit: (customer: Customer) => void;
 }
-
-// Define column type
-type ColumnVisibility = {
-  [key: string]: boolean;
-};
 
 const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   const { customers, isLoading, error, deleteCustomer } = useCustomers();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
   
   // Column visibility state
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
     name: true,
     email: true,
     phone: true,
@@ -88,7 +65,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
 
   // Initialize column visibility for custom fields
   useEffect(() => {
-    const initialCustomFieldVisibility: ColumnVisibility = {};
+    const initialCustomFieldVisibility: Record<string, boolean> = {};
     customFields.forEach(field => {
       // If not in state yet, default to visible
       if (columnVisibility[field] === undefined) {
@@ -102,7 +79,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
         ...initialCustomFieldVisibility
       }));
     }
-  }, [customFields]);
+  }, [customFields, columnVisibility]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -139,6 +116,9 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
     .filter(([_, isVisible]) => isVisible)
     .map(([column]) => column);
 
+  // Filter custom fields to only display the visible ones
+  const visibleCustomFields = customFields.filter(field => columnVisibility[field]);
+
   if (error) {
     return (
       <div className="p-4 text-center">
@@ -148,69 +128,15 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
     );
   }
 
-  // Filter custom fields to only display the visible ones
-  const visibleCustomFields = customFields.filter(field => columnVisibility[field]);
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Input
-          placeholder="Search customers..."
-          value={searchTerm}
-          onChange={handleSearch}
-          className="max-w-sm"
+        <SearchInput searchTerm={searchTerm} onSearch={handleSearch} />
+        <ColumnVisibilityDropdown 
+          columnVisibility={columnVisibility}
+          customFields={customFields}
+          onToggleColumn={toggleColumnVisibility}
         />
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-2">
-              <Settings className="mr-2 h-4 w-4" />
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.name}
-                onCheckedChange={() => toggleColumnVisibility('name')}
-              >
-                Name
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.email}
-                onCheckedChange={() => toggleColumnVisibility('email')}
-              >
-                Email
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.phone}
-                onCheckedChange={() => toggleColumnVisibility('phone')}
-              >
-                Phone
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.createdAt}
-                onCheckedChange={() => toggleColumnVisibility('createdAt')}
-              >
-                Created Date
-              </DropdownMenuCheckboxItem>
-              
-              {/* Custom fields column toggles */}
-              {customFields.length > 0 && <DropdownMenuSeparator />}
-              {customFields.map(field => (
-                <DropdownMenuCheckboxItem
-                  key={field}
-                  checked={columnVisibility[field]}
-                  onCheckedChange={() => toggleColumnVisibility(field)}
-                >
-                  {field}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       <div className="border rounded-md">
@@ -229,18 +155,10 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <TableRow key={index}>
-                  {columnVisibility.name && <TableCell><Skeleton className="h-6 w-32" /></TableCell>}
-                  {columnVisibility.email && <TableCell><Skeleton className="h-6 w-48" /></TableCell>}
-                  {columnVisibility.phone && <TableCell><Skeleton className="h-6 w-24" /></TableCell>}
-                  {visibleCustomFields.map((field, i) => (
-                    <TableCell key={i}><Skeleton className="h-6 w-24" /></TableCell>
-                  ))}
-                  {columnVisibility.createdAt && <TableCell><Skeleton className="h-6 w-24" /></TableCell>}
-                  <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                </TableRow>
-              ))
+              <CustomerTableSkeleton 
+                visibleColumns={columnVisibility}
+                visibleCustomFields={visibleCustomFields}
+              />
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
                 <TableCell 
@@ -252,72 +170,25 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
-                  {columnVisibility.name && <TableCell>{customer.name}</TableCell>}
-                  {columnVisibility.email && <TableCell>{customer.email}</TableCell>}
-                  {columnVisibility.phone && <TableCell>{customer.phone}</TableCell>}
-                  {visibleCustomFields.map(field => (
-                    <TableCell key={field}>
-                      {customer.customFields?.[field] || "-"}
-                    </TableCell>
-                  ))}
-                  {columnVisibility.createdAt && (
-                    <TableCell>
-                      {new Date(customer.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  )}
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => onEdit(customer)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDelete(customer.id)}
-                          className="text-red-600 focus:text-red-600"
-                        >
-                          <Trash className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
+                <CustomerTableRow
+                  key={customer.id}
+                  customer={customer}
+                  visibleColumns={columnVisibility}
+                  visibleCustomFields={visibleCustomFields}
+                  onEdit={onEdit}
+                  onDelete={handleDelete}
+                />
               ))
             )}
           </TableBody>
         </Table>
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the
-              customer and all related data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };
