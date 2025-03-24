@@ -3,17 +3,23 @@ import React, { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PanelLeft, Plus, Trash2, ChevronLeft } from "lucide-react";
+import { PanelLeft, Plus, Trash2, ChevronLeft, Database, AlertCircle, HelpCircle } from "lucide-react";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { CustomField } from "@/types/customer";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const CustomFields = () => {
   const { customFields, updateCustomFields, isLoading } = useCustomFields();
@@ -88,32 +94,83 @@ const CustomFields = () => {
           </Button>
 
           <DashboardLayout>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" asChild>
+            <div className="max-w-4xl mx-auto space-y-8">
+              <div>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" asChild className="h-8 w-8">
                       <Link to="/settings">
                         <ChevronLeft className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <h1 className="text-2xl font-bold">Customer Custom Fields</h1>
+                    <div className="flex items-center gap-2">
+                      <Database className="h-6 w-6 text-purple-600" />
+                      <h1 className="text-2xl font-bold">Customer Data Fields</h1>
+                    </div>
                   </div>
-                  <p className="text-muted-foreground">Configure custom fields for your customers</p>
                 </div>
+                <p className="text-muted-foreground mt-2 ml-12">Customize what information you collect about your customers</p>
+                <Separator className="mt-6" />
               </div>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Custom Fields Configuration</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2">
+                    Field Customization
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p>Define additional fields to collect from your customers. These will appear in customer forms and tables.</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardTitle>
+                  <CardDescription>Add the custom data fields you need to collect from your customers</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
+                      <div className="flex gap-2">
+                        <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-amber-800">
+                            Customer ID, Name, Email, and Phone are built-in fields and don't need to be added here.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {fields.length === 0 && (
+                      <div className="text-center p-6 border border-dashed rounded-lg">
+                        <Database className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground">No custom fields defined yet</p>
+                        <Button 
+                          type="button" 
+                          onClick={addField} 
+                          className="mt-4 bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Your First Field
+                        </Button>
+                      </div>
+                    )}
+
                     {fields.map((field, index) => (
-                      <div key={index} className="flex items-start gap-4 p-4 border rounded-lg">
+                      <div key={index} className="flex items-start gap-4 p-4 border rounded-lg bg-card shadow-sm">
                         <div className="flex-1 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                           <div className="space-y-2">
-                            <Label htmlFor={`key-${index}`}>Field Key</Label>
+                            <Label htmlFor={`key-${index}`} className="flex items-center gap-1">
+                              Field Key
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="max-w-xs">Used in API calls and database. Use alphanumeric characters and underscores only.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </Label>
                             <Input
                               id={`key-${index}`}
                               value={field.key}
@@ -122,7 +179,7 @@ const CustomFields = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor={`label-${index}`}>Field Label</Label>
+                            <Label htmlFor={`label-${index}`}>Display Label</Label>
                             <Input
                               id={`label-${index}`}
                               value={field.label}
@@ -169,16 +226,24 @@ const CustomFields = () => {
                       </div>
                     ))}
 
-                    <Button type="button" variant="outline" onClick={addField}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Field
-                    </Button>
-
-                    <div className="flex justify-end">
-                      <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
-                        Save Changes
+                    {fields.length > 0 && (
+                      <Button type="button" variant="outline" onClick={addField}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Another Field
                       </Button>
-                    </div>
+                    )}
+
+                    {fields.length > 0 && (
+                      <div className="flex justify-end">
+                        <Button 
+                          type="submit" 
+                          className="bg-purple-600 hover:bg-purple-700"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? "Saving..." : "Save Field Configuration"}
+                        </Button>
+                      </div>
+                    )}
                   </form>
                 </CardContent>
               </Card>
