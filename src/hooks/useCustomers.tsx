@@ -15,7 +15,7 @@ export interface Customer {
   };
 }
 
-interface CustomerCreateInput {
+export interface CustomerCreateInput {
   name: string;
   email: string;
   customFields?: {

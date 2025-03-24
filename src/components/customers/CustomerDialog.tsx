@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -10,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCustomers } from "@/hooks/useCustomers";
+import { useCustomers, Customer } from "@/hooks/useCustomers";
 import { toast } from "sonner";
 import { PlusCircle, X } from "lucide-react";
 
@@ -18,7 +19,7 @@ interface CustomerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isEditMode: boolean;
-  customer: any | null;
+  customer: Customer | null;
 }
 
 const CustomerDialog: React.FC<CustomerDialogProps> = ({
@@ -60,7 +61,11 @@ const CustomerDialog: React.FC<CustomerDialogProps> = ({
       };
 
       if (isEditMode && customer) {
-        await updateCustomer(customer.id, customerData);
+        // Fix: We need to pass the id separately along with the customer data
+        await updateCustomer({
+          id: customer.id,
+          ...customerData
+        });
         toast.success("Customer updated successfully");
       } else {
         await addCustomer(customerData);
