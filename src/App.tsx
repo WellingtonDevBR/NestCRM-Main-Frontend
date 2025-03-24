@@ -10,10 +10,11 @@ import NotFound from "./pages/NotFound";
 import React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
 
-// Create a function component for our app to ensure hooks are used properly
+// Create a function component for our app
 const App: React.FC = () => {
-  // Create QueryClient instance inside the component
-  const queryClient = React.useMemo(() => new QueryClient(), []);
+  // Create QueryClient instance inside the component using useState instead of useMemo directly
+  // This ensures the hook is called within the component body
+  const [queryClient] = React.useState(() => new QueryClient());
 
   // If we're not on a subdomain, redirect to main site
   React.useEffect(() => {
