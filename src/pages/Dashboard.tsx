@@ -9,6 +9,7 @@ import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -19,29 +20,30 @@ const Dashboard: React.FC = () => {
     return null;
   }
 
-  // Show loading state
+  // Show full-page loading state
   if (authLoading) {
     return (
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <DashboardSidebar />
-          <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300">
-            <div className="h-full w-full flex items-center justify-center">
-              <Card className="p-6 w-full max-w-md text-center">
-                <div className="animate-pulse space-y-4">
-                  <div className="h-12 bg-purple-100 rounded-md mx-auto w-3/4"></div>
-                  <div className="h-8 bg-purple-50 rounded-md mx-auto w-1/2"></div>
-                  <div className="h-24 bg-purple-50 rounded-md"></div>
-                </div>
-              </Card>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Card className="p-8 w-full max-w-md">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-3/4 mx-auto" />
+            <Skeleton className="h-4 w-1/2 mx-auto" />
+            <div className="space-y-2">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
             </div>
-          </main>
-        </div>
-      </SidebarProvider>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   // If not authenticated, the useAuth hook will handle the redirect
+  if (!isAuthenticated) {
+    // Don't render anything while not authenticated
+    return null;
+  }
 
   return (
     <SidebarProvider>
