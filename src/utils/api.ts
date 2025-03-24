@@ -122,8 +122,8 @@ export async function logout() {
     
     toast.success("Logged out successfully");
     
-    // Redirect to main site after successful logout
-    window.location.href = "https://nestcrm.com.au";
+    // Redirect to logout page after successful logout
+    window.location.href = "https://nestcrm.com.au/logout";
   } catch (error) {
     console.error("Logout failed:", error);
     toast.error("Failed to log out. Please try again.");
