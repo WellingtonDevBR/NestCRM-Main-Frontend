@@ -12,13 +12,14 @@ import CustomersTable from "@/components/customers/CustomersTable";
 import CustomerDialog from "@/components/customers/CustomerDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
+import { Customer } from "@/hooks/useCustomers";
 
 const Customers: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading, error: authError } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [isEditMode, setIsEditMode] = React.useState(false);
-  const [currentCustomer, setCurrentCustomer] = React.useState<any>(null);
+  const [currentCustomer, setCurrentCustomer] = React.useState<Customer | null>(null);
   
   // If not on subdomain, don't render dashboard content
   if (!isOnDashboardSubdomain()) {
@@ -60,7 +61,7 @@ const Customers: React.FC = () => {
     setOpen(true);
   };
 
-  const handleEditCustomer = (customer: any) => {
+  const handleEditCustomer = (customer: Customer) => {
     setCurrentCustomer(customer);
     setIsEditMode(true);
     setOpen(true);
