@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { api } from "@/utils/api";
 import { toast } from "sonner";
@@ -9,17 +8,19 @@ export interface Customer {
   id: string;
   name: string;
   email: string;
+  phone: string;
   createdAt: string;
   customFields?: {
-    [key: string]: string;
+    [key: string]: string | number | null;
   };
 }
 
 export interface CustomerCreateInput {
   name: string;
   email: string;
+  phone: string;
   customFields?: {
-    [key: string]: string;
+    [key: string]: string | number | null;
   };
 }
 
@@ -29,6 +30,7 @@ const MOCK_CUSTOMERS: Customer[] = [
     id: "1",
     name: "Acme Corp",
     email: "contact@acmecorp.com",
+    phone: "123-456-7890",
     createdAt: new Date().toISOString(),
     customFields: {
       industry: "Technology",
@@ -40,6 +42,7 @@ const MOCK_CUSTOMERS: Customer[] = [
     id: "2",
     name: "Globex Industries",
     email: "info@globex.com",
+    phone: "987-654-3210",
     createdAt: new Date(Date.now() - 86400000).toISOString(),
     customFields: {
       industry: "Manufacturing",
@@ -51,6 +54,7 @@ const MOCK_CUSTOMERS: Customer[] = [
     id: "3",
     name: "Wayne Enterprises",
     email: "bruce@wayne.com",
+    phone: "555-555-5555",
     createdAt: new Date(Date.now() - 172800000).toISOString(),
     customFields: {
       industry: "Technology",
@@ -97,9 +101,7 @@ export function useCustomers() {
     queryFn: async () => {
       try {
         // In a real app, we'd use the API here
-        // return await api.get<Customer[]>("/customers");
-        
-        // For now, use localStorage
+        // return await api.get<Customer[]>("/api/customers");
         return getStoredCustomers();
       } catch (err) {
         console.error("Error fetching customers:", err);
@@ -113,17 +115,15 @@ export function useCustomers() {
     mutationFn: async (newCustomer: CustomerCreateInput) => {
       try {
         // In a real app, we'd use the API here
-        // return await api.post<Customer>("/customers", newCustomer);
+        // return await api.post<Customer>("/api/customers", newCustomer);
         
-        // For now, use localStorage
-        const currentCustomers = getStoredCustomers();
         const customerToAdd: Customer = {
           id: Date.now().toString(),
           ...newCustomer,
           createdAt: new Date().toISOString()
         };
         
-        const updatedCustomers = [...currentCustomers, customerToAdd];
+        const updatedCustomers = [...getStoredCustomers(), customerToAdd];
         storeCustomers(updatedCustomers);
         return customerToAdd;
       } catch (err) {
@@ -142,9 +142,8 @@ export function useCustomers() {
     mutationFn: async ({ id, ...updateData }: { id: string } & CustomerCreateInput) => {
       try {
         // In a real app, we'd use the API here
-        // return await api.put<Customer>(`/customers/${id}`, updateData);
+        // return await api.put<Customer>(`/api/customers/${id}`, updateData);
         
-        // For now, use localStorage
         const currentCustomers = getStoredCustomers();
         const customerIndex = currentCustomers.findIndex(c => c.id === id);
         
@@ -176,9 +175,8 @@ export function useCustomers() {
     mutationFn: async (id: string) => {
       try {
         // In a real app, we'd use the API here
-        // return await api.delete(`/customers/${id}`);
+        // return await api.delete(`/api/customers/${id}`);
         
-        // For now, use localStorage
         const currentCustomers = getStoredCustomers();
         const updatedCustomers = currentCustomers.filter(c => c.id !== id);
         storeCustomers(updatedCustomers);

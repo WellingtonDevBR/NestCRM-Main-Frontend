@@ -1,0 +1,153 @@
+
+import React, { useState } from "react";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { PanelLeft, Plus, Trash2 } from "lucide-react";
+import { useCustomFields } from "@/hooks/useCustomFields";
+import { CustomField } from "@/types/customer";
+
+const CustomFields = () => {
+  const { customFields, updateCustomFields } = useCustomFields();
+  const [fields, setFields] = useState<CustomField[]>(customFields);
+
+  const addField = () => {
+    setFields([
+      ...fields,
+      { key: "", label: "", type: "text", required: false }
+    ]);
+  };
+
+  const removeField = (index: number) => {
+    setFields(fields.filter((_, i) => i !== index));
+  };
+
+  const updateField = (index: number, updates: Partial<CustomField>) => {
+    setFields(fields.map((field, i) => 
+      i === index ? { ...field, ...updates } : field
+    ));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const validFields = fields.filter(field => field.key && field.label);
+    await updateCustomFields(validFields);
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex">
+        <DashboardSidebar />
+        <main className="flex-1 p-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300">
+          <Button 
+            variant="outline" 
+            size="icon"
+            className="fixed top-4 left-4 z-50 shadow-md bg-white md:hidden" 
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("sidebar:toggle"));
+            }}
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
+
+          <DashboardLayout>
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-bold">Customer Custom Fields</h1>
+                <p className="text-muted-foreground">Configure custom fields for your customers</p>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Custom Fields Configuration</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {fields.map((field, index) => (
+                      <div key={index} className="flex items-start gap-4 p-4 border rounded-lg">
+                        <div className="flex-1 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`key-${index}`}>Field Key</Label>
+                            <Input
+                              id={`key-${index}`}
+                              value={field.key}
+                              onChange={e => updateField(index, { key: e.target.value })}
+                              placeholder="e.g., loyaltyPoints"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`label-${index}`}>Field Label</Label>
+                            <Input
+                              id={`label-${index}`}
+                              value={field.label}
+                              onChange={e => updateField(index, { label: e.target.value })}
+                              placeholder="e.g., Loyalty Points"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`type-${index}`}>Field Type</Label>
+                            <Select
+                              value={field.type}
+                              onValueChange={value => updateField(index, { type: value as "text" | "date" | "number" })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="text">Text</SelectItem>
+                                <SelectItem value="date">Date</SelectItem>
+                                <SelectItem value="number">Number</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex items-center gap-4 pt-7">
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                id={`required-${index}`}
+                                checked={field.required}
+                                onCheckedChange={checked => updateField(index, { required: checked })}
+                              />
+                              <Label htmlFor={`required-${index}`}>Required</Label>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeField(index)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    <Button type="button" variant="outline" onClick={addField}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Field
+                    </Button>
+
+                    <div className="flex justify-end">
+                      <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+                        Save Changes
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          </DashboardLayout>
+        </main>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default CustomFields;
