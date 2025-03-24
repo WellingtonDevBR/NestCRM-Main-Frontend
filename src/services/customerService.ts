@@ -18,10 +18,10 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
 const mapToApiRequest = (customerData: CustomerFormData): CustomerApiRequest => {
   return {
     customer: {
-      Name: customerData.name,
-      Email: customerData.email,
-      Phone: customerData.phone,
-      CustomFields: customerData.customFields || {}
+      name: customerData.name,
+      email: customerData.email,
+      phone: customerData.phone,
+      customFields: customerData.customFields || {}
     }
   };
 };

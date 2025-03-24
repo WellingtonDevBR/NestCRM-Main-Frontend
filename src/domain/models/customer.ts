@@ -41,10 +41,10 @@ export interface CustomerApiResponse {
 
 export interface CustomerApiRequest {
   customer: {
-    Name: string;
-    Email: string;
-    Phone: string;
-    CustomFields: {
+    name: string;
+    email: string;
+    phone: string;
+    customFields: {
       [key: string]: string | number | null;
     };
   };
