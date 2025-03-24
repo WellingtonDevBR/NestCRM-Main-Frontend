@@ -115,15 +115,16 @@ export async function apiRequest<T>({
  */
 export async function logout() {
   try {
-    await fetch(`${API_BASE_URL}/logout`, {
+    // Send logout request to main domain API
+    await fetch(`https://nestcrm.com.au/api/logout`, {
       method: "POST",
       credentials: "include",
     });
     
     toast.success("Logged out successfully");
     
-    // Redirect to logout page after successful logout
-    window.location.href = "https://nestcrm.com.au/logout";
+    // Redirect to login page after successful logout
+    window.location.href = "https://nestcrm.com.au/login";
   } catch (error) {
     console.error("Logout failed:", error);
     toast.error("Failed to log out. Please try again.");
@@ -146,3 +147,4 @@ export const api = {
   delete: <T>(endpoint: string, headers?: Record<string, string>, suppressToast?: boolean) => 
     apiRequest<T>({ endpoint, method: "DELETE", headers, suppressToast }),
 };
+
