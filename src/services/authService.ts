@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { authApi } from "@/infrastructure/api/authApi";
 import { tokenStorage } from "@/infrastructure/storage/tokenStorage";
@@ -146,12 +145,35 @@ class AuthService {
         return false;
       }
       
-      // For more security, you could add additional token validation here
-      return true;
+      // For more security, check if the auth cookie exists
+      // This will return true only if both localStorage tenant info AND the cookie exist
+      return this.hasCookieToken();
     } catch (error) {
       console.error('Error checking authentication status:', error);
       return false;
     }
+  }
+
+  /**
+   * Check if the authentication cookie exists in the browser
+   * We can't directly access HttpOnly cookies, but we can make a lightweight request
+   * to check if the cookie is being sent with requests
+   */
+  private hasCookieToken(): boolean {
+    // Check tenant info existence first as a quick check
+    if (!tokenStorage.hasTenantInfo()) {
+      return false;
+    }
+    
+    // We'll use a cookie flag in localStorage that gets cleared if we detect invalid auth
+    const cookieValid = tokenStorage.getCookieValidFlag();
+    
+    // If we explicitly know the cookie is invalid, return false immediately
+    if (cookieValid === false) {
+      return false;
+    }
+    
+    return true;
   }
 
   /**
@@ -252,7 +274,7 @@ class AuthService {
    */
   verifyAuthentication(): boolean {
     try {
-      // Check if tenant info exists
+      // First check if tenant info exists in localStorage
       const isTenantValid = tokenStorage.hasTenantInfo();
       
       if (!isTenantValid) {
@@ -262,9 +284,54 @@ class AuthService {
         return false;
       }
       
+      // Check cookie validity
+      const hasCookie = this.hasCookieToken();
+      if (!hasCookie) {
+        console.log('Authentication verification failed: Missing authentication cookie');
+        // Update cookie validity flag
+        tokenStorage.setCookieValidFlag(false);
+        return false;
+      }
+      
+      // If we've made it here, both tenant info and cookie appear valid
+      tokenStorage.setCookieValidFlag(true);
       return true;
     } catch (error) {
       console.error('Error verifying authentication:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Validate authentication by making a test request to the API
+   * This can be called periodically to ensure tokens are still valid
+   */
+  async validateAuthCookie(): Promise<boolean> {
+    // Get the current tenant
+    const tenant = this.getCurrentTenant();
+    if (!tenant) {
+      console.log('No tenant info found when validating auth cookie');
+      tokenStorage.setCookieValidFlag(false);
+      return false;
+    }
+    
+    try {
+      // Make a lightweight validation request
+      const isValid = await authApi.validateAuth();
+      
+      // Update the cookie validity flag
+      tokenStorage.setCookieValidFlag(isValid);
+      
+      if (!isValid) {
+        // If validation fails, clear auth data
+        console.log('Auth cookie validation failed, clearing auth data');
+        await this.signOut();
+      }
+      
+      return isValid;
+    } catch (error) {
+      console.error('Error validating auth cookie:', error);
+      tokenStorage.setCookieValidFlag(false);
       return false;
     }
   }

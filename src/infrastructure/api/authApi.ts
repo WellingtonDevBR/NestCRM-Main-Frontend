@@ -1,4 +1,3 @@
-
 import { LoginCredentials, SignUpData, AuthenticatedSession } from "@/domain/auth/types";
 
 /**
@@ -118,6 +117,29 @@ export class AuthApi {
       console.error('Signup API error:', error);
       // Re-throw to be handled by service layer
       throw error;
+    }
+  }
+
+  /**
+   * Validates if the current authentication cookie is still valid
+   * @returns Promise<boolean> True if the cookie is valid, false otherwise
+   */
+  async validateAuth(): Promise<boolean> {
+    try {
+      // Attempt a lightweight request to the validation endpoint
+      const response = await fetch(`${this.baseUrl}/validate`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies in the request
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      // Consider 2xx status codes as successful validation
+      return response.ok;
+    } catch (error) {
+      console.error('Error validating authentication:', error);
+      return false;
     }
   }
 }

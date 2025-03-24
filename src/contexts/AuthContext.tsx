@@ -19,31 +19,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   console.log('AuthProvider initialized');
   
   useEffect(() => {
-    try {
-      // Use the verification method to check auth state
-      const authState = authService?.verifyAuthentication?.() || false;
-      if (authState) {
-        const tenantInfo = authService?.getCurrentTenant?.() || null;
-        setTenant(tenantInfo);
-      } else {
-        // Ensure tenant is cleared if verification fails
-        setTenant(null);
+    const initAuth = async () => {
+      try {
+        // First quickly check the basic auth verification
+        // This checks localStorage and cookie flag but doesn't make API calls
+        const quickVerification = authService.verifyAuthentication();
+        
+        if (quickVerification) {
+          const tenantInfo = authService.getCurrentTenant();
+          setTenant(tenantInfo);
+          setIsAuthenticated(true);
+          
+          // Then asynchronously validate the cookie with an API call
+          // This ensures the cookie is still valid server-side
+          authService.validateAuthCookie().then(isValid => {
+            if (!isValid) {
+              // Update state if validation failed
+              setIsAuthenticated(false);
+              setTenant(null);
+            }
+          }).catch(error => {
+            console.error('Error validating auth cookie:', error);
+          });
+        } else {
+          // Ensure tenant is cleared if verification fails
+          setTenant(null);
+          setIsAuthenticated(false);
+        }
+        
+        setLoading(false);
+        console.log('AuthProvider: auth state loaded', { quickVerification });
+      } catch (error) {
+        console.error('Error initializing auth state:', error);
+        setLoading(false);
       }
-      setIsAuthenticated(authState);
-      setLoading(false);
-      
-      console.log('AuthProvider: auth state loaded', { authState });
-    } catch (error) {
-      console.error('Error initializing auth state:', error);
-      setLoading(false);
-    }
+    };
+    
+    initAuth();
 
     // Listen for storage events to sync auth state across tabs
     const handleStorageChange = () => {
       try {
-        // Use verification method for storage events too
-        const authState = authService?.verifyAuthentication?.() || false;
-        const tenantInfo = authService?.getCurrentTenant?.() || null;
+        const authState = authService.verifyAuthentication();
+        const tenantInfo = authService.getCurrentTenant();
         setTenant(authState ? tenantInfo : null);
         setIsAuthenticated(authState);
       } catch (error) {
