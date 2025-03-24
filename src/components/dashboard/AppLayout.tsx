@@ -46,8 +46,7 @@ const AppLayoutContent: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex w-full">
       <DashboardSidebar />
-      <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300 relative">
-        {/* The SidebarToggleButton is now visible for all routes */}
+      <main className="flex-1 p-6 pt-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300 ease-in-out relative">
         <SidebarToggleButton />
         {children}
       </main>
