@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import Customers from "./pages/Customers";
 import NotFound from "./pages/NotFound";
 import React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
@@ -33,6 +34,7 @@ const App: React.FC = () => {
             
             {/* Dashboard routes */}
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/customers" element={<Customers />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

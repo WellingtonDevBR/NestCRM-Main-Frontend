@@ -13,7 +13,8 @@ import {
   FileText,
   ChartBar,
   User,
-  LogOut
+  LogOut,
+  PanelLeft
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,13 +28,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
-  SidebarTrigger
+  SidebarTrigger,
+  useSidebar
 } from "@/components/ui/sidebar";
 import { logout } from "@/utils/api";
 import { Button } from "@/components/ui/button";
 
 const DashboardSidebar: React.FC = () => {
   const subdomain = getSubdomain();
+  const { state } = useSidebar();
 
   // Handle logout click
   const handleLogout = async () => {

@@ -2,36 +2,35 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import ChurnMetrics from "@/components/dashboard/ChurnMetrics";
-import CustomerList from "@/components/dashboard/CustomerList";
-import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/useAuth";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CustomersTable from "@/components/customers/CustomersTable";
+import CustomerDialog from "@/components/customers/CustomerDialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import { isOnDashboardSubdomain } from "@/utils/subdomain";
 
-const Dashboard: React.FC = () => {
+const Customers: React.FC = () => {
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading, error: authError } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [isEditMode, setIsEditMode] = React.useState(false);
+  const [currentCustomer, setCurrentCustomer] = React.useState<any>(null);
   
   // If not on subdomain, don't render dashboard content
   if (!isOnDashboardSubdomain()) {
     return null;
   }
 
-  // Handle auth errors (including 404 "Invalid tenant or subdomain")
-  // The API utility will already handle the redirect for this specific error
-  // This is just an extra safeguard
+  // Handle auth errors
   if (authError && authError.message === "Invalid tenant or subdomain") {
-    // The API utility will handle the redirect, so we can just return null
     return null;
   }
 
-  // Show full-page loading state
+  // Show loading state
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -50,11 +49,22 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // If not authenticated, the useAuth hook will handle the redirect
+  // If not authenticated, don't render
   if (!isAuthenticated) {
-    // Don't render anything while not authenticated
     return null;
   }
+
+  const handleAddNewCustomer = () => {
+    setCurrentCustomer(null);
+    setIsEditMode(false);
+    setOpen(true);
+  };
+
+  const handleEditCustomer = (customer: any) => {
+    setCurrentCustomer(customer);
+    setIsEditMode(true);
+    setOpen(true);
+  };
 
   return (
     <SidebarProvider>
@@ -67,7 +77,6 @@ const Dashboard: React.FC = () => {
             size="icon"
             className="fixed top-4 left-4 z-50 shadow-md bg-white md:hidden group-data-[state=collapsed]:block lg:group-data-[state=collapsed]:block" 
             onClick={() => {
-              // This is handled by the SidebarTrigger, but we need this button for mobile
               const event = new CustomEvent("sidebar:toggle");
               window.dispatchEvent(event);
             }}
@@ -76,15 +85,41 @@ const Dashboard: React.FC = () => {
           </Button>
           
           <DashboardLayout>
-            <div className="space-y-8">
-              <ChurnMetrics />
-              <CustomerList />
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-2xl font-bold">Customers</h1>
+                  <p className="text-muted-foreground">Manage your customer data</p>
+                </div>
+                <Button 
+                  onClick={handleAddNewCustomer}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  Add New Customer
+                </Button>
+              </div>
+              
+              <Card className="shadow-md">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg">Customer Database</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CustomersTable onEdit={handleEditCustomer} />
+                </CardContent>
+              </Card>
             </div>
           </DashboardLayout>
+          
+          <CustomerDialog 
+            open={open} 
+            onOpenChange={setOpen} 
+            isEditMode={isEditMode}
+            customer={currentCustomer}
+          />
         </main>
       </div>
     </SidebarProvider>
   );
 };
 
-export default Dashboard;
+export default Customers;
