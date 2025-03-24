@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/tooltip";
 
 const CustomFields = () => {
-  const { customFields, updateCustomFields, isLoading } = useCustomFields();
+  const { customFields, updateCustomFields, isLoading, isUpdating } = useCustomFields();
   const [fields, setFields] = useState<CustomField[]>([]);
 
   useEffect(() => {
     if (customFields) {
+      console.log("Loaded custom fields:", customFields);
       setFields(customFields);
     }
   }, [customFields]);
@@ -72,8 +73,12 @@ const CustomFields = () => {
       return;
     }
     
-    const validFields = fields.filter(field => field.key && field.label);
-    await updateCustomFields(validFields);
+    try {
+      const validFields = fields.filter(field => field.key && field.label);
+      await updateCustomFields(validFields);
+    } catch (error) {
+      console.error("Error updating fields:", error);
+    }
   };
 
   return (
@@ -139,7 +144,11 @@ const CustomFields = () => {
                     </div>
                   </div>
                   
-                  {fields.length === 0 && (
+                  {isLoading ? (
+                    <div className="text-center p-8">
+                      <p>Loading custom fields...</p>
+                    </div>
+                  ) : fields.length === 0 ? (
                     <div className="text-center p-8 border border-dashed rounded-lg bg-gray-50">
                       <Database className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-40" />
                       <h3 className="text-lg font-medium mb-2">No custom fields defined yet</h3>
@@ -155,9 +164,7 @@ const CustomFields = () => {
                         Add Your First Field
                       </Button>
                     </div>
-                  )}
-
-                  {fields.length > 0 && (
+                  ) : (
                     <div className="space-y-4">
                       <div className="grid grid-cols-12 gap-4 px-4 pb-2 text-sm font-medium text-muted-foreground">
                         <div className="col-span-3">Field Key</div>
@@ -235,9 +242,9 @@ const CustomFields = () => {
                       <Button 
                         type="submit" 
                         className="bg-purple-600 hover:bg-purple-700"
-                        disabled={isLoading}
+                        disabled={isLoading || isUpdating}
                       >
-                        {isLoading ? "Saving..." : "Save Field Configuration"}
+                        {isUpdating ? "Saving..." : "Save Field Configuration"}
                       </Button>
                     </div>
                   )}

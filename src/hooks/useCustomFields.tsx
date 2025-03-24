@@ -43,15 +43,12 @@ export function useCustomFields() {
     queryKey: ["customerCustomFields"],
     queryFn: async () => {
       try {
-        // Try to fetch from API first
-        const data = await api.get<{fields: CustomField[]}>("/settings/custom-fields")
+        // Try to fetch from API first - the response is a direct array of CustomField objects
+        const fields = await api.get<CustomField[]>("/settings/custom-fields")
           .catch(() => {
             console.log("API fetch failed, falling back to localStorage");
-            return { fields: getStoredFields() };
+            return getStoredFields();
           });
-        
-        // Extract fields from response or use empty array
-        const fields = data.fields || [];
         
         // If we have data, also update localStorage as a cache
         if (Array.isArray(fields)) {
@@ -72,23 +69,20 @@ export function useCustomFields() {
   const { mutateAsync: updateCustomFields, isPending: isUpdating } = useMutation({
     mutationFn: async (fields: CustomField[]) => {
       try {
-        // Format payload according to expected structure
+        // Send the fields in the expected format: { fields: [...] }
         const payload = { fields };
         
         // Try to update via API
-        const response = await api.post<{fields: CustomField[]}>("/settings/custom-fields", payload)
+        const response = await api.post<CustomField[]>("/settings/custom-fields", payload)
           .catch((error) => {
             console.log("API update failed, falling back to localStorage", error);
             storeFields(fields);
-            return { fields };
+            return fields;
           });
         
-        // Extract fields from response
-        const updatedFields = response.fields || fields;
-        
         // Always update localStorage as cache
-        storeFields(Array.isArray(updatedFields) ? updatedFields : fields);
-        return updatedFields;
+        storeFields(Array.isArray(response) ? response : fields);
+        return Array.isArray(response) ? response : fields;
       } catch (error) {
         console.error("Failed to update custom fields:", error);
         // Fallback to local storage on error
