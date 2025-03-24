@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { getSubdomain } from "@/utils/subdomain";
@@ -95,7 +94,14 @@ const DashboardSidebar: React.FC = () => {
               NestCRM
             </span>
           </Link>
-          <SidebarTrigger className="mr-1" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="mr-1"
+            onClick={() => useSidebar().toggleSidebar()}
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
         </div>
         
         <div className="px-4 mt-4">
@@ -185,3 +191,4 @@ const DashboardSidebar: React.FC = () => {
 };
 
 export default DashboardSidebar;
+
