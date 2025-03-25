@@ -20,7 +20,7 @@ export const SidebarUserProfile: React.FC = () => {
     <SidebarGroup>
       <SidebarGroupContent>
         <div className="flex flex-col gap-3 px-3 py-3">
-          <Link to="/profile" className="flex items-center gap-3 rounded-md hover:bg-purple-50 transition-colors py-2">
+          <Link to="/profile" className="flex items-center gap-3 rounded-md hover:bg-purple-50 transition-colors py-2 px-2">
             <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
               <User size={16} className="text-purple-700" />
             </div>

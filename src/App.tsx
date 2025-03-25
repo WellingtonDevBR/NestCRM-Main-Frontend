@@ -21,6 +21,7 @@ import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import Settings from "./pages/Settings";
 import CustomFields from "./pages/CustomFields";
 import AppLayout from "./components/dashboard/AppLayout";
+import Profile from "./pages/Profile";
 
 // Create a function component for our app
 const App: React.FC = () => {
@@ -114,6 +115,13 @@ const App: React.FC = () => {
             <Route path="/settings/custom-fields" element={
               <AppLayout>
                 <CustomFields />
+              </AppLayout>
+            } />
+            
+            {/* Profile page */}
+            <Route path="/profile" element={
+              <AppLayout>
+                <Profile />
               </AppLayout>
             } />
             
