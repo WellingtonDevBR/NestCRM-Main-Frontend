@@ -13,6 +13,8 @@ import Support from "./pages/Support";
 import Predictions from "./pages/Predictions";
 import RiskAlerts from "./pages/RiskAlerts";
 import Analytics from "./pages/Analytics";
+import Reports from "./pages/Reports";
+import HelpAndSupport from "./pages/HelpAndSupport";
 import NotFound from "./pages/NotFound";
 import React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
@@ -75,7 +77,7 @@ const App: React.FC = () => {
               </AppLayout>
             } />
             
-            {/* New prediction and analytics routes */}
+            {/* Prediction and analytics routes */}
             <Route path="/predictions" element={
               <AppLayout>
                 <Predictions />
@@ -89,6 +91,18 @@ const App: React.FC = () => {
             <Route path="/analytics" element={
               <AppLayout>
                 <Analytics />
+              </AppLayout>
+            } />
+            
+            {/* New reports and help & support routes */}
+            <Route path="/reports" element={
+              <AppLayout>
+                <Reports />
+              </AppLayout>
+            } />
+            <Route path="/help-support" element={
+              <AppLayout>
+                <HelpAndSupport />
               </AppLayout>
             } />
             

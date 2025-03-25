@@ -85,8 +85,8 @@ const DashboardSidebar: React.FC = () => {
   // Secondary navigation items
   const secondaryNavItems = [
     { title: "Reports", icon: FileText, path: "/reports" },
+    { title: "Help & Support", icon: HelpCircle, path: "/help-support" },
     { title: "Settings", icon: Settings, path: "/settings" },
-    { title: "Help & Support", icon: HelpCircle, path: "/support" },
   ];
 
   // Check if the current path is or starts with a specific path
