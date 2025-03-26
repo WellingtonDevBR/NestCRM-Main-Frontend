@@ -19,12 +19,12 @@ class TenantService {
 
     try {
       console.log('Checking tenant status for domain:', tenant.domain);
-      
+
       // Explicitly set the headers with the Host header using the tenant domain
       const headers = new Headers({
         'Host': tenant.domain
       });
-      
+
       const response = await fetch(`https://${tenant.domain}/api/status`, {
         method: 'GET',
         credentials: 'include', // Send cookies
@@ -48,7 +48,7 @@ class TenantService {
   async redirectToTenantDomain(
     tenant: TenantInfo | null,
     maxRetries = 10,
-    retryDelay = 5000
+    retryDelay = 10000
   ): Promise<void> {
     // Only redirect if tenant is valid
     if (!tenant) {
