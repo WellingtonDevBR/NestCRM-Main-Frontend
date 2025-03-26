@@ -4,7 +4,7 @@ import { LoginCredentials, SignUpData, AuthenticatedSession } from "@/domain/aut
  * API client for authentication endpoints
  */
 export class AuthApi {
-  private readonly baseUrl: string = "https://nestcrm.com.au/api/tenants";
+  private readonly baseUrl: string = "https://nestcrm.com.au/api";
 
   /**
    * Makes an API request to the tenant login endpoint
@@ -38,7 +38,7 @@ export class AuthApi {
       try {
         const responseData = await response.json();
         console.log('Login API response:', responseData);
-        
+
         // Return the tenant information from the response
         return {
           tenant: responseData.tenant,
@@ -62,7 +62,7 @@ export class AuthApi {
     try {
       // Construct the domain from the subdomain
       const domain = `${data.subdomain}.nestcrm.com.au`;
-      
+
       // Format the data correctly according to the required structure
       const signupPayload = {
         firstName: data.firstName,
@@ -73,16 +73,16 @@ export class AuthApi {
         domain: domain,
         password: data.password
       };
-      
+
       console.log('Signup payload:', signupPayload);
-      
+
       const response = await fetch(`${this.baseUrl}/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(signupPayload),
-        credentials: 'include', // This is crucial for cookies to be sent and received
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -103,7 +103,7 @@ export class AuthApi {
       try {
         const responseData = await response.json();
         console.log('Signup API response:', responseData);
-        
+
         // Return the tenant information from the response
         return {
           tenant: responseData.tenant,
