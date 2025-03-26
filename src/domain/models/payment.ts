@@ -1,13 +1,14 @@
 
-// Payment domain models
 export interface Payment {
   id: string;
+  reference: string;
   customerId: string;
   customerName: string;
+  orderId: string;
   orderNumber: string;
   date: string;
-  amount: number;
-  method: 'credit_card' | 'bank_transfer' | 'paypal' | 'cash';
+  method: 'credit_card' | 'bank_transfer' | 'paypal' | 'cash' | 'other';
   status: 'pending' | 'completed' | 'failed' | 'refunded';
-  reference: string;
+  amount: number;
+  customFields?: Record<string, string | number | boolean | Date>;
 }

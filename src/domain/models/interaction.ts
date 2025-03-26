@@ -1,14 +1,13 @@
 
-// Interaction domain models
 export interface Interaction {
   id: string;
   customerId: string;
   customerName: string;
-  type: 'email' | 'call' | 'meeting' | 'chat';
   date: string;
-  duration: number;
+  type: 'email' | 'call' | 'meeting' | 'note' | 'other';
   subject: string;
-  summary: string;
-  agentName: string;
-  status: 'open' | 'closed' | 'pending';
+  content: string;
+  status: 'open' | 'closed';
+  assignedTo?: string;
+  customFields?: Record<string, string | number | boolean | Date>;
 }

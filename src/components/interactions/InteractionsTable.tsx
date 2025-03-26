@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Interaction } from "@/domain/models/interaction";
 import { 
   Table, 
@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
+import { useCustomFields } from "@/hooks/useCustomFields";
+import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 
 interface InteractionsTableProps {
   interactions: Interaction[];
@@ -26,32 +28,56 @@ const getTypeIcon = (type: Interaction['type']) => {
       return "📞";
     case 'meeting':
       return "👥";
-    case 'chat':
+    case 'note':
+      return "📝";
+    default:
       return "💬";
-    default:
-      return "🔄";
-  }
-};
-
-const getStatusColor = (status: Interaction['status']) => {
-  switch (status) {
-    case 'open':
-      return "bg-green-100 text-green-800 hover:bg-green-200";
-    case 'closed':
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200";
-    case 'pending':
-      return "bg-amber-100 text-amber-800 hover:bg-amber-200";
-    default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200";
   }
 };
 
 const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isLoading }) => {
-  if (isLoading) {
+  // Using the targeted query to only fetch Interaction specific fields
+  const { data: interactionFieldsData, isLoading: isLoadingInteractionFields } = 
+    useCustomFields().useCategoryFields("Interaction");
+  
+  // Get the interaction custom fields
+  const interactionCustomFields = interactionFieldsData?.fields || [];
+
+  // Column visibility state
+  const [columnVisibility, setColumnVisibility] = useState({
+    date: true,
+    customerName: true,
+    type: true,
+    subject: true,
+    status: true
+  });
+
+  // Initialize column visibility for custom fields
+  useEffect(() => {
+    if (interactionCustomFields.length > 0) {
+      const customFieldVisibility: Record<string, boolean> = {};
+      interactionCustomFields.forEach(field => {
+        customFieldVisibility[field.key] = true;
+      });
+      
+      setColumnVisibility(prev => ({
+        ...prev,
+        ...customFieldVisibility
+      }));
+    }
+  }, [interactionCustomFields]);
+
+  const toggleColumnVisibility = (column: string) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+  };
+
+  if (isLoading || isLoadingInteractionFields) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-full" />
-        <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
         <Skeleton className="h-24 w-full" />
       </div>
@@ -67,45 +93,75 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Type</TableHead>
-          <TableHead>Customer</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead>Subject</TableHead>
-          <TableHead>Agent</TableHead>
-          <TableHead>Duration</TableHead>
-          <TableHead>Status</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {interactions.map((interaction) => (
-          <TableRow key={interaction.id} className="cursor-pointer hover:bg-gray-50">
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <span>{getTypeIcon(interaction.type)}</span>
-                <span className="capitalize">{interaction.type}</span>
-              </div>
-            </TableCell>
-            <TableCell>{interaction.customerName}</TableCell>
-            <TableCell>{format(new Date(interaction.date), 'dd MMM yyyy')}</TableCell>
-            <TableCell className="font-medium">{interaction.subject}</TableCell>
-            <TableCell>{interaction.agentName}</TableCell>
-            <TableCell>
-              {interaction.type === 'email' 
-                ? '—' 
-                : `${interaction.duration} min${interaction.duration !== 1 ? 's' : ''}`}
-            </TableCell>
-            <TableCell>
-              <Badge variant="outline" className={getStatusColor(interaction.status)}>
-                {interaction.status.charAt(0).toUpperCase() + interaction.status.slice(1)}
-              </Badge>
-            </TableCell>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <ColumnVisibilityDropdown
+          columnVisibility={columnVisibility}
+          customFields={interactionCustomFields || []}
+          onToggleColumn={toggleColumnVisibility}
+          basicColumns={[
+            { key: 'date', label: 'Date' },
+            { key: 'customerName', label: 'Customer' },
+            { key: 'type', label: 'Type' },
+            { key: 'subject', label: 'Subject' },
+            { key: 'status', label: 'Status' }
+          ]}
+        />
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {columnVisibility.date && <TableHead>Date</TableHead>}
+            {columnVisibility.customerName && <TableHead>Customer</TableHead>}
+            {columnVisibility.type && <TableHead>Type</TableHead>}
+            {columnVisibility.subject && <TableHead>Subject</TableHead>}
+            
+            {/* Render custom field headers dynamically */}
+            {interactionCustomFields.map(field => (
+              columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
+            ))}
+            
+            {columnVisibility.status && <TableHead>Status</TableHead>}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {interactions.map((interaction) => (
+            <TableRow key={interaction.id} className="cursor-pointer hover:bg-gray-50">
+              {columnVisibility.date && <TableCell>{format(new Date(interaction.date), 'dd MMM yyyy HH:mm')}</TableCell>}
+              {columnVisibility.customerName && <TableCell>{interaction.customerName}</TableCell>}
+              {columnVisibility.type && (
+                <TableCell>
+                  <span className="mr-2">{getTypeIcon(interaction.type)}</span>
+                  {interaction.type.charAt(0).toUpperCase() + interaction.type.slice(1)}
+                </TableCell>
+              )}
+              {columnVisibility.subject && <TableCell className="font-medium">{interaction.subject}</TableCell>}
+              
+              {/* Render custom field values if present */}
+              {interactionCustomFields.map(field => (
+                columnVisibility[field.key] && (
+                  <TableCell key={field.key}>
+                    {interaction.customFields && field.key in interaction.customFields
+                      ? (typeof interaction.customFields[field.key] === 'object' && interaction.customFields[field.key] instanceof Date)
+                        ? format(new Date(interaction.customFields[field.key] as Date), 'dd MMM yyyy')
+                        : String(interaction.customFields[field.key])
+                      : '—'}
+                  </TableCell>
+                )
+              ))}
+              
+              {columnVisibility.status && (
+                <TableCell>
+                  <Badge variant={interaction.status === 'open' ? 'default' : 'secondary'}>
+                    {interaction.status.charAt(0).toUpperCase() + interaction.status.slice(1)}
+                  </Badge>
+                </TableCell>
+              )}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 
