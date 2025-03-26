@@ -1,5 +1,5 @@
 
-import { CustomField } from "@/domain/models/customer";
+import { CustomField, CustomFieldCategory } from "@/domain/models/customField";
 import { api } from "@/utils/api";
 
 // API endpoints
@@ -7,13 +7,13 @@ const CUSTOM_FIELDS_ENDPOINT = "/settings/custom-fields";
 
 /**
  * Fetch custom fields from the API
- * @returns Promise with the custom fields array
+ * @returns Promise with the custom fields categories array
  */
-export async function fetchCustomFields(): Promise<CustomField[]> {
+export async function fetchCustomFields(): Promise<CustomFieldCategory[]> {
   try {
-    // The API returns the fields directly as an array
-    const fields = await api.get<CustomField[]>(CUSTOM_FIELDS_ENDPOINT);
-    return Array.isArray(fields) ? fields : [];
+    // The API returns categories with fields
+    const categories = await api.get<CustomFieldCategory[]>(CUSTOM_FIELDS_ENDPOINT);
+    return Array.isArray(categories) ? categories : [];
   } catch (error) {
     console.error("Failed to fetch custom fields from API:", error);
     throw error;
@@ -21,16 +21,30 @@ export async function fetchCustomFields(): Promise<CustomField[]> {
 }
 
 /**
- * Save custom fields to the API
- * @param fields Array of custom fields to save
- * @returns Promise with the saved custom fields
+ * Fetch custom fields for a specific category from the API
+ * @param category The category to fetch fields for
+ * @returns Promise with the custom fields array for the requested category
  */
-export async function saveCustomFields(fields: CustomField[]): Promise<CustomField[]> {
+export async function fetchCategoryFields(category: string): Promise<CustomField[]> {
   try {
-    // The API expects a payload with a 'fields' property
-    const payload = { fields };
-    const response = await api.post<CustomField[]>(CUSTOM_FIELDS_ENDPOINT, payload);
-    return Array.isArray(response) ? response : fields;
+    const categories = await fetchCustomFields();
+    const categoryData = categories.find(c => c.category === category);
+    return categoryData?.fields || [];
+  } catch (error) {
+    console.error(`Failed to fetch ${category} fields from API:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Save custom fields to the API
+ * @param categoryData The category with fields to save
+ * @returns Promise with the saved custom fields category
+ */
+export async function saveCustomFieldCategory(categoryData: CustomFieldCategory): Promise<CustomFieldCategory> {
+  try {
+    const response = await api.post<CustomFieldCategory>(CUSTOM_FIELDS_ENDPOINT, categoryData);
+    return response;
   } catch (error) {
     console.error("Failed to save custom fields to API:", error);
     throw error;

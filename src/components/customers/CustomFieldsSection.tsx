@@ -3,7 +3,15 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { CustomField, CustomerFormData } from "@/domain/models/customer";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { CustomerFormData } from "@/domain/models/customer";
+import { CustomField } from "@/domain/models/customField";
 import { getFieldProps } from "./utils/fieldUtils";
 
 interface CustomFieldsSectionProps {
@@ -25,6 +33,36 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
   const requiredFields = customFields.filter(f => f.required);
   const optionalFields = customFields.filter(f => !f.required);
   
+  const renderField = (field: CustomField) => {
+    const value = formData.customFields[field.label] ?? "";
+    
+    if (field.type === "select" && field.options?.length) {
+      return (
+        <Select
+          value={value.toString()}
+          onValueChange={newValue => onFieldChange(field, newValue)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {field.options.map(option => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      );
+    }
+    
+    return (
+      <Input 
+        {...getFieldProps(field, value, onFieldChange)} 
+      />
+    );
+  };
+  
   return (
     <>
       <Separator />
@@ -38,13 +76,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
               {field.label}
               <span className="text-destructive ml-1">*</span>
             </Label>
-            <Input 
-              {...getFieldProps(
-                field, 
-                formData.customFields[field.label] ?? "", 
-                onFieldChange
-              )} 
-            />
+            {renderField(field)}
           </div>
         ))}
         
@@ -52,13 +84,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
         {optionalFields.map(field => (
           <div key={field.key} className="space-y-2">
             <Label htmlFor={field.key}>{field.label}</Label>
-            <Input 
-              {...getFieldProps(
-                field, 
-                formData.customFields[field.label] ?? "", 
-                onFieldChange
-              )} 
-            />
+            {renderField(field)}
           </div>
         ))}
       </div>

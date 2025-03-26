@@ -1,12 +1,14 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { PanelLeft } from "lucide-react";
+import { PanelLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { useCustomFields } from "@/hooks/useCustomFields";
-import { CustomField } from "@/types/customer";
+import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
 
 // Import the refactored components
 import CustomFieldsHeader from "@/components/custom-fields/CustomFieldsHeader";
@@ -14,29 +16,35 @@ import CustomFieldsContainer from "@/components/custom-fields/CustomFieldsContai
 import CustomFieldForm from "@/components/custom-fields/CustomFieldForm";
 
 const CustomFields = () => {
-  const { customFields, updateCustomFields, isLoading, isUpdating } = useCustomFields();
-  const [fields, setFields] = useState<CustomField[]>([]);
+  const { 
+    customFieldCategories, 
+    isLoadingCategories, 
+    updateCategoryFields 
+  } = useCustomFields();
+
+  const [activeCategory, setActiveCategory] = useState("Customer");
+  const [categoryFields, setCategoryFields] = useState<CustomField[]>([]);
 
   useEffect(() => {
-    if (customFields) {
-      console.log("Loaded custom fields:", customFields);
-      setFields(customFields);
+    if (customFieldCategories?.length) {
+      const category = customFieldCategories.find(c => c.category === activeCategory);
+      setCategoryFields(category?.fields || []);
     }
-  }, [customFields]);
+  }, [customFieldCategories, activeCategory]);
 
   const addField = () => {
-    setFields([
-      ...fields,
+    setCategoryFields([
+      ...categoryFields,
       { key: "", label: "", type: "text", required: false }
     ]);
   };
 
   const removeField = (index: number) => {
-    setFields(fields.filter((_, i) => i !== index));
+    setCategoryFields(categoryFields.filter((_, i) => i !== index));
   };
 
   const updateField = (index: number, updates: Partial<CustomField>) => {
-    setFields(fields.map((field, i) => 
+    setCategoryFields(categoryFields.map((field, i) => 
       i === index ? { ...field, ...updates } : field
     ));
   };
@@ -45,14 +53,14 @@ const CustomFields = () => {
     e.preventDefault();
     
     // Basic validation
-    const invalidFields = fields.filter(field => !field.key || !field.label);
+    const invalidFields = categoryFields.filter(field => !field.key || !field.label);
     if (invalidFields.length > 0) {
       toast.error("Please fill in all field keys and labels");
       return;
     }
     
     // Check for duplicate keys
-    const keys = fields.map(field => field.key);
+    const keys = categoryFields.map(field => field.key);
     const hasDuplicates = keys.some((key, index) => keys.indexOf(key) !== index);
     if (hasDuplicates) {
       toast.error("Field keys must be unique");
@@ -60,15 +68,18 @@ const CustomFields = () => {
     }
     
     // Validate key format (alphanumeric and underscores only)
-    const invalidKeyFormat = fields.some(field => !/^[a-zA-Z0-9_]+$/.test(field.key));
+    const invalidKeyFormat = categoryFields.some(field => !/^[a-zA-Z0-9_]+$/.test(field.key));
     if (invalidKeyFormat) {
       toast.error("Field keys must contain only letters, numbers, and underscores");
       return;
     }
     
     try {
-      const validFields = fields.filter(field => field.key && field.label);
-      await updateCustomFields(validFields);
+      const validFields = categoryFields.filter(field => field.key && field.label);
+      await updateCategoryFields({
+        category: activeCategory,
+        fields: validFields
+      });
     } catch (error) {
       console.error("Error updating fields:", error);
     }
@@ -93,17 +104,39 @@ const CustomFields = () => {
           <div className="max-w-4xl mx-auto space-y-8 pt-6">
             <CustomFieldsHeader />
             
-            <CustomFieldsContainer>
-              <CustomFieldForm
-                fields={fields}
-                isLoading={isLoading}
-                isUpdating={isUpdating}
-                onAddField={addField}
-                onRemoveField={removeField}
-                onUpdateField={updateField}
-                onSubmit={handleSubmit}
-              />
-            </CustomFieldsContainer>
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Important</AlertTitle>
+              <AlertDescription>
+                Configure the custom fields for each module in the system. Each category's fields will be displayed in their respective section.
+              </AlertDescription>
+            </Alert>
+            
+            <Tabs defaultValue="Customer" value={activeCategory} onValueChange={setActiveCategory}>
+              <TabsList className="w-full border-b">
+                {FIELD_CATEGORIES.map(category => (
+                  <TabsTrigger key={category} value={category} className="flex-1">
+                    {category}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              
+              {FIELD_CATEGORIES.map(category => (
+                <TabsContent key={category} value={category}>
+                  <CustomFieldsContainer>
+                    <CustomFieldForm
+                      fields={categoryFields}
+                      isLoading={isLoadingCategories}
+                      isUpdating={false}
+                      onAddField={addField}
+                      onRemoveField={removeField}
+                      onUpdateField={updateField}
+                      onSubmit={handleSubmit}
+                    />
+                  </CustomFieldsContainer>
+                </TabsContent>
+              ))}
+            </Tabs>
           </div>
         </main>
       </div>

@@ -1,53 +1,72 @@
 
-import { CustomField } from "@/domain/models/customer";
+import { CustomField } from "@/domain/models/customField";
 
+/**
+ * Process a field value based on its type
+ * @param field The custom field
+ * @param value The input value
+ * @returns The processed value appropriate for the field type
+ */
 export const processFieldValue = (field: CustomField, value: string) => {
-  if (field.type === 'number') {
-    // Convert to number if possible, otherwise return null
-    if (value === '') return null;
-    const num = Number(value);
+  if (field.type === "number") {
+    if (value === "") return null;
+    const num = parseFloat(value);
     return isNaN(num) ? null : num;
   }
   
+  if (field.type === "date") {
+    // This performs a basic validation, ensuring the value is a valid date string
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? "" : value;
+  }
+
+  // For text and select, just return the string value
   return value;
 };
 
+/**
+ * Get appropriate props for an Input component based on field type
+ * @param field The custom field 
+ * @param value The current value
+ * @param onChange The change handler function
+ * @returns Props for the Input component
+ */
 export const getFieldProps = (
-  field: CustomField, 
-  value: string | number | null = "",
+  field: CustomField,
+  value: any,
   onChange: (field: CustomField, value: string) => void
 ) => {
-  const stringValue = value === null ? "" : String(value);
-  
   const baseProps = {
     id: field.key,
     name: field.key,
-    placeholder: `Enter ${field.label.toLowerCase()}`,
-    value: stringValue,
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
-      onChange(field, e.target.value),
-    required: field.required,
-    className: field.required ? "border-l-4 border-l-purple-500 pl-3" : "",
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(field, e.target.value)
   };
-  
-  if (field.type === 'number') {
-    return {
-      ...baseProps,
-      type: 'number',
-      step: 'any',
-    };
+
+  switch (field.type) {
+    case "number":
+      return {
+        ...baseProps,
+        type: "number",
+        value: value === null ? "" : value,
+        step: "any",
+      };
+    case "date":
+      return {
+        ...baseProps,
+        type: "date",
+        value: value || "",
+      };
+    case "select":
+      // This shouldn't be rendered for select fields, but included for type safety
+      return {
+        ...baseProps,
+        value: value || "",
+      };
+    default: // text
+      return {
+        ...baseProps,
+        type: "text",
+        value: value || "",
+      };
   }
-  
-  if (field.type === 'date') {
-    return {
-      ...baseProps,
-      type: 'date',
-    };
-  }
-  
-  // Default to text type
-  return {
-    ...baseProps,
-    type: 'text',
-  };
 };

@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useCustomFields } from "@/hooks/useCustomFields";
-import { CustomField, Customer, CustomerFormData } from "@/domain/models/customer";
+import { Customer, CustomerFormData } from "@/domain/models/customer";
 import BasicInformationFields from "./BasicInformationFields";
 import CustomFieldsSection from "./CustomFieldsSection";
 import { processFieldValue } from "./utils/fieldUtils";
+import { CustomField } from "@/domain/models/customField";
 
 interface CustomerFormProps {
   isEditMode: boolean;
@@ -23,7 +24,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   onSuccess
 }) => {
   const { addCustomer, updateCustomer } = useCustomers();
-  const { customFields, isLoading: isLoadingFields } = useCustomFields();
+  const { getCategoryFields, isLoadingCategories } = useCustomFields();
+  const customerFields = getCategoryFields("Customer");
+  
   const [formData, setFormData] = useState<CustomerFormData>({
     name: "",
     email: "",
@@ -45,7 +48,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       const initialCustomFields: {[key: string]: string | number | null} = {};
       
       // Pre-populate required fields with empty values
-      customFields.forEach(field => {
+      customerFields.forEach(field => {
         if (field.type === 'number') {
           initialCustomFields[field.label] = null;
         } else if (field.type === 'date') {
@@ -62,7 +65,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         customFields: initialCustomFields
       });
     }
-  }, [isEditMode, customer, customFields]);
+  }, [isEditMode, customer, customerFields]);
 
   const handleFieldChange = (field: CustomField, value: string) => {
     const processedValue = processFieldValue(field, value);
@@ -80,7 +83,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     e.preventDefault();
 
     // Validate required custom fields
-    const missingRequiredFields = customFields
+    const missingRequiredFields = customerFields
       .filter(field => field.required)
       .filter(field => {
         const value = formData.customFields[field.label];
@@ -120,7 +123,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         />
 
         <CustomFieldsSection
-          customFields={customFields}
+          customFields={customerFields}
           formData={formData}
           onFieldChange={handleFieldChange}
         />
