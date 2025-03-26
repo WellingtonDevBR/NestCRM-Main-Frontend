@@ -23,7 +23,8 @@ export function useCustomFields() {
     data: customFieldCategories = [], 
     isLoading: isLoadingCategories, 
     error: categoriesError,
-    isFetching: isFetchingCategories
+    isFetching: isFetchingCategories,
+    refetch: refetchCategories
   } = useQuery({
     queryKey: ["customFieldCategories"],
     queryFn: async () => {
@@ -141,6 +142,7 @@ export function useCustomFields() {
     updateCategoryFields,
     isUpdatingCategory,
     useCategoryFields,
+    refetchCategories,
     
     // Original API (for backward compatibility)
     customFields,

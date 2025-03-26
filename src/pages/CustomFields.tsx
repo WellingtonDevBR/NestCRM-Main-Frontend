@@ -19,18 +19,20 @@ const CustomFields = () => {
   const { 
     customFieldCategories, 
     isLoadingCategories, 
-    updateCategoryFields 
+    updateCategoryFields,
+    getCategoryFields 
   } = useCustomFields();
 
   const [activeCategory, setActiveCategory] = useState("Customer");
   const [categoryFields, setCategoryFields] = useState<CustomField[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  // Update category fields when the active category changes or when field data is loaded
   useEffect(() => {
-    if (customFieldCategories?.length) {
-      const category = customFieldCategories.find(c => c.category === activeCategory);
-      setCategoryFields(category?.fields || []);
-    }
-  }, [customFieldCategories, activeCategory]);
+    // Get the fields for the currently active category
+    const fields = getCategoryFields(activeCategory);
+    setCategoryFields(fields);
+  }, [customFieldCategories, activeCategory, getCategoryFields]);
 
   const addField = () => {
     setCategoryFields([
@@ -75,14 +77,21 @@ const CustomFields = () => {
     }
     
     try {
+      setIsUpdating(true);
       const validFields = categoryFields.filter(field => field.key && field.label);
       await updateCategoryFields({
         category: activeCategory,
         fields: validFields
       });
+      setIsUpdating(false);
     } catch (error) {
+      setIsUpdating(false);
       console.error("Error updating fields:", error);
     }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveCategory(value);
   };
 
   return (
@@ -112,7 +121,11 @@ const CustomFields = () => {
               </AlertDescription>
             </Alert>
             
-            <Tabs defaultValue="Customer" value={activeCategory} onValueChange={setActiveCategory}>
+            <Tabs 
+              defaultValue="Customer" 
+              value={activeCategory} 
+              onValueChange={handleTabChange}
+            >
               <TabsList className="w-full border-b">
                 {FIELD_CATEGORIES.map(category => (
                   <TabsTrigger key={category} value={category} className="flex-1">
@@ -127,7 +140,7 @@ const CustomFields = () => {
                     <CustomFieldForm
                       fields={categoryFields}
                       isLoading={isLoadingCategories}
-                      isUpdating={false}
+                      isUpdating={isUpdating}
                       onAddField={addField}
                       onRemoveField={removeField}
                       onUpdateField={updateField}
