@@ -76,7 +76,7 @@ export class AuthApi {
 
       console.log('Signup payload:', signupPayload);
 
-      const response = await fetch(`${this.baseUrl}/tenatns/signup`, {
+      const response = await fetch(`${this.baseUrl}/tenants/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
