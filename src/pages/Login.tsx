@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useLoginForm } from "@/hooks/useLoginForm";
 import LoginHeader from "@/components/auth/LoginHeader";
 import LoginForm from "@/components/auth/LoginForm";
-import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import LoginHero from "@/components/auth/LoginHero";
 
 const Login = () => {
@@ -46,34 +45,19 @@ const Login = () => {
           <LoginHeader />
 
           <div className="mt-8">
-            <div className="space-y-6">
-              <LoginForm 
-                email={email}
-                setEmail={setEmail}
-                password={password}
-                setPassword={setPassword}
-                showPassword={showPassword}
-                togglePasswordVisibility={togglePasswordVisibility}
-                isLoading={isLoading}
-                handleSubmit={handleSubmit}
-                errors={errors}
-                handleBlur={handleBlur}
-                touched={touched}
-              />
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with
-                  </span>
-                </div>
-              </div>
-
-              <SocialLoginButtons disabled={isLoading} />
-            </div>
+            <LoginForm 
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              showPassword={showPassword}
+              togglePasswordVisibility={togglePasswordVisibility}
+              isLoading={isLoading}
+              handleSubmit={handleSubmit}
+              errors={errors}
+              handleBlur={handleBlur}
+              touched={touched}
+            />
           </div>
         </div>
       </div>
