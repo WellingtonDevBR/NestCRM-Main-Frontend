@@ -15,9 +15,11 @@ export const DashboardSidebarHeader: React.FC = () => {
     <SidebarHeader className="py-4">
       <div className="px-2 flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-md flex items-center justify-center bg-gradient-to-r from-purple-600 to-purple-400 text-white font-bold">
-            N
-          </div>
+          <img 
+            src="/lovable-uploads/a8eb6e4e-e296-40bc-9357-df7ee5b520b3.png" 
+            alt="NestCRM Logo" 
+            className="w-8 h-8"
+          />
           <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-400">
             NestCRM
           </span>
