@@ -3,13 +3,11 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { AuthResult } from "@/domain/auth/types";
-import SocialLoginButtons from "@/components/auth/SocialLoginButtons";
 import PersonalInfoFields from "@/components/auth/form/PersonalInfoFields";
 import CompanyInfoFields from "@/components/auth/form/CompanyInfoFields";
 import PasswordField from "@/components/auth/form/PasswordField";
 import TermsCheckbox from "@/components/auth/form/TermsCheckbox";
 import SubmitButton from "@/components/auth/form/SubmitButton";
-import FormDivider from "@/components/auth/form/FormDivider";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -178,13 +176,6 @@ const SignUpForm = () => {
 
           <SubmitButton isLoading={isLoading} />
         </form>
-      )}
-
-      {!showSetupProgress && (
-        <>
-          <FormDivider />
-          <SocialLoginButtons />
-        </>
       )}
     </div>
   );
