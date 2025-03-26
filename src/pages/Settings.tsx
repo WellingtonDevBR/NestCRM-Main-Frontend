@@ -16,8 +16,8 @@ const Settings = () => {
       disabled: true,
     },
     {
-      title: "Customer Data Fields",
-      description: "Customize what information you collect about your customers",
+      title: "Custom Data Fields",
+      description: "Customize what information you collect across different modules",
       icon: Database,
       path: "/settings/custom-fields",
       disabled: false,

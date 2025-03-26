@@ -2,9 +2,10 @@
 import React from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomField } from "@/types/customer";
+import { CustomField } from "@/domain/models/customField";
 import CustomFieldItem from "./CustomFieldItem";
 import NoCustomFields from "./NoCustomFields";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomFieldFormProps {
   fields: CustomField[];
@@ -25,21 +26,28 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   onUpdateField,
   onSubmit,
 }) => {
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+  
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
         <div className="flex gap-2">
           <div className="text-sm text-amber-800">
             Customer ID, Name, Email, and Phone are built-in fields and don't need to be added here.
+            Fields configured here will appear in the corresponding section of the application.
           </div>
         </div>
       </div>
       
-      {isLoading ? (
-        <div className="text-center p-8">
-          <p>Loading custom fields...</p>
-        </div>
-      ) : fields.length === 0 ? (
+      {fields.length === 0 ? (
         <NoCustomFields onAddField={onAddField} />
       ) : (
         <div className="space-y-4">

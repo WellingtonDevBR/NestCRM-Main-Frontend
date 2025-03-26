@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { 
   fetchCustomFields, 
-  fetchCategoryFieldsFromApi, 
   fetchCategoryFields, 
   saveCustomFieldCategory 
 } from "@/utils/customFieldsApi";
@@ -19,6 +18,7 @@ import {
 export function useCustomFields() {
   const queryClient = useQueryClient();
 
+  // Query for all categories
   const { 
     data: customFieldCategories = [], 
     isLoading: isLoadingCategories, 
@@ -28,15 +28,13 @@ export function useCustomFields() {
     queryKey: ["customFieldCategories"],
     queryFn: async () => {
       try {
+        console.log("Fetching all custom field categories...");
         // Try to fetch from API first
-        const categories = await fetchCustomFields()
-          .catch(() => {
-            console.log("API fetch failed, falling back to localStorage");
-            return getStoredCustomFields();
-          });
+        const categories = await fetchCustomFields();
+        console.log("Fetched categories from API:", categories);
         
         // Update localStorage as a cache
-        if (Array.isArray(categories)) {
+        if (Array.isArray(categories) && categories.length > 0) {
           storeCustomFields(categories);
         }
         
@@ -44,37 +42,38 @@ export function useCustomFields() {
       } catch (error) {
         console.error("Failed to fetch custom field categories:", error);
         // Fallback to localStorage on error
-        return getStoredCustomFields();
+        const storedCategories = getStoredCustomFields();
+        console.log("Using stored categories from localStorage:", storedCategories);
+        return storedCategories;
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: true
   });
 
-  // Function to fetch a specific category using a dedicated query
+  // Function to fetch a specific category
   const useCategoryFields = (category: FieldCategory) => {
     return useQuery({
       queryKey: ["customFieldCategory", category],
       queryFn: async () => {
         try {
-          // Try to fetch from API first with specific category endpoint
-          const categoryData = await fetchCategoryFieldsFromApi(category)
-            .catch(() => {
-              console.log(`API fetch failed for ${category}, falling back to localStorage`);
-              const storedFields = getStoredCategoryFields(category);
-              return { category, fields: storedFields };
-            });
+          console.log(`Fetching fields for ${category} category...`);
+          // Try to fetch from API first
+          const fields = await fetchCategoryFields(category);
+          console.log(`Fetched ${category} fields from API:`, fields);
           
           // Update localStorage as a cache
-          if (categoryData) {
+          if (fields && Array.isArray(fields)) {
+            const categoryData = { category, fields };
             storeCategoryFields(categoryData);
           }
           
-          return categoryData;
+          return { category, fields };
         } catch (error) {
           console.error(`Failed to fetch ${category} fields:`, error);
           // Fallback to localStorage on error
           const storedFields = getStoredCategoryFields(category);
+          console.log(`Using stored ${category} fields from localStorage:`, storedFields);
           return { category, fields: storedFields };
         }
       },
@@ -89,7 +88,7 @@ export function useCustomFields() {
     return categoryData?.fields || [];
   };
 
-  // Data for customer fields (for backward compatibility)
+  // For backward compatibility
   const customFields = getCategoryFields("Customer");
   const isLoading = isLoadingCategories;
   const error = categoriesError;
@@ -98,17 +97,20 @@ export function useCustomFields() {
   const { mutateAsync: updateCategoryFields, isPending: isUpdatingCategory } = useMutation({
     mutationFn: async (categoryData: CustomFieldCategory) => {
       try {
+        console.log(`Updating fields for ${categoryData.category} category...`);
         // Try to update via API
-        const response = await saveCustomFieldCategory(categoryData)
-          .catch((error) => {
-            console.log(`API update failed for ${categoryData.category}, falling back to localStorage`, error);
-            storeCategoryFields(categoryData);
-            return categoryData;
-          });
+        const response = await saveCustomFieldCategory(categoryData);
+        console.log(`Updated ${categoryData.category} fields on API:`, response);
+        
+        // Create the updated category object
+        const updatedCategory = {
+          category: categoryData.category,
+          fields: response
+        };
         
         // Always update localStorage as cache
-        storeCategoryFields(response);
-        return response;
+        storeCategoryFields(updatedCategory);
+        return updatedCategory;
       } catch (error) {
         console.error("Failed to update category fields:", error);
         // Fallback to local storage on error

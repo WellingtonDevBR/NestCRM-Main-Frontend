@@ -18,19 +18,41 @@ import CustomFieldForm from "@/components/custom-fields/CustomFieldForm";
 const CustomFields = () => {
   const { 
     customFieldCategories, 
-    isLoadingCategories, 
-    updateCategoryFields 
+    isLoadingCategories,
+    getCategoryFields,
+    updateCategoryFields,
+    isUpdatingCategory
   } = useCustomFields();
 
   const [activeCategory, setActiveCategory] = useState("Customer");
   const [categoryFields, setCategoryFields] = useState<CustomField[]>([]);
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  // When customFieldCategories data is loaded or activeCategory changes, update the fields
   useEffect(() => {
+    console.log("CustomFields > customFieldCategories:", customFieldCategories);
+    console.log("CustomFields > activeCategory:", activeCategory);
+    
     if (customFieldCategories?.length) {
       const category = customFieldCategories.find(c => c.category === activeCategory);
-      setCategoryFields(category?.fields || []);
+      console.log("CustomFields > Found category data:", category);
+      
+      if (category) {
+        setCategoryFields(category.fields || []);
+      } else {
+        setCategoryFields([]);
+      }
+    } else {
+      console.log("CustomFields > No categories data available");
+      setCategoryFields([]);
     }
   }, [customFieldCategories, activeCategory]);
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    console.log("Switching to category:", value);
+    setActiveCategory(value);
+  };
 
   const addField = () => {
     setCategoryFields([
@@ -75,13 +97,21 @@ const CustomFields = () => {
     }
     
     try {
+      setIsUpdating(true);
+      console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
+      
       const validFields = categoryFields.filter(field => field.key && field.label);
       await updateCategoryFields({
         category: activeCategory,
         fields: validFields
       });
+      
+      toast.success(`${activeCategory} fields updated successfully`);
     } catch (error) {
       console.error("Error updating fields:", error);
+      toast.error(`Failed to update ${activeCategory} fields`);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -112,7 +142,7 @@ const CustomFields = () => {
               </AlertDescription>
             </Alert>
             
-            <Tabs defaultValue="Customer" value={activeCategory} onValueChange={setActiveCategory}>
+            <Tabs value={activeCategory} onValueChange={handleTabChange}>
               <TabsList className="w-full border-b">
                 {FIELD_CATEGORIES.map(category => (
                   <TabsTrigger key={category} value={category} className="flex-1">
@@ -127,7 +157,7 @@ const CustomFields = () => {
                     <CustomFieldForm
                       fields={categoryFields}
                       isLoading={isLoadingCategories}
-                      isUpdating={false}
+                      isUpdating={isUpdating || isUpdatingCategory}
                       onAddField={addField}
                       onRemoveField={removeField}
                       onUpdateField={updateField}
