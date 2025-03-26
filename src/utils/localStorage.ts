@@ -1,79 +1,98 @@
 
-import { CustomField, CustomFieldCategory } from "@/domain/models/customField";
+import { CustomField, CustomFieldCategory, FieldCategory } from "@/domain/models/customField";
 
-// Storage keys
-export const STORAGE_KEYS = {
-  CUSTOM_FIELDS: "custom_fields_categories",
-};
+// Keys for localStorage
+const CUSTOM_FIELDS_KEY = "nestcrm-custom-fields";
+const CATEGORY_FIELDS_PREFIX = "nestcrm-category-fields-";
 
-/**
- * Get stored custom fields from localStorage
- * @returns Array of custom field categories
- */
-export function getStoredCustomFields(): CustomFieldCategory[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEYS.CUSTOM_FIELDS);
-    return stored ? JSON.parse(stored) : [];
-  } catch (error) {
-    console.error("Error reading custom fields from localStorage:", error);
-    return [];
-  }
-}
-
-/**
- * Get stored custom fields for a specific category
- * @param category The category to retrieve fields for
- * @returns Array of custom fields for the specified category
- */
-export function getStoredCategoryFields(category: string): CustomField[] {
-  try {
-    const categories = getStoredCustomFields();
-    const categoryData = categories.find(c => c.category === category);
-    return categoryData?.fields || [];
-  } catch (error) {
-    console.error(`Error reading ${category} fields from localStorage:`, error);
-    return [];
-  }
-}
-
-/**
- * Store custom field categories in localStorage
- * @param categories Array of custom field categories to store
- */
+// Store all custom field categories
 export function storeCustomFields(categories: CustomFieldCategory[]): void {
   try {
-    // Validate categories before storage
-    const validCategories = categories.filter(category => {
-      return category.category && Array.isArray(category.fields);
-    });
-    
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_FIELDS, JSON.stringify(validCategories));
+    localStorage.setItem(CUSTOM_FIELDS_KEY, JSON.stringify(categories));
   } catch (error) {
     console.error("Error storing custom fields in localStorage:", error);
-    throw new Error("Failed to save custom fields to localStorage");
   }
 }
 
-/**
- * Store or update a single category in localStorage
- * @param categoryData The category data to store
- */
+// Get all stored custom field categories
+export function getStoredCustomFields(): CustomFieldCategory[] {
+  try {
+    const stored = localStorage.getItem(CUSTOM_FIELDS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error("Error retrieving custom fields from localStorage:", error);
+    return [];
+  }
+}
+
+// Store a specific category's fields
 export function storeCategoryFields(categoryData: CustomFieldCategory): void {
   try {
-    const categories = getStoredCustomFields();
-    const existingIndex = categories.findIndex(c => c.category === categoryData.category);
+    // Store in the category-specific key
+    const key = `${CATEGORY_FIELDS_PREFIX}${categoryData.category}`;
+    localStorage.setItem(key, JSON.stringify(categoryData.fields));
+    
+    // Also update the main custom fields storage
+    const allCategories = getStoredCustomFields();
+    const existingIndex = allCategories.findIndex(c => c.category === categoryData.category);
     
     if (existingIndex >= 0) {
-      // Update existing category
-      categories[existingIndex] = categoryData;
+      allCategories[existingIndex] = categoryData;
     } else {
-      // Add new category
-      categories.push(categoryData);
+      allCategories.push(categoryData);
     }
     
-    storeCustomFields(categories);
+    storeCustomFields(allCategories);
   } catch (error) {
     console.error(`Error storing ${categoryData.category} fields in localStorage:`, error);
-    throw error;
+  }
+}
+
+// Get stored fields for a specific category
+export function getStoredCategoryFields(category: string): CustomField[] {
+  try {
+    const key = `${CATEGORY_FIELDS_PREFIX}${category}`;
+    const stored = localStorage.getItem(key);
+    
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    
+    // Fallback to checking the main storage
+    const allCategories = getStoredCustomFields();
+    const categoryData = allCategories.find(c => c.category === category);
+    return categoryData?.fields || [];
+  } catch (error) {
+    console.error(`Error retrieving ${category} fields from localStorage:`, error);
+    return [];
+  }
+}
+
+// Retrieve a store item by key
+export function getStoredItem<T>(key: string, defaultValue: T): T {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : defaultValue;
+  } catch (error) {
+    console.error(`Error retrieving ${key} from localStorage:`, error);
+    return defaultValue;
+  }
+}
+
+// Store an item by key
+export function storeItem<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Error storing ${key} in localStorage:`, error);
+  }
+}
+
+// Remove an item by key
+export function removeStoredItem(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error(`Error removing ${key} from localStorage:`, error);
   }
 }

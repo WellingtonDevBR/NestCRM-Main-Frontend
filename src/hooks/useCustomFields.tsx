@@ -3,8 +3,18 @@ import { useState } from "react";
 import { CustomField, CustomFieldCategory, FieldCategory } from "@/domain/models/customField";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { fetchCustomFields, fetchCategoryFields, saveCustomFieldCategory } from "@/utils/customFieldsApi";
-import { getStoredCustomFields, getStoredCategoryFields, storeCustomFields, storeCategoryFields } from "@/utils/localStorage";
+import { 
+  fetchCustomFields, 
+  fetchCategoryFieldsFromApi, 
+  fetchCategoryFields, 
+  saveCustomFieldCategory 
+} from "@/utils/customFieldsApi";
+import { 
+  getStoredCustomFields, 
+  getStoredCategoryFields, 
+  storeCustomFields, 
+  storeCategoryFields 
+} from "@/utils/localStorage";
 
 export function useCustomFields() {
   const queryClient = useQueryClient();
@@ -41,7 +51,39 @@ export function useCustomFields() {
     refetchOnWindowFocus: true
   });
 
-  // Function to get fields for a specific category
+  // Function to fetch a specific category using a dedicated query
+  const useCategoryFields = (category: FieldCategory) => {
+    return useQuery({
+      queryKey: ["customFieldCategory", category],
+      queryFn: async () => {
+        try {
+          // Try to fetch from API first with specific category endpoint
+          const categoryData = await fetchCategoryFieldsFromApi(category)
+            .catch(() => {
+              console.log(`API fetch failed for ${category}, falling back to localStorage`);
+              const storedFields = getStoredCategoryFields(category);
+              return { category, fields: storedFields };
+            });
+          
+          // Update localStorage as a cache
+          if (categoryData) {
+            storeCategoryFields(categoryData);
+          }
+          
+          return categoryData;
+        } catch (error) {
+          console.error(`Failed to fetch ${category} fields:`, error);
+          // Fallback to localStorage on error
+          const storedFields = getStoredCategoryFields(category);
+          return { category, fields: storedFields };
+        }
+      },
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      refetchOnWindowFocus: true
+    });
+  };
+
+  // Function to get fields for a specific category from the current data
   const getCategoryFields = (category: FieldCategory): CustomField[] => {
     const categoryData = customFieldCategories.find(c => c.category === category);
     return categoryData?.fields || [];
@@ -75,7 +117,9 @@ export function useCustomFields() {
       }
     },
     onSuccess: (data) => {
+      // Invalidate both the all categories query and the specific category query
       queryClient.invalidateQueries({ queryKey: ["customFieldCategories"] });
+      queryClient.invalidateQueries({ queryKey: ["customFieldCategory", data.category] });
       toast.success(`${data.category} fields updated successfully`);
     },
     onError: (error, variables) => {
@@ -96,6 +140,7 @@ export function useCustomFields() {
     getCategoryFields,
     updateCategoryFields,
     isUpdatingCategory,
+    useCategoryFields,
     
     // Original API (for backward compatibility)
     customFields,

@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Order } from "@/domain/models/order";
+import { useCustomFields } from "@/hooks/useCustomFields";
 import { 
   Table, 
   TableHeader, 
@@ -43,7 +44,17 @@ const getStatusColor = (status: Order['status']) => {
 };
 
 const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
-  if (isLoading) {
+  // Using the new targeted query to only fetch Order specific fields
+  const { data: orderFieldsData, isLoading: isLoadingOrderFields } = 
+    useCustomFields().useCategoryFields("Order");
+  
+  // Get the order custom fields
+  const orderCustomFields = orderFieldsData?.fields || [];
+
+  // We could add column visibility state here similar to CustomerTable
+  // const [columnVisibility, setColumnVisibility] = useState({ /* default visibility */ });
+
+  if (isLoading || isLoadingOrderFields) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-8 w-full" />
@@ -71,6 +82,12 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
           <TableHead>Date</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Items</TableHead>
+          
+          {/* Render custom field headers dynamically */}
+          {orderCustomFields.map(field => (
+            <TableHead key={field.key}>{field.label}</TableHead>
+          ))}
+          
           <TableHead className="text-right">Total</TableHead>
         </TableRow>
       </TableHeader>
@@ -86,6 +103,14 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
               </Badge>
             </TableCell>
             <TableCell>{order.items.length}</TableCell>
+            
+            {/* Render custom field values if present */}
+            {orderCustomFields.map(field => (
+              <TableCell key={field.key}>
+                {order.customFields?.[field.key] || '—'}
+              </TableCell>
+            ))}
+            
             <TableCell className="text-right font-medium">
               {formatCurrency(order.total)}
             </TableCell>
