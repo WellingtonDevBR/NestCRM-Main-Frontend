@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomField } from "@/domain/models/customField";
@@ -26,6 +26,11 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   onSubmit,
 }) => {
   console.log("CustomFieldForm rendering with fields:", fields);
+  
+  // Log when fields change
+  useEffect(() => {
+    console.log("Fields updated in CustomFieldForm:", fields);
+  }, [fields]);
   
   return (
     <form onSubmit={onSubmit} className="space-y-6">

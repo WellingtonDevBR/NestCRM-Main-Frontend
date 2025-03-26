@@ -9,6 +9,7 @@ const CATEGORY_FIELDS_PREFIX = "nestcrm-category-fields-";
 export function storeCustomFields(categories: CustomFieldCategory[]): void {
   try {
     localStorage.setItem(CUSTOM_FIELDS_KEY, JSON.stringify(categories));
+    console.log("Stored all custom field categories in localStorage:", categories);
   } catch (error) {
     console.error("Error storing custom fields in localStorage:", error);
   }
@@ -18,7 +19,9 @@ export function storeCustomFields(categories: CustomFieldCategory[]): void {
 export function getStoredCustomFields(): CustomFieldCategory[] {
   try {
     const stored = localStorage.getItem(CUSTOM_FIELDS_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const parsed = stored ? JSON.parse(stored) : [];
+    console.log("Retrieved custom field categories from localStorage:", parsed);
+    return parsed;
   } catch (error) {
     console.error("Error retrieving custom fields from localStorage:", error);
     return [];
@@ -31,6 +34,7 @@ export function storeCategoryFields(categoryData: CustomFieldCategory): void {
     // Store in the category-specific key
     const key = `${CATEGORY_FIELDS_PREFIX}${categoryData.category}`;
     localStorage.setItem(key, JSON.stringify(categoryData.fields));
+    console.log(`Stored ${categoryData.category} fields in localStorage:`, categoryData.fields);
     
     // Also update the main custom fields storage
     const allCategories = getStoredCustomFields();
@@ -55,13 +59,17 @@ export function getStoredCategoryFields(category: string): CustomField[] {
     const stored = localStorage.getItem(key);
     
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      console.log(`Retrieved ${category} fields from localStorage:`, parsed);
+      return parsed;
     }
     
     // Fallback to checking the main storage
     const allCategories = getStoredCustomFields();
     const categoryData = allCategories.find(c => c.category === category);
-    return categoryData?.fields || [];
+    const fields = categoryData?.fields || [];
+    console.log(`Retrieved ${category} fields from main storage:`, fields);
+    return fields;
   } catch (error) {
     console.error(`Error retrieving ${category} fields from localStorage:`, error);
     return [];

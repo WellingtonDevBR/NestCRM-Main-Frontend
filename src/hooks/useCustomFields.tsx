@@ -31,13 +31,22 @@ export function useCustomFields() {
       try {
         console.log("Fetching custom field categories");
         // Try to fetch from API first
-        const categories = await fetchCustomFields()
-          .catch((error) => {
-            console.log("API fetch failed, falling back to localStorage", error);
-            return getStoredCustomFields();
-          });
+        const apiData = await fetchCustomFields();
+        console.log("API response for custom fields:", apiData);
         
-        console.log("Fetched categories:", categories);
+        // Transform the data into categories format
+        const categories: CustomFieldCategory[] = [];
+        
+        for (const [category, fields] of Object.entries(apiData)) {
+          if (Array.isArray(fields)) {
+            categories.push({
+              category,
+              fields: fields
+            });
+          }
+        }
+        
+        console.log("Transformed categories:", categories);
         
         // Update localStorage as a cache
         if (Array.isArray(categories)) {
@@ -108,6 +117,12 @@ export function useCustomFields() {
       try {
         console.log(`Updating fields for ${categoryData.category}:`, categoryData.fields);
         // Try to update via API
+        const payload = {
+          [categoryData.category]: categoryData.fields
+        };
+        
+        console.log("Creating payload:", payload);
+        
         const response = await saveCustomFieldCategory(categoryData)
           .catch((error) => {
             console.log(`API update failed for ${categoryData.category}, falling back to localStorage`, error);

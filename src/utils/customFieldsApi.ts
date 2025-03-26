@@ -9,27 +9,13 @@ const CUSTOM_FIELDS_ENDPOINT = "/settings/custom-fields";
  * Fetch custom fields from the API
  * @returns Promise with the custom fields categories array
  */
-export async function fetchCustomFields(): Promise<CustomFieldCategory[]> {
+export async function fetchCustomFields(): Promise<Record<string, CustomField[]>> {
   try {
-    // The API returns categories with fields in a different format
+    // The API returns categories with fields in the format:
+    // { "Customer": [...fields], "Order": [...fields], etc. }
     const response = await api.get<Record<string, CustomField[]>>(CUSTOM_FIELDS_ENDPOINT);
     console.log("API Response for custom fields:", response);
-    
-    // Transform the response to our internal format
-    const categories: CustomFieldCategory[] = [];
-    
-    // Process each category in the response
-    for (const [category, fields] of Object.entries(response)) {
-      if (Array.isArray(fields)) {
-        categories.push({
-          category,
-          fields: fields
-        });
-      }
-    }
-    
-    console.log("Transformed categories:", categories);
-    return categories;
+    return response;
   } catch (error) {
     console.error("Failed to fetch custom fields from API:", error);
     throw error;
@@ -45,6 +31,7 @@ export async function fetchCategoryFieldsFromApi(category: string): Promise<Cust
   try {
     // Use the main endpoint as the API returns all categories at once
     const response = await api.get<Record<string, CustomField[]>>(CUSTOM_FIELDS_ENDPOINT);
+    console.log(`API response for ${category}:`, response);
     
     // Extract the fields for the requested category
     const fields = response[category] || [];
@@ -89,6 +76,7 @@ export async function saveCustomFieldCategory(categoryData: CustomFieldCategory)
     console.log("Saving custom fields with payload:", payload);
     
     const response = await api.post<Record<string, CustomField[]>>(CUSTOM_FIELDS_ENDPOINT, payload);
+    console.log("API response after saving:", response);
     
     // Transform the response back to our internal format
     return {

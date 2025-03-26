@@ -16,6 +16,8 @@ import CustomFieldsContainer from "@/components/custom-fields/CustomFieldsContai
 import CustomFieldForm from "@/components/custom-fields/CustomFieldForm";
 
 const CustomFields = () => {
+  console.log("CustomFields page rendering");
+  
   const { 
     customFieldCategories, 
     isLoadingCategories, 
@@ -30,14 +32,21 @@ const CustomFields = () => {
 
   // Initial data fetch when component mounts
   useEffect(() => {
+    console.log("Running initial fetch effect");
     refetchCategories();
-  }, []);
+  }, [refetchCategories]);
 
   // Update category fields when the active category changes or when field data is loaded
   useEffect(() => {
+    console.log("Category data changed, updating fields", { 
+      customFieldCategories, 
+      activeCategory 
+    });
+    
     if (customFieldCategories && customFieldCategories.length > 0) {
       // Get the fields for the currently active category
       const fields = getCategoryFields(activeCategory);
+      console.log(`Setting ${activeCategory} fields:`, fields);
       setCategoryFields(fields);
     }
   }, [customFieldCategories, activeCategory, getCategoryFields]);
@@ -99,6 +108,7 @@ const CustomFields = () => {
   };
 
   const handleTabChange = (value: string) => {
+    console.log(`Tab changed to: ${value}`);
     // Cast the string value to FieldCategory since we know it's one of the valid categories
     setActiveCategory(value as FieldCategory);
   };
@@ -124,7 +134,7 @@ const CustomFields = () => {
           </Button>
 
           <div className="max-w-4xl mx-auto space-y-8 pt-6">
-            <CustomFieldsHeader />
+            <CustomFieldsHeader title="Custom Data Fields" description="Customize what information you collect about your customers" />
             
             <Alert>
               <AlertTriangle className="h-4 w-4" />
