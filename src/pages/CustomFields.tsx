@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { useCustomFields } from "@/hooks/useCustomFields";
-import { CustomField, CustomFieldCategory, FIELD_CATEGORIES, FieldCategory } from "@/domain/models/customField";
+import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
 
 // Import the refactored components
 import CustomFieldsHeader from "@/components/custom-fields/CustomFieldsHeader";
@@ -16,44 +16,23 @@ import CustomFieldsContainer from "@/components/custom-fields/CustomFieldsContai
 import CustomFieldForm from "@/components/custom-fields/CustomFieldForm";
 
 const CustomFields = () => {
-  console.log("CustomFields page rendering");
-  
   const { 
     customFieldCategories, 
     isLoadingCategories, 
-    updateCategoryFields,
-    getCategoryFields,
-    isUpdatingCategory,
-    refetchCategories 
+    updateCategoryFields 
   } = useCustomFields();
 
-  const [activeCategory, setActiveCategory] = useState<FieldCategory>("Customer");
+  const [activeCategory, setActiveCategory] = useState("Customer");
   const [categoryFields, setCategoryFields] = useState<CustomField[]>([]);
-  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Initial data fetch when component mounts
   useEffect(() => {
-    console.log("Running initial fetch effect");
-    refetchCategories();
-  }, [refetchCategories]);
-
-  // Update category fields when the active category changes or when field data is loaded
-  useEffect(() => {
-    console.log("Category data changed, updating fields", { 
-      customFieldCategories, 
-      activeCategory 
-    });
-    
-    if (customFieldCategories) {
-      // Get the fields for the currently active category
-      const fields = getCategoryFields(activeCategory);
-      console.log(`Setting ${activeCategory} fields:`, fields);
-      setCategoryFields(fields);
+    if (customFieldCategories?.length) {
+      const category = customFieldCategories.find(c => c.category === activeCategory);
+      setCategoryFields(category?.fields || []);
     }
-  }, [customFieldCategories, activeCategory, getCategoryFields]);
+  }, [customFieldCategories, activeCategory]);
 
   const addField = () => {
-    console.log("Adding new field to", activeCategory);
     setCategoryFields([
       ...categoryFields,
       { key: "", label: "", type: "text", required: false }
@@ -61,12 +40,10 @@ const CustomFields = () => {
   };
 
   const removeField = (index: number) => {
-    console.log(`Removing field at index ${index} from ${activeCategory}`);
     setCategoryFields(categoryFields.filter((_, i) => i !== index));
   };
 
   const updateField = (index: number, updates: Partial<CustomField>) => {
-    console.log(`Updating field at index ${index} in ${activeCategory}`, updates);
     setCategoryFields(categoryFields.map((field, i) => 
       i === index ? { ...field, ...updates } : field
     ));
@@ -74,8 +51,6 @@ const CustomFields = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
     
     // Basic validation
     const invalidFields = categoryFields.filter(field => !field.key || !field.label);
@@ -100,31 +75,15 @@ const CustomFields = () => {
     }
     
     try {
-      setIsUpdating(true);
-      console.log(`Saving fields for ${activeCategory}`, categoryFields);
       const validFields = categoryFields.filter(field => field.key && field.label);
       await updateCategoryFields({
         category: activeCategory,
         fields: validFields
       });
-      setIsUpdating(false);
-      toast.success(`${activeCategory} fields updated successfully`);
     } catch (error) {
-      setIsUpdating(false);
       console.error("Error updating fields:", error);
-      toast.error(`Failed to update ${activeCategory} fields`);
     }
   };
-
-  const handleTabChange = (value: string) => {
-    console.log(`Tab changed to: ${value}`);
-    // Cast the string value to FieldCategory since we know it's one of the valid categories
-    setActiveCategory(value as FieldCategory);
-  };
-
-  console.log("Rendering CustomFields with categories:", customFieldCategories);
-  console.log("Current active category:", activeCategory);
-  console.log("Current category fields:", categoryFields);
 
   return (
     <SidebarProvider>
@@ -143,7 +102,7 @@ const CustomFields = () => {
           </Button>
 
           <div className="max-w-4xl mx-auto space-y-8 pt-6">
-            <CustomFieldsHeader title="Custom Data Fields" description="Customize what information you collect about your data entities" />
+            <CustomFieldsHeader />
             
             <Alert>
               <AlertTriangle className="h-4 w-4" />
@@ -153,11 +112,7 @@ const CustomFields = () => {
               </AlertDescription>
             </Alert>
             
-            <Tabs 
-              defaultValue="Customer" 
-              value={activeCategory} 
-              onValueChange={handleTabChange}
-            >
+            <Tabs defaultValue="Customer" value={activeCategory} onValueChange={setActiveCategory}>
               <TabsList className="w-full border-b">
                 {FIELD_CATEGORIES.map(category => (
                   <TabsTrigger key={category} value={category} className="flex-1">
@@ -172,7 +127,7 @@ const CustomFields = () => {
                     <CustomFieldForm
                       fields={categoryFields}
                       isLoading={isLoadingCategories}
-                      isUpdating={isUpdating || isUpdatingCategory}
+                      isUpdating={false}
                       onAddField={addField}
                       onRemoveField={removeField}
                       onUpdateField={updateField}

@@ -23,33 +23,20 @@ export function useCustomFields() {
     data: customFieldCategories = [], 
     isLoading: isLoadingCategories, 
     error: categoriesError,
-    isFetching: isFetchingCategories,
-    refetch: refetchCategories
+    isFetching: isFetchingCategories
   } = useQuery({
     queryKey: ["customFieldCategories"],
     queryFn: async () => {
       try {
-        console.log("Fetching custom field categories");
         // Try to fetch from API first
-        const apiData = await fetchCustomFields();
-        console.log("API response for custom fields:", apiData);
-        
-        // Transform the data into categories format
-        const categories: CustomFieldCategory[] = [];
-        
-        for (const [category, fields] of Object.entries(apiData)) {
-          if (Array.isArray(fields)) {
-            categories.push({
-              category,
-              fields: fields
-            });
-          }
-        }
-        
-        console.log("Transformed categories:", categories);
+        const categories = await fetchCustomFields()
+          .catch(() => {
+            console.log("API fetch failed, falling back to localStorage");
+            return getStoredCustomFields();
+          });
         
         // Update localStorage as a cache
-        if (categories.length > 0) {
+        if (Array.isArray(categories)) {
           storeCustomFields(categories);
         }
         
@@ -70,7 +57,6 @@ export function useCustomFields() {
       queryKey: ["customFieldCategory", category],
       queryFn: async () => {
         try {
-          console.log(`Fetching fields for category: ${category}`);
           // Try to fetch from API first with specific category endpoint
           const categoryData = await fetchCategoryFieldsFromApi(category)
             .catch(() => {
@@ -78,8 +64,6 @@ export function useCustomFields() {
               const storedFields = getStoredCategoryFields(category);
               return { category, fields: storedFields };
             });
-          
-          console.log(`Fetched fields for ${category}:`, categoryData);
           
           // Update localStorage as a cache
           if (categoryData) {
@@ -101,15 +85,8 @@ export function useCustomFields() {
 
   // Function to get fields for a specific category from the current data
   const getCategoryFields = (category: FieldCategory): CustomField[] => {
-    if (!category) {
-      console.warn("getCategoryFields called with undefined category");
-      return [];
-    }
-    
     const categoryData = customFieldCategories.find(c => c.category === category);
-    const fields = categoryData?.fields || [];
-    console.log(`Getting fields for ${category}:`, fields);
-    return fields;
+    return categoryData?.fields || [];
   };
 
   // Data for customer fields (for backward compatibility)
@@ -121,12 +98,6 @@ export function useCustomFields() {
   const { mutateAsync: updateCategoryFields, isPending: isUpdatingCategory } = useMutation({
     mutationFn: async (categoryData: CustomFieldCategory) => {
       try {
-        if (!categoryData.category) {
-          throw new Error("Category name is required");
-        }
-        
-        console.log(`Updating fields for ${categoryData.category}:`, categoryData.fields);
-        
         // Try to update via API
         const response = await saveCustomFieldCategory(categoryData)
           .catch((error) => {
@@ -135,17 +106,13 @@ export function useCustomFields() {
             return categoryData;
           });
         
-        console.log(`Update response for ${categoryData.category}:`, response);
-        
         // Always update localStorage as cache
         storeCategoryFields(response);
         return response;
       } catch (error) {
         console.error("Failed to update category fields:", error);
         // Fallback to local storage on error
-        if (categoryData.category) {
-          storeCategoryFields(categoryData);
-        }
+        storeCategoryFields(categoryData);
         throw error;
       }
     },
@@ -174,7 +141,6 @@ export function useCustomFields() {
     updateCategoryFields,
     isUpdatingCategory,
     useCategoryFields,
-    refetchCategories,
     
     // Original API (for backward compatibility)
     customFields,

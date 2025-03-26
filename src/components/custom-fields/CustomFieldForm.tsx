@@ -1,11 +1,10 @@
 
-import React, { useEffect } from "react";
-import { Plus } from "lucide-react";
+import React from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomField } from "@/domain/models/customField";
+import { CustomField } from "@/types/customer";
 import CustomFieldItem from "./CustomFieldItem";
 import NoCustomFields from "./NoCustomFields";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomFieldFormProps {
   fields: CustomField[];
@@ -26,23 +25,6 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   onUpdateField,
   onSubmit,
 }) => {
-  console.log("CustomFieldForm rendering with fields:", fields);
-  
-  // Log when fields change
-  useEffect(() => {
-    console.log("Fields updated in CustomFieldForm:", fields);
-  }, [fields]);
-  
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-12 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
-  
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
@@ -53,7 +35,11 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
         </div>
       </div>
       
-      {fields.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center p-8">
+          <p>Loading custom fields...</p>
+        </div>
+      ) : fields.length === 0 ? (
         <NoCustomFields onAddField={onAddField} />
       ) : (
         <div className="space-y-4">
@@ -67,7 +53,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
 
           {fields.map((field, index) => (
             <CustomFieldItem
-              key={`field-${index}-${field.key || index}`}
+              key={index}
               field={field}
               index={index}
               onUpdateField={onUpdateField}

@@ -1,162 +1,156 @@
 
-// Basic API utilities
+import { toast } from "sonner";
+
+// Base API URL - defaults to current domain
+const API_BASE_URL = `${window.location.origin}/api`;
+
+/**
+ * Custom API client for making authenticated requests to the backend
+ */
 interface ApiOptions {
+  endpoint: string;
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  body?: any;
   headers?: Record<string, string>;
+  suppressToast?: boolean;
 }
 
-// Mock data for custom fields
-const mockCustomFields = {
-  "Customer": [
-    {
-      "label": "Salary",
-      "type": "number",
-      "key": "Salary",
-      "required": true
-    }
-  ],
-  "Order": [
-    {
-      "label": "Order ID",
-      "type": "text",
-      "key": "Order_ID",
-      "required": true
-    }
-  ],
-  "Payment": [
-    {
-      "label": "Total Amount",
-      "type": "number",
-      "key": "Total_Amount",
-      "required": true
-    },
-    {
-      "label": "Payment ID",
-      "type": "text",
-      "key": "Payment_ID",
-      "required": true
-    }
-  ],
-  "Interaction": [
-    {
-      "label": "Interaction ID", 
-      "type": "text",
-      "key": "Interaction_ID",
-      "required": true
-    }
-  ],
-  "Support": [
-    {
-      "label": "Support ID",
-      "type": "text",
-      "key": "Support_ID",
-      "required": true
-    }
-  ]
-};
-
-// Simple API client for making HTTP requests
-export const api = {
-  // GET request
-  async get<T>(url: string, options?: ApiOptions): Promise<T> {
-    console.log(`API GET request to ${url}`);
-    
-    // Mock API response for custom fields
-    if (url.includes('/settings/custom-fields')) {
-      console.log("Mocking API response for custom fields GET:", mockCustomFields);
-      // Return mock data for custom fields
-      return mockCustomFields as unknown as T;
-    }
-
-    // Implement actual API call logic here
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {})
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    return response.json();
-  },
-
-  // POST request
-  async post<T>(url: string, data: any, options?: ApiOptions): Promise<T> {
-    console.log(`API POST request to ${url} with data:`, data);
-    
-    // Mock API response for custom fields update
-    if (url.includes('/settings/custom-fields')) {
-      console.log("Mocking API response for custom fields POST:", data);
-      // Update mock data and return it
-      const category = Object.keys(data)[0];
-      if (category) {
-        mockCustomFields[category as keyof typeof mockCustomFields] = data[category];
-      }
-      return data as unknown as T;
-    }
-
-    // Implement actual API call logic here
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {})
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    return response.json();
-  },
-
-  // PUT request
-  async put<T>(url: string, data: any, options?: ApiOptions): Promise<T> {
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {})
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    return response.json();
-  },
-
-  // DELETE request
-  async delete<T>(url: string, options?: ApiOptions): Promise<T> {
-    const response = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(options?.headers || {})
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    return response.json();
-  }
-};
-
-// Logout function
-export const logout = async (): Promise<void> => {
-  // In a real application, this would call an API endpoint to invalidate the session
-  // For now, we'll just simulate a logout by clearing local storage and redirecting
-  localStorage.clear();
+/**
+ * Makes an authenticated API request to the backend
+ * Automatically includes credentials for cookies
+ */
+export async function apiRequest<T>({
+  endpoint,
+  method = "GET",
+  body = undefined,
+  headers = {},
+  suppressToast = false,
+}: ApiOptions): Promise<T> {
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
   
-  // Redirect to home/login page
-  window.location.href = "/";
+  try {
+    // Create fetch options with credentials to include cookies
+    const options: RequestInit = {
+      method,
+      credentials: "include", // This is crucial for sending cookies
+      headers: {
+        "Content-Type": "application/json",
+        ...headers,
+      },
+    };
+
+    // Add body for non-GET requests
+    if (body && method !== "GET") {
+      options.body = JSON.stringify(body);
+    }
+
+    // Make the request
+    const response = await fetch(url, options);
+    
+    // Handle non-2xx responses
+    if (!response.ok) {
+      // Try to parse error response
+      let errorData;
+      try {
+        // Check if the content type is JSON
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+          errorData = await response.json();
+        } else {
+          // Handle HTML or other non-JSON responses
+          errorData = { message: "Unexpected server response format" };
+        }
+      } catch (e) {
+        errorData = { message: "An unknown error occurred" };
+      }
+      
+      // Handle auth errors specially
+      if (response.status === 401) {
+        if (!suppressToast) {
+          toast.error("Session expired. Please log in again.");
+        }
+        // Redirect to login if needed
+        window.location.href = "https://nestcrm.com.au/login";
+        throw new Error("Authentication failed");
+      }
+      
+      // Handle 404 with "Invalid tenant or subdomain" message
+      if (response.status === 404 && errorData.error === "Invalid tenant or subdomain") {
+        if (!suppressToast) {
+          toast.error("Invalid tenant or subdomain. Redirecting to main site.");
+        }
+        // Redirect to main site
+        window.location.href = "https://nestcrm.com.au";
+        throw new Error("Invalid tenant or subdomain");
+      }
+      
+      throw new Error(errorData.message || errorData.error || "Request failed");
+    }
+
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
+      const data = await response.json();
+      return data as T;
+    } else {
+      // Handle non-JSON responses
+      console.error("Received non-JSON response:", await response.text().catch(() => "Unable to read response text"));
+      throw new Error("Unexpected server response format");
+    }
+  } catch (error) {
+    console.error("API request failed:", error);
+    
+    // Show a toast unless suppressed
+    if (!suppressToast) {
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
+    }
+    
+    // Re-throw to allow handling by the caller
+    throw error;
+  }
+}
+
+/**
+ * Logout the current user
+ */
+export async function logout() {
+  try {
+    // Send logout request to current subdomain API
+    await fetch(`${API_BASE_URL}/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+    
+    // Send logout request to main domain API
+    await fetch(`https://nestcrm.com.au/api/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+    
+    toast.success("Logged out successfully");
+    
+    // Redirect to login page after successful logout
+    window.location.href = "https://nestcrm.com.au/login";
+  } catch (error) {
+    console.error("Logout failed:", error);
+    toast.error("Failed to log out. Please try again.");
+  }
+}
+
+/**
+ * Convenience methods for common HTTP verbs
+ */
+export const api = {
+  get: <T>(endpoint: string, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "GET", headers, suppressToast }),
+  
+  post: <T>(endpoint: string, body: any, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "POST", body, headers, suppressToast }),
+  
+  put: <T>(endpoint: string, body: any, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "PUT", body, headers, suppressToast }),
+  
+  delete: <T>(endpoint: string, headers?: Record<string, string>, suppressToast?: boolean) => 
+    apiRequest<T>({ endpoint, method: "DELETE", headers, suppressToast }),
 };
+
