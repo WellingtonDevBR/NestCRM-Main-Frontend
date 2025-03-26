@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { useCustomFields } from "@/hooks/useCustomFields";
-import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
+import { CustomField, CustomFieldCategory, FIELD_CATEGORIES, FieldCategory } from "@/domain/models/customField";
 
 // Import the refactored components
 import CustomFieldsHeader from "@/components/custom-fields/CustomFieldsHeader";
@@ -23,7 +23,7 @@ const CustomFields = () => {
     getCategoryFields 
   } = useCustomFields();
 
-  const [activeCategory, setActiveCategory] = useState("Customer");
+  const [activeCategory, setActiveCategory] = useState<FieldCategory>("Customer");
   const [categoryFields, setCategoryFields] = useState<CustomField[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -91,7 +91,8 @@ const CustomFields = () => {
   };
 
   const handleTabChange = (value: string) => {
-    setActiveCategory(value);
+    // Cast the string value to FieldCategory since we know it's one of the valid categories
+    setActiveCategory(value as FieldCategory);
   };
 
   return (

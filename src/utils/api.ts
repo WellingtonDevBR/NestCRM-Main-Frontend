@@ -128,3 +128,13 @@ export const api = {
     return response.json();
   }
 };
+
+// Logout function
+export const logout = async (): Promise<void> => {
+  // In a real application, this would call an API endpoint to invalidate the session
+  // For now, we'll just simulate a logout by clearing local storage and redirecting
+  localStorage.clear();
+  
+  // Redirect to home/login page
+  window.location.href = "/";
+};
