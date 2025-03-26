@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CustomField } from "@/domain/models/customField";
 import CustomFieldItem from "./CustomFieldItem";
 import NoCustomFields from "./NoCustomFields";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomFieldFormProps {
   fields: CustomField[];
@@ -32,6 +33,16 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     console.log("Fields updated in CustomFieldForm:", fields);
   }, [fields]);
   
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+  
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
@@ -42,11 +53,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
         </div>
       </div>
       
-      {isLoading ? (
-        <div className="text-center p-8">
-          <p>Loading custom fields...</p>
-        </div>
-      ) : fields.length === 0 ? (
+      {fields.length === 0 ? (
         <NoCustomFields onAddField={onAddField} />
       ) : (
         <div className="space-y-4">
@@ -60,7 +67,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
 
           {fields.map((field, index) => (
             <CustomFieldItem
-              key={index}
+              key={`field-${index}-${field.key || index}`}
               field={field}
               index={index}
               onUpdateField={onUpdateField}

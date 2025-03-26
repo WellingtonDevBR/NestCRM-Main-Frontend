@@ -49,7 +49,7 @@ export function useCustomFields() {
         console.log("Transformed categories:", categories);
         
         // Update localStorage as a cache
-        if (Array.isArray(categories)) {
+        if (categories.length > 0) {
           storeCustomFields(categories);
         }
         
@@ -101,9 +101,15 @@ export function useCustomFields() {
 
   // Function to get fields for a specific category from the current data
   const getCategoryFields = (category: FieldCategory): CustomField[] => {
+    if (!category) {
+      console.warn("getCategoryFields called with undefined category");
+      return [];
+    }
+    
     const categoryData = customFieldCategories.find(c => c.category === category);
-    console.log(`Getting fields for ${category}:`, categoryData?.fields || []);
-    return categoryData?.fields || [];
+    const fields = categoryData?.fields || [];
+    console.log(`Getting fields for ${category}:`, fields);
+    return fields;
   };
 
   // Data for customer fields (for backward compatibility)
@@ -115,14 +121,13 @@ export function useCustomFields() {
   const { mutateAsync: updateCategoryFields, isPending: isUpdatingCategory } = useMutation({
     mutationFn: async (categoryData: CustomFieldCategory) => {
       try {
+        if (!categoryData.category) {
+          throw new Error("Category name is required");
+        }
+        
         console.log(`Updating fields for ${categoryData.category}:`, categoryData.fields);
+        
         // Try to update via API
-        const payload = {
-          [categoryData.category]: categoryData.fields
-        };
-        
-        console.log("Creating payload:", payload);
-        
         const response = await saveCustomFieldCategory(categoryData)
           .catch((error) => {
             console.log(`API update failed for ${categoryData.category}, falling back to localStorage`, error);
@@ -138,7 +143,9 @@ export function useCustomFields() {
       } catch (error) {
         console.error("Failed to update category fields:", error);
         // Fallback to local storage on error
-        storeCategoryFields(categoryData);
+        if (categoryData.category) {
+          storeCategoryFields(categoryData);
+        }
         throw error;
       }
     },

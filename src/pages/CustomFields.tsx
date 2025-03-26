@@ -23,6 +23,7 @@ const CustomFields = () => {
     isLoadingCategories, 
     updateCategoryFields,
     getCategoryFields,
+    isUpdatingCategory,
     refetchCategories 
   } = useCustomFields();
 
@@ -43,7 +44,7 @@ const CustomFields = () => {
       activeCategory 
     });
     
-    if (customFieldCategories && customFieldCategories.length > 0) {
+    if (customFieldCategories) {
       // Get the fields for the currently active category
       const fields = getCategoryFields(activeCategory);
       console.log(`Setting ${activeCategory} fields:`, fields);
@@ -52,6 +53,7 @@ const CustomFields = () => {
   }, [customFieldCategories, activeCategory, getCategoryFields]);
 
   const addField = () => {
+    console.log("Adding new field to", activeCategory);
     setCategoryFields([
       ...categoryFields,
       { key: "", label: "", type: "text", required: false }
@@ -59,10 +61,12 @@ const CustomFields = () => {
   };
 
   const removeField = (index: number) => {
+    console.log(`Removing field at index ${index} from ${activeCategory}`);
     setCategoryFields(categoryFields.filter((_, i) => i !== index));
   };
 
   const updateField = (index: number, updates: Partial<CustomField>) => {
+    console.log(`Updating field at index ${index} in ${activeCategory}`, updates);
     setCategoryFields(categoryFields.map((field, i) => 
       i === index ? { ...field, ...updates } : field
     ));
@@ -70,6 +74,8 @@ const CustomFields = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
     
     // Basic validation
     const invalidFields = categoryFields.filter(field => !field.key || !field.label);
@@ -95,15 +101,18 @@ const CustomFields = () => {
     
     try {
       setIsUpdating(true);
+      console.log(`Saving fields for ${activeCategory}`, categoryFields);
       const validFields = categoryFields.filter(field => field.key && field.label);
       await updateCategoryFields({
         category: activeCategory,
         fields: validFields
       });
       setIsUpdating(false);
+      toast.success(`${activeCategory} fields updated successfully`);
     } catch (error) {
       setIsUpdating(false);
       console.error("Error updating fields:", error);
+      toast.error(`Failed to update ${activeCategory} fields`);
     }
   };
 
@@ -134,7 +143,7 @@ const CustomFields = () => {
           </Button>
 
           <div className="max-w-4xl mx-auto space-y-8 pt-6">
-            <CustomFieldsHeader title="Custom Data Fields" description="Customize what information you collect about your customers" />
+            <CustomFieldsHeader title="Custom Data Fields" description="Customize what information you collect about your data entities" />
             
             <Alert>
               <AlertTriangle className="h-4 w-4" />
@@ -163,7 +172,7 @@ const CustomFields = () => {
                     <CustomFieldForm
                       fields={categoryFields}
                       isLoading={isLoadingCategories}
-                      isUpdating={isUpdating}
+                      isUpdating={isUpdating || isUpdatingCategory}
                       onAddField={addField}
                       onRemoveField={removeField}
                       onUpdateField={updateField}

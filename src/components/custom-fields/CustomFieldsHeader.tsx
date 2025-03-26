@@ -12,7 +12,7 @@ interface CustomFieldsHeaderProps {
 }
 
 const CustomFieldsHeader: React.FC<CustomFieldsHeaderProps> = ({ 
-  title = "Customer Data Fields",
+  title = "Custom Data Fields",
   description = "Customize what information you collect about your customers" 
 }) => {
   return (

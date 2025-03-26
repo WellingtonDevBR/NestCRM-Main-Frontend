@@ -31,6 +31,11 @@ export function getStoredCustomFields(): CustomFieldCategory[] {
 // Store a specific category's fields
 export function storeCategoryFields(categoryData: CustomFieldCategory): void {
   try {
+    if (!categoryData || !categoryData.category) {
+      console.error("Invalid category data for storage:", categoryData);
+      return;
+    }
+    
     // Store in the category-specific key
     const key = `${CATEGORY_FIELDS_PREFIX}${categoryData.category}`;
     localStorage.setItem(key, JSON.stringify(categoryData.fields));
@@ -48,13 +53,18 @@ export function storeCategoryFields(categoryData: CustomFieldCategory): void {
     
     storeCustomFields(allCategories);
   } catch (error) {
-    console.error(`Error storing ${categoryData.category} fields in localStorage:`, error);
+    console.error(`Error storing ${categoryData?.category} fields in localStorage:`, error);
   }
 }
 
 // Get stored fields for a specific category
 export function getStoredCategoryFields(category: string): CustomField[] {
   try {
+    if (!category) {
+      console.error("Invalid category for retrieval:", category);
+      return [];
+    }
+    
     const key = `${CATEGORY_FIELDS_PREFIX}${category}`;
     const stored = localStorage.getItem(key);
     

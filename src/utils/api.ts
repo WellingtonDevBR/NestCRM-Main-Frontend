@@ -6,6 +6,14 @@ interface ApiOptions {
 
 // Mock data for custom fields
 const mockCustomFields = {
+  "Customer": [
+    {
+      "label": "Salary",
+      "type": "number",
+      "key": "Salary",
+      "required": true
+    }
+  ],
   "Order": [
     {
       "label": "Order ID",
@@ -28,16 +36,22 @@ const mockCustomFields = {
       "required": true
     }
   ],
-  "Customer": [
+  "Interaction": [
     {
-      "label": "Salary",
-      "type": "number",
-      "key": "Salary",
+      "label": "Interaction ID", 
+      "type": "text",
+      "key": "Interaction_ID",
       "required": true
     }
   ],
-  "Interaction": [],
-  "Support": []
+  "Support": [
+    {
+      "label": "Support ID",
+      "type": "text",
+      "key": "Support_ID",
+      "required": true
+    }
+  ]
 };
 
 // Simple API client for making HTTP requests
@@ -78,7 +92,9 @@ export const api = {
       console.log("Mocking API response for custom fields POST:", data);
       // Update mock data and return it
       const category = Object.keys(data)[0];
-      mockCustomFields[category as keyof typeof mockCustomFields] = data[category];
+      if (category) {
+        mockCustomFields[category as keyof typeof mockCustomFields] = data[category];
+      }
       return data as unknown as T;
     }
 
