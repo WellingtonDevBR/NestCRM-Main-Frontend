@@ -19,7 +19,11 @@ const mockOrders: Order[] = [
         unitPrice: 249.99,
         total: 249.99
       }
-    ]
+    ],
+    customFields: {
+      referralSource: "Website",
+      promotion: "Back to School"
+    }
   },
   {
     id: "ord-002",
@@ -37,7 +41,11 @@ const mockOrders: Order[] = [
         unitPrice: 149.99,
         total: 149.99
       }
-    ]
+    ],
+    customFields: {
+      referralSource: "Partner",
+      notes: "First-time customer"
+    }
   },
   {
     id: "ord-003",
@@ -62,7 +70,11 @@ const mockOrders: Order[] = [
         unitPrice: 148.99,
         total: 148.99
       }
-    ]
+    ],
+    customFields: {
+      referralSource: "Email Campaign",
+      priority: "High"
+    }
   },
   {
     id: "ord-004",
@@ -80,7 +92,11 @@ const mockOrders: Order[] = [
         unitPrice: 99.99,
         total: 99.99
       }
-    ]
+    ],
+    customFields: {
+      referralSource: "Friend",
+      couponCode: "WELCOME10"
+    }
   },
   {
     id: "ord-005",
@@ -105,7 +121,11 @@ const mockOrders: Order[] = [
         unitPrice: 99.99,
         total: 99.99
       }
-    ]
+    ],
+    customFields: {
+      cancelReason: "Changed mind",
+      refundStatus: "Pending"
+    }
   }
 ];
 

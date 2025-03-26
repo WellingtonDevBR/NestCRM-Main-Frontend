@@ -9,6 +9,7 @@ export interface Order {
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   total: number;
   items: OrderItem[];
+  customFields?: Record<string, string | number | boolean | Date>;
 }
 
 export interface OrderItem {
