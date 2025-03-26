@@ -37,7 +37,7 @@ export function useDashboardData() {
     queryFn: async () => {
       // The API call will handle 404 "Invalid tenant or subdomain" errors
       // and redirect to the main site
-      return api.get<DashboardData>("/data");
+      return api.get<DashboardData>("/status");
     },
     // Refresh data every 5 minutes
     refetchInterval: 5 * 60 * 1000,
