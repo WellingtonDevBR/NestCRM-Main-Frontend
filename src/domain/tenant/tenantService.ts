@@ -22,6 +22,10 @@ class TenantService {
       const response = await fetch(`https://${tenant.domain}/api/status`, {
         method: 'GET',
         credentials: 'include', // Send cookies
+        headers: {
+          // Add the Host header with the tenant domain
+          'Host': tenant.domain
+        }
       });
 
       console.log('Tenant status response:', response.status);
