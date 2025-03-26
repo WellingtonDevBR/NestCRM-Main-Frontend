@@ -11,7 +11,7 @@ export class AuthApi {
    */
   async login(credentials: LoginCredentials): Promise<AuthenticatedSession> {
     try {
-      const response = await fetch(`${this.baseUrl}/login`, {
+      const response = await fetch(`${this.baseUrl}/tenants/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export class AuthApi {
 
       console.log('Signup payload:', signupPayload);
 
-      const response = await fetch(`${this.baseUrl}/signup`, {
+      const response = await fetch(`${this.baseUrl}/tenatns/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
