@@ -20,18 +20,26 @@ const CustomFields = () => {
     customFieldCategories, 
     isLoadingCategories, 
     updateCategoryFields,
-    getCategoryFields 
+    getCategoryFields,
+    refetchCategories 
   } = useCustomFields();
 
   const [activeCategory, setActiveCategory] = useState<FieldCategory>("Customer");
   const [categoryFields, setCategoryFields] = useState<CustomField[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Initial data fetch when component mounts
+  useEffect(() => {
+    refetchCategories();
+  }, []);
+
   // Update category fields when the active category changes or when field data is loaded
   useEffect(() => {
-    // Get the fields for the currently active category
-    const fields = getCategoryFields(activeCategory);
-    setCategoryFields(fields);
+    if (customFieldCategories && customFieldCategories.length > 0) {
+      // Get the fields for the currently active category
+      const fields = getCategoryFields(activeCategory);
+      setCategoryFields(fields);
+    }
   }, [customFieldCategories, activeCategory, getCategoryFields]);
 
   const addField = () => {
@@ -94,6 +102,10 @@ const CustomFields = () => {
     // Cast the string value to FieldCategory since we know it's one of the valid categories
     setActiveCategory(value as FieldCategory);
   };
+
+  console.log("Rendering CustomFields with categories:", customFieldCategories);
+  console.log("Current active category:", activeCategory);
+  console.log("Current category fields:", categoryFields);
 
   return (
     <SidebarProvider>

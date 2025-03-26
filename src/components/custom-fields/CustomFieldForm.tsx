@@ -1,8 +1,8 @@
 
 import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomField } from "@/types/customer";
+import { CustomField } from "@/domain/models/customField";
 import CustomFieldItem from "./CustomFieldItem";
 import NoCustomFields from "./NoCustomFields";
 
@@ -25,6 +25,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   onUpdateField,
   onSubmit,
 }) => {
+  console.log("CustomFieldForm rendering with fields:", fields);
+  
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">

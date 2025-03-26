@@ -46,6 +46,7 @@ export const api = {
   async get<T>(url: string, options?: ApiOptions): Promise<T> {
     // Mock API response for custom fields
     if (url.includes('/settings/custom-fields')) {
+      console.log("Mocking API response for custom fields GET:", mockCustomFields);
       // Return mock data for custom fields
       return mockCustomFields as unknown as T;
     }
@@ -70,6 +71,7 @@ export const api = {
   async post<T>(url: string, data: any, options?: ApiOptions): Promise<T> {
     // Mock API response for custom fields update
     if (url.includes('/settings/custom-fields')) {
+      console.log("Mocking API response for custom fields POST:", data);
       // Update mock data and return it
       const category = Object.keys(data)[0];
       mockCustomFields[category as keyof typeof mockCustomFields] = data[category];

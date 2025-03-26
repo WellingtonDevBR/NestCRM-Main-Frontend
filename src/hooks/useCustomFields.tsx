@@ -29,12 +29,15 @@ export function useCustomFields() {
     queryKey: ["customFieldCategories"],
     queryFn: async () => {
       try {
+        console.log("Fetching custom field categories");
         // Try to fetch from API first
         const categories = await fetchCustomFields()
-          .catch(() => {
-            console.log("API fetch failed, falling back to localStorage");
+          .catch((error) => {
+            console.log("API fetch failed, falling back to localStorage", error);
             return getStoredCustomFields();
           });
+        
+        console.log("Fetched categories:", categories);
         
         // Update localStorage as a cache
         if (Array.isArray(categories)) {
@@ -58,6 +61,7 @@ export function useCustomFields() {
       queryKey: ["customFieldCategory", category],
       queryFn: async () => {
         try {
+          console.log(`Fetching fields for category: ${category}`);
           // Try to fetch from API first with specific category endpoint
           const categoryData = await fetchCategoryFieldsFromApi(category)
             .catch(() => {
@@ -65,6 +69,8 @@ export function useCustomFields() {
               const storedFields = getStoredCategoryFields(category);
               return { category, fields: storedFields };
             });
+          
+          console.log(`Fetched fields for ${category}:`, categoryData);
           
           // Update localStorage as a cache
           if (categoryData) {
@@ -87,6 +93,7 @@ export function useCustomFields() {
   // Function to get fields for a specific category from the current data
   const getCategoryFields = (category: FieldCategory): CustomField[] => {
     const categoryData = customFieldCategories.find(c => c.category === category);
+    console.log(`Getting fields for ${category}:`, categoryData?.fields || []);
     return categoryData?.fields || [];
   };
 
@@ -99,6 +106,7 @@ export function useCustomFields() {
   const { mutateAsync: updateCategoryFields, isPending: isUpdatingCategory } = useMutation({
     mutationFn: async (categoryData: CustomFieldCategory) => {
       try {
+        console.log(`Updating fields for ${categoryData.category}:`, categoryData.fields);
         // Try to update via API
         const response = await saveCustomFieldCategory(categoryData)
           .catch((error) => {
@@ -106,6 +114,8 @@ export function useCustomFields() {
             storeCategoryFields(categoryData);
             return categoryData;
           });
+        
+        console.log(`Update response for ${categoryData.category}:`, response);
         
         // Always update localStorage as cache
         storeCategoryFields(response);
