@@ -3,8 +3,9 @@
 export interface CustomField {
   key: string;
   label: string;
-  type: 'text' | 'date' | 'number';
+  type: 'text' | 'date' | 'number' | 'select';
   required: boolean;
+  options?: string[]; // Add options for select type fields
 }
 
 export interface CustomerFormData {
