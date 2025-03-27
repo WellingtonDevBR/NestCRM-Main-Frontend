@@ -16,7 +16,7 @@ import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
 import HelpAndSupport from "./pages/HelpAndSupport";
 import NotFound from "./pages/NotFound";
-import React from "react";
+import * as React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import Settings from "./pages/Settings";
 import CustomFields from "./pages/CustomFields";
