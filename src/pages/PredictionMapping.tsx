@@ -32,8 +32,8 @@ const PredictionMapping: React.FC = () => {
     saveMappings,
     isSaving,
     getMapping,
-    LIGHTWEIGHT_MODEL_FEATURES,
-    FULL_MODEL_FEATURES
+    LIGHT_FEATURES,
+    FULL_FEATURES
   } = usePredictionMapping();
   
   // Local state to track changes
@@ -46,8 +46,8 @@ const PredictionMapping: React.FC = () => {
     if (!localMappings.mappings) return { mapped: 0, total: 0 };
     
     const relevantFeatures = activeModel === "lightweight" 
-      ? LIGHTWEIGHT_MODEL_FEATURES 
-      : FULL_MODEL_FEATURES;
+      ? LIGHT_FEATURES 
+      : FULL_FEATURES;
     
     const mapped = relevantFeatures.filter(feature => {
       const mapping = getLocalMapping(feature.modelField);
@@ -118,8 +118,8 @@ const PredictionMapping: React.FC = () => {
   const isLoading = isLoadingFields || isLoadingMappings;
   
   // Get advanced features by filtering out the lightweight features
-  const advancedFeatures = FULL_MODEL_FEATURES.filter(
-    f => !LIGHTWEIGHT_MODEL_FEATURES.some(lf => lf.modelField === f.modelField)
+  const advancedFeatures = FULL_FEATURES.filter(
+    f => !LIGHT_FEATURES.some(lf => lf.modelField === f.modelField)
   );
   
   if (isLoading) {
@@ -221,7 +221,7 @@ const PredictionMapping: React.FC = () => {
             className={activeModel === "lightweight" ? "bg-purple-600 hover:bg-purple-700" : ""}
             size="sm"
           >
-            Lightweight Model ({LIGHTWEIGHT_MODEL_FEATURES.length} fields)
+            Lightweight Model ({LIGHT_FEATURES.length} fields)
           </Button>
           <Button
             onClick={() => setActiveModel("full")}
@@ -229,7 +229,7 @@ const PredictionMapping: React.FC = () => {
             className={activeModel === "full" ? "bg-purple-600 hover:bg-purple-700" : ""}
             size="sm"
           >
-            Full Model ({FULL_MODEL_FEATURES.length} fields)
+            Full Model ({FULL_FEATURES.length} fields)
           </Button>
         </div>
         
@@ -325,7 +325,7 @@ const PredictionMapping: React.FC = () => {
           {activeModel === "lightweight" && (
             <FieldMappingTable
               title="Lightweight Model Features"
-              features={LIGHTWEIGHT_MODEL_FEATURES}
+              features={LIGHT_FEATURES}
               customFieldCategories={customFieldCategories || []}
               getMappedField={getLocalMapping}
               onFieldChange={handleFieldChange}
@@ -336,7 +336,7 @@ const PredictionMapping: React.FC = () => {
             <>
               <FieldMappingTable
                 title="Essential Model Features"
-                features={LIGHTWEIGHT_MODEL_FEATURES}
+                features={LIGHT_FEATURES}
                 customFieldCategories={customFieldCategories || []}
                 getMappedField={getLocalMapping}
                 onFieldChange={handleFieldChange}
