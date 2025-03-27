@@ -32,12 +32,9 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   onFieldChange
 }) => {
   console.log(`FieldMappingRow - ${modelFeature.modelField} - selectedField:`, selectedField);
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    getFieldCategory(selectedField, customFieldCategories)
-  );
-
-  // Function to find the category for a given field key
-  function getFieldCategory(fieldKey: string | undefined, categories: CustomFieldCategory[]): string | undefined {
+  
+  // Find the category for the selected field
+  const getFieldCategory = (fieldKey: string | undefined, categories: CustomFieldCategory[]): string | undefined => {
     if (!fieldKey || !categories || !Array.isArray(categories) || fieldKey === "not_mapped") return undefined;
     
     for (const category of categories) {
@@ -48,7 +45,11 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
       }
     }
     return undefined;
-  }
+  };
+
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
+    getFieldCategory(selectedField, customFieldCategories)
+  );
 
   useEffect(() => {
     // Update selected category when selectedField changes
@@ -60,9 +61,13 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
 
   // Get fields from the selected category
   const getCategoryFields = (category: string | undefined): CustomField[] => {
-    if (!category || !customFieldCategories || !Array.isArray(customFieldCategories)) return [];
+    if (!category || !customFieldCategories || !Array.isArray(customFieldCategories)) {
+      console.log(`No fields found for category: ${category}`);
+      return [];
+    }
     
     const categoryData = customFieldCategories.find(c => c.category === category);
+    console.log(`Fields for category ${category}:`, categoryData?.fields);
     return categoryData?.fields || [];
   };
 
@@ -73,11 +78,17 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   const compatibleFields = modelFeature.modelType && Array.isArray(availableFields)
     ? availableFields.filter(field => {
         if (!field) return false;
+
+        // Log field types for debugging
+        console.log(`Comparing field ${field.key} (${field.type}) with model type ${modelFeature.modelType}`);
+        
         if (modelFeature.modelType === "number") return field.type === "number";
         if (modelFeature.modelType === "select") return field.type === "select";
         return true;
       })
     : availableFields || [];
+  
+  console.log(`Compatible fields for ${modelFeature.modelField}:`, compatibleFields);
 
   const handleCategoryChange = (category: string) => {
     console.log(`${modelFeature.modelField} - Category changed to:`, category);
@@ -145,16 +156,17 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="not_mapped">Not mapped</SelectItem>
-            {compatibleFields.map(field => (
-              <SelectItem key={field.key} value={field.key}>
-                {field.label} ({field.key})
-              </SelectItem>
-            ))}
-            {compatibleFields.length === 0 && selectedCategory && (
+            {compatibleFields.length > 0 ? (
+              compatibleFields.map(field => (
+                <SelectItem key={field.key} value={field.key}>
+                  {field.label} ({field.key})
+                </SelectItem>
+              ))
+            ) : selectedCategory ? (
               <div className="p-2 text-sm text-center text-gray-500">
                 No compatible fields found in this category
               </div>
-            )}
+            ) : null}
           </SelectContent>
         </Select>
       </td>

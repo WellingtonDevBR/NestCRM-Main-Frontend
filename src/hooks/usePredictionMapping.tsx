@@ -47,31 +47,38 @@ export function usePredictionMapping() {
     console.log(`updateMapping - modelField: ${modelField}, tenantField: ${tenantField}`);
     console.log('Current mappings before update:', JSON.stringify(currentMappings));
     
+    // Ensure we have a valid mappings array
+    if (!currentMappings || !currentMappings.mappings) {
+      console.warn('Invalid current mappings provided, creating new mappings object');
+      currentMappings = { mappings: [] };
+    }
+    
     // Create a deep copy of the mappings
-    const mappingsCopy: PredictionMapping = { 
+    const updatedMappings: PredictionMapping = { 
       mappings: Array.isArray(currentMappings.mappings) 
         ? [...currentMappings.mappings]
         : []
     };
     
-    const existingIndex = mappingsCopy.mappings.findIndex(m => m.modelField === modelField);
+    // Find if mapping already exists for this model field
+    const existingIndex = updatedMappings.mappings.findIndex(m => m.modelField === modelField);
     
     if (existingIndex !== -1) {
       // Update existing mapping
-      mappingsCopy.mappings[existingIndex] = {
-        ...mappingsCopy.mappings[existingIndex],
+      updatedMappings.mappings[existingIndex] = {
+        ...updatedMappings.mappings[existingIndex],
         tenantField
       };
     } else {
       // Add new mapping
-      mappingsCopy.mappings.push({
+      updatedMappings.mappings.push({
         modelField,
         tenantField
       });
     }
     
-    console.log('Mappings after update:', JSON.stringify(mappingsCopy));
-    return mappingsCopy;
+    console.log('Mappings after update:', JSON.stringify(updatedMappings));
+    return updatedMappings;
   };
 
   return {
