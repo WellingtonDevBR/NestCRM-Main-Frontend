@@ -11,7 +11,9 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
-import { Customer, CustomField } from "@/domain/models/customer";
+import { Customer } from "@/domain/models/customer";
+import { CustomField } from "@/domain/models/customField";
+import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
 
 interface CustomerTableRowProps {
   customer: Customer;
@@ -28,28 +30,6 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
   onEdit,
   onDelete
 }) => {
-  // Function to format custom field values based on their type
-  const formatCustomFieldValue = (field: CustomField, value: any) => {
-    if (!value && value !== 0) return "-";
-    
-    if (field.type === "number") {
-      return typeof value === "number" ? value.toLocaleString() : value;
-    } else if (field.type === "date") {
-      try {
-        return new Date(value).toLocaleDateString();
-      } catch (e) {
-        return value;
-      }
-    }
-    
-    return value;
-  };
-
-  // Lookup custom field definitions by key
-  const getCustomFieldByLabel = (label: string): CustomField | undefined => {
-    return customFields.find(field => field.label === label);
-  };
-
   return (
     <TableRow key={customer.id}>
       {visibleColumns.name && <TableCell>{customer.name}</TableCell>}
@@ -60,10 +40,10 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
       {customFields.map(field => 
         visibleColumns[field.key] && (
           <TableCell key={field.key}>
-            {formatCustomFieldValue(
-              field, 
-              customer.customFields?.[field.label]
-            )}
+            <DynamicFieldRenderer 
+              value={customer.customFields?.[field.label]} 
+              uiConfig={field.uiConfig}
+            />
           </TableCell>
         )
       )}

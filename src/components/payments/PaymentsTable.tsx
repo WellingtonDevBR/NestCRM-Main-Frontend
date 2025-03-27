@@ -10,9 +10,9 @@ import {
   TableCell 
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
+import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
 
 interface PaymentsTableProps {
   payments: Payment[];
@@ -93,11 +93,10 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments, isLoading }) =>
               {paymentCustomFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
-                    {payment.customFields && field.key in payment.customFields
-                      ? (typeof payment.customFields[field.key] === 'object' && payment.customFields[field.key] instanceof Date)
-                        ? format(new Date(payment.customFields[field.key] as Date), 'dd MMM yyyy')
-                        : String(payment.customFields[field.key])
-                      : '—'}
+                    <DynamicFieldRenderer 
+                      value={payment.customFields?.[field.key]}
+                      uiConfig={field.uiConfig}
+                    />
                   </TableCell>
                 )
               ))}

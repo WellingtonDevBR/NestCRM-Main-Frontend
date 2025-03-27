@@ -10,9 +10,9 @@ import {
   TableCell 
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
+import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
 
 interface InteractionsTableProps {
   interactions: Interaction[];
@@ -92,11 +92,10 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
               {interactionCustomFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
-                    {interaction.customFields && field.key in interaction.customFields
-                      ? (typeof interaction.customFields[field.key] === 'object' && interaction.customFields[field.key] instanceof Date)
-                        ? format(new Date(interaction.customFields[field.key] as Date), 'dd MMM yyyy')
-                        : String(interaction.customFields[field.key])
-                      : '—'}
+                    <DynamicFieldRenderer 
+                      value={interaction.customFields?.[field.key]}
+                      uiConfig={field.uiConfig}
+                    />
                   </TableCell>
                 )
               ))}

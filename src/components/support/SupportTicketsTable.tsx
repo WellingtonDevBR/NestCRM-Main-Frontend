@@ -10,9 +10,9 @@ import {
   TableCell 
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
+import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
 
 interface SupportTicketsTableProps {
   tickets: SupportTicket[];
@@ -93,11 +93,10 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
               {supportCustomFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
-                    {ticket.customFields && field.key in ticket.customFields
-                      ? (typeof ticket.customFields[field.key] === 'object' && ticket.customFields[field.key] instanceof Date)
-                        ? format(new Date(ticket.customFields[field.key] as Date), 'dd MMM yyyy')
-                        : String(ticket.customFields[field.key])
-                      : '—'}
+                    <DynamicFieldRenderer 
+                      value={ticket.customFields?.[field.key]}
+                      uiConfig={field.uiConfig}
+                    />
                   </TableCell>
                 )
               ))}

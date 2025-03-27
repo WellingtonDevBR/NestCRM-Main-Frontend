@@ -10,39 +10,14 @@ import {
   TableRow, 
   TableCell 
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
+import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
 
 interface OrdersTableProps {
   orders: Order[];
   isLoading: boolean;
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-AU', {
-    style: 'currency',
-    currency: 'AUD'
-  }).format(amount);
-};
-
-const getStatusColor = (status: Order['status']) => {
-  switch (status) {
-    case 'pending':
-      return "bg-amber-100 text-amber-800 hover:bg-amber-200";
-    case 'processing':
-      return "bg-blue-100 text-blue-800 hover:bg-blue-200";
-    case 'shipped':
-      return "bg-purple-100 text-purple-800 hover:bg-purple-200";
-    case 'delivered':
-      return "bg-green-100 text-green-800 hover:bg-green-200";
-    case 'cancelled':
-      return "bg-red-100 text-red-800 hover:bg-red-200";
-    default:
-      return "bg-gray-100 text-gray-800 hover:bg-gray-200";
-  }
-};
 
 const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
   // Using the targeted query to only fetch Order specific fields
@@ -93,11 +68,6 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
     );
   }
 
-  // Get all visible columns
-  const visibleColumns = Object.entries(columnVisibility)
-    .filter(([_, isVisible]) => isVisible)
-    .map(([column]) => column);
-
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
@@ -123,11 +93,10 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
               {orderCustomFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
-                    {order.customFields && field.key in order.customFields
-                      ? (typeof order.customFields[field.key] === 'object' && order.customFields[field.key] instanceof Date)
-                        ? format(new Date(order.customFields[field.key] as Date), 'dd MMM yyyy')
-                        : String(order.customFields[field.key])
-                      : '—'}
+                    <DynamicFieldRenderer 
+                      value={order.customFields?.[field.key]} 
+                      uiConfig={field.uiConfig}
+                    />
                   </TableCell>
                 )
               ))}
