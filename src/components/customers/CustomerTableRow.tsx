@@ -41,7 +41,7 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
         visibleColumns[field.key] && (
           <TableCell key={field.key}>
             <DynamicFieldRenderer 
-              value={customer.customFields?.[field.label]} 
+              value={customer.customFields?.[field.key]} 
               uiConfig={field.uiConfig}
             />
           </TableCell>

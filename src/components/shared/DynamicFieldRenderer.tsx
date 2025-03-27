@@ -5,6 +5,11 @@ import { UIConfig } from "@/domain/models/customField";
 import * as Icons from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface DynamicFieldRendererProps {
   value: any;
@@ -21,54 +26,71 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     return <span className="text-muted-foreground">—</span>;
   }
 
-  // If no uiConfig is provided, or type is not specified or "default", render default
-  if (!uiConfig || !uiConfig.type || uiConfig.type === "default") {
+  // If no uiConfig is provided, or type is not specified, render default
+  if (!uiConfig || !uiConfig.type) {
     return <span className={className}>{String(value)}</span>;
   }
+
+  // Apply tooltip wrapper if tooltip is provided
+  const renderWithTooltip = (content: React.ReactNode) => {
+    if (uiConfig.tooltip) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="cursor-help">{content}</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{uiConfig.tooltip}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+    return content;
+  };
 
   // Handle different rendering types
   switch (uiConfig.type) {
     // Select field types
     case "badge":
-      return renderBadge(value, uiConfig, className);
+      return renderWithTooltip(renderBadge(value, uiConfig, className));
     case "pill":
-      return renderPill(value, uiConfig, className);
+      return renderWithTooltip(renderPill(value, uiConfig, className));
     case "icon":
-      return renderIcon(value, uiConfig, className);
+      return renderWithTooltip(renderIcon(value, uiConfig, className));
     case "chip":
-      return renderChip(value, uiConfig, className);
+      return renderWithTooltip(renderChip(value, uiConfig, className));
     
     // Text field types
     case "link":
-      return renderLink(value, uiConfig, className);
+      return renderWithTooltip(renderLink(value, uiConfig, className));
     case "highlight":
-      return renderHighlight(value, uiConfig, className);
+      return renderWithTooltip(renderHighlight(value, uiConfig, className));
     case "tooltip-only":
       return renderTooltipOnly(value, uiConfig, className);
     case "avatar":
-      return renderAvatar(value, uiConfig, className);
+      return renderWithTooltip(renderAvatar(value, uiConfig, className));
     
     // Date field types
     case "date":
     case "time":
     case "calendar":
-      return renderDateFormat(value, uiConfig, className);
+      return renderWithTooltip(renderDateFormat(value, uiConfig, className));
     
     // Number field types
     case "currency":
-      return renderCurrency(value, uiConfig, className);
+      return renderWithTooltip(renderCurrency(value, uiConfig, className));
     case "percent":
-      return renderPercent(value, uiConfig, className);
+      return renderWithTooltip(renderPercent(value, uiConfig, className));
     case "progress":
-      return renderProgress(value, uiConfig, className);
+      return renderWithTooltip(renderProgress(value, uiConfig, className));
     case "rating":
-      return renderRating(value, uiConfig, className);
+      return renderWithTooltip(renderRating(value, uiConfig, className));
     
     // Boolean field types
     case "boolean":
-      return renderBoolean(value, uiConfig, className);
+      return renderWithTooltip(renderBoolean(value, uiConfig, className));
     case "status-dot":
-      return renderStatusDot(value, uiConfig, className);
+      return renderWithTooltip(renderStatusDot(value, uiConfig, className));
     
     default:
       return <span className={className}>{String(value)}</span>;
@@ -167,12 +189,16 @@ const renderTooltipOnly = (value: any, uiConfig: UIConfig, className: string) =>
   }
   
   return (
-    <span 
-      className={`cursor-help border-b border-dotted border-gray-400 ${className}`}
-      title={uiConfig.tooltip}
-    >
-      {String(value)}
-    </span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={`cursor-help border-b border-dotted border-gray-400 ${className}`}>
+          {String(value)}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{uiConfig.tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
 
@@ -233,7 +259,13 @@ const renderDateFormat = (value: any, uiConfig: UIConfig, className: string) => 
 
 // Number field renderers
 const renderCurrency = (value: any, uiConfig: UIConfig, className: string) => {
-  if (typeof value !== 'number') {
+  if (typeof value !== 'number' && typeof value !== 'string') {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
     return <span className={className}>{String(value)}</span>;
   }
   
@@ -244,49 +276,73 @@ const renderCurrency = (value: any, uiConfig: UIConfig, className: string) => {
       {new Intl.NumberFormat('en-US', { 
         style: 'currency', 
         currency: currency
-      }).format(value)}
+      }).format(numValue)}
     </span>
   );
 };
 
 const renderPercent = (value: any, uiConfig: UIConfig, className: string) => {
-  if (typeof value !== 'number') {
+  if (typeof value !== 'number' && typeof value !== 'string') {
     return <span className={className}>{String(value)}</span>;
   }
+  
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  // Determine if the value is already in percent (0-100) or decimal (0-1)
+  const percentValue = numValue > 0 && numValue < 1 ? numValue * 100 : numValue;
   
   return (
     <span className={className}>
       {new Intl.NumberFormat('en-US', { 
         style: 'percent',
         maximumFractionDigits: 2
-      }).format(value / 100)}
+      }).format(percentValue / 100)}
     </span>
   );
 };
 
 const renderProgress = (value: any, uiConfig: UIConfig, className: string) => {
-  if (typeof value !== 'number') {
+  if (typeof value !== 'number' && typeof value !== 'string') {
     return <span className={className}>{String(value)}</span>;
   }
   
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue)) {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  // Determine if the value is already in percent (0-100) or decimal (0-1)
+  const percentValue = numValue > 0 && numValue < 1 ? numValue * 100 : numValue;
+  
   // Ensure value is between 0 and 100
-  const progressValue = Math.max(0, Math.min(100, value));
+  const progressValue = Math.max(0, Math.min(100, percentValue));
   
   return (
     <div className={`w-full space-y-1 ${className}`}>
       <Progress value={progressValue} className="h-2" />
-      <p className="text-xs text-right text-muted-foreground">{progressValue}%</p>
+      <p className="text-xs text-right text-muted-foreground">{progressValue.toFixed(1)}%</p>
     </div>
   );
 };
 
 const renderRating = (value: any, uiConfig: UIConfig, className: string) => {
-  if (typeof value !== 'number' || value < 0 || value > 5) {
+  if (typeof value !== 'number' && typeof value !== 'string') {
     return <span className={className}>{String(value)}</span>;
   }
   
-  const fullStars = Math.floor(value);
-  const hasHalfStar = value % 1 >= 0.5;
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  if (isNaN(numValue) || numValue < 0 || numValue > 5) {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  const fullStars = Math.floor(numValue);
+  const hasHalfStar = numValue % 1 >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
   
   return (
@@ -306,27 +362,36 @@ const renderRating = (value: any, uiConfig: UIConfig, className: string) => {
 
 // Boolean field renderers
 const renderBoolean = (value: any, uiConfig: UIConfig, className: string) => {
-  const isTrue = value === true || value === "true" || value === 1 || value === "1";
+  const isTrue = value === true || value === "true" || value === 1 || value === "1" || value === "yes" || value === "Yes";
   
   return (
     <div className={`flex items-center ${className}`}>
       {isTrue ? (
-        <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+        <div className="flex items-center">
+          <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+          <span>Yes</span>
+        </div>
       ) : (
-        <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+        <div className="flex items-center">
+          <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+          <span>No</span>
+        </div>
       )}
-      <span>{isTrue ? "Yes" : "No"}</span>
     </div>
   );
 };
 
 const renderStatusDot = (value: any, uiConfig: UIConfig, className: string) => {
-  const isTrue = value === true || value === "true" || value === 1 || value === "1";
+  const isTrue = value === true || value === "true" || value === 1 || value === "1" || value === "yes" || value === "Yes";
   const color = isTrue ? "green" : "red";
+  
+  // If there's a color map and the value is in it, use that color instead
+  const mappedColor = uiConfig.colorMap?.[String(value)];
+  const finalColor = mappedColor || color;
   
   return (
     <div className={`flex items-center ${className}`}>
-      <div className={`w-3 h-3 rounded-full ${getDotColorClass(color)}`}></div>
+      <div className={`w-3 h-3 rounded-full ${getDotColorClass(finalColor)}`}></div>
     </div>
   );
 };

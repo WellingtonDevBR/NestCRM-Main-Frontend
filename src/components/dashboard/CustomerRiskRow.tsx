@@ -25,8 +25,8 @@ const CustomerRiskRow: React.FC<CustomerRiskRowProps> = ({
 
   return (
     <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-      {/* Display custom field values */}
-      {customFields.map(field => (
+      {/* Display custom field values based on visibility settings */}
+      {customFields.map(field => 
         columnVisibility[field.key] && (
           <td key={field.key} className="py-4 text-sm">
             <DynamicFieldRenderer 
@@ -35,7 +35,7 @@ const CustomerRiskRow: React.FC<CustomerRiskRowProps> = ({
             />
           </td>
         )
-      ))}
+      )}
       
       <td className="py-4 text-sm text-right">
         <Button variant="ghost" size="sm">
