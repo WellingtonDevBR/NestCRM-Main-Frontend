@@ -22,8 +22,6 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   selectedField,
   onFieldChange
 }) => {
-  console.log(`FieldMappingRow - ${modelFeature.modelField} - selectedField:`, selectedField);
-  
   const { 
     selectedCategory, 
     setSelectedCategory, 
@@ -31,16 +29,17 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   } = useFieldMapping(modelFeature, customFieldCategories, selectedField);
 
   const handleCategoryChange = (category: string) => {
-    console.log(`${modelFeature.modelField} - Category changed to:`, category);
     setSelectedCategory(category);
     // Reset field selection when category changes
     onFieldChange(modelFeature.modelField, "not_mapped");
   };
 
   const handleFieldChange = (value: string) => {
-    console.log(`${modelFeature.modelField} - Field changed to:`, value);
     onFieldChange(modelFeature.modelField, value);
   };
+
+  // Field selector should be disabled only when no category is selected
+  const isFieldSelectorDisabled = !selectedCategory;
 
   return (
     <tr className="hover:bg-gray-50 transition-colors">
@@ -60,7 +59,7 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
         <FieldSelector
           selectedField={selectedField}
           compatibleFields={compatibleFields}
-          disabled={!selectedCategory}
+          disabled={isFieldSelectorDisabled}
           onFieldChange={handleFieldChange}
         />
       </td>

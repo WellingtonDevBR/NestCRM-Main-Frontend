@@ -29,7 +29,7 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
       disabled={disabled}
     >
       <SelectTrigger className="w-full">
-        <SelectValue placeholder={!disabled ? "Select a field" : "Select category first"} />
+        <SelectValue placeholder={disabled ? "Select category first" : "Select a field"} />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="not_mapped">Not mapped</SelectItem>

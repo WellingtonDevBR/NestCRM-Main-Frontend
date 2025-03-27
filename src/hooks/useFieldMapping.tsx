@@ -23,9 +23,9 @@ export function useFieldMapping(
     return undefined;
   };
 
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
-    getFieldCategory(selectedField, customFieldCategories)
-  );
+  // Initialize with the category that contains the selected field
+  const initialCategory = getFieldCategory(selectedField, customFieldCategories);
+  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(initialCategory);
 
   useEffect(() => {
     // Update selected category when selectedField changes
@@ -38,14 +38,12 @@ export function useFieldMapping(
   // Get all available fields from a specific category
   const getCategoryFields = (category: string | undefined): CustomField[] => {
     if (!category || !customFieldCategories || !Array.isArray(customFieldCategories)) {
-      console.log(`No fields found for category: ${category}`);
       return [];
     }
     
     const categoryData = customFieldCategories.find(c => c.category === category);
-    if (categoryData && categoryData.fields) {
-      console.log(`Fields for category ${category}:`, categoryData.fields);
-      return categoryData.fields || [];
+    if (categoryData && Array.isArray(categoryData.fields)) {
+      return categoryData.fields;
     }
     return [];
   };
@@ -54,16 +52,9 @@ export function useFieldMapping(
   const availableFields = getCategoryFields(selectedCategory);
   
   // Filter compatible fields based on the model field type
-  const compatibleFields = availableFields.filter(field => {
-    if (!field) return false;
-
-    // Log field types for debugging
-    console.log(`Comparing field ${field.key} (${field.type}) with model type ${modelFeature.modelType}`);
-    
-    return isFieldCompatible(field, modelFeature.modelType);
-  });
-  
-  console.log(`Compatible fields for ${modelFeature.modelField}:`, compatibleFields);
+  const compatibleFields = availableFields.filter(field => 
+    field && isFieldCompatible(field, modelFeature.modelType)
+  );
 
   return {
     selectedCategory,

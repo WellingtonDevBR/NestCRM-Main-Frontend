@@ -1,41 +1,53 @@
 
-import { CustomField } from "@/domain/models/customField";
-import { ModelFeature } from "@/domain/models/predictionMapping";
+import { CustomField } from "../models/customField";
 
 /**
- * Checks if a custom field is compatible with a model feature based on their types
+ * Get color classes based on field type
  */
-export const isFieldCompatible = (
-  field: CustomField, 
-  modelType?: string
-): boolean => {
-  if (!field || !modelType) return true;
-  
-  // For number type model fields, match with number type custom fields
-  if (modelType === "number" && field.type === "number") {
-    return true;
+export const getTypeColor = (type?: string): string => {
+  switch (type?.toLowerCase()) {
+    case 'number':
+      return 'bg-blue-50 text-blue-700 border-blue-200';
+    case 'string':
+      return 'bg-green-50 text-green-700 border-green-200';
+    case 'select':
+      return 'bg-purple-50 text-purple-700 border-purple-200';
+    case 'date':
+      return 'bg-amber-50 text-amber-700 border-amber-200';
+    case 'boolean':
+      return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+    default:
+      return 'bg-gray-50 text-gray-700 border-gray-200';
   }
-  
-  // For select type model fields, match with select type custom fields or fields with options
-  if (modelType === "select" && (field.type === "select" || (field.options && field.options.length > 0))) {
-    return true;
-  }
-  
-  // For any type or undefined type, accept any field
-  if (!modelType || modelType === "any") {
-    return true;
-  }
-  
-  return false;
 };
 
 /**
- * Get the appropriate color class for a type badge
+ * Check if a custom field is compatible with the model field type
  */
-export const getTypeColor = (type?: string): string => {
-  switch (type) {
-    case "number": return "bg-blue-100 text-blue-700";
-    case "select": return "bg-purple-100 text-purple-700";
-    default: return "bg-gray-100 text-gray-700";
+export const isFieldCompatible = (customField: CustomField, modelType?: string): boolean => {
+  if (!modelType) return true; // If no type is specified, all fields are compatible
+  
+  const customFieldType = customField.type?.toLowerCase();
+  const modelTypeNormalized = modelType.toLowerCase();
+  
+  // Direct type matching
+  if (customFieldType === modelTypeNormalized) {
+    return true;
+  }
+  
+  // Special compatibility rules
+  switch (modelTypeNormalized) {
+    case 'number':
+      return customFieldType === 'number';
+    case 'string':
+      return customFieldType === 'text' || customFieldType === 'string' || customFieldType === 'textarea';
+    case 'select':
+      return customFieldType === 'select' || customFieldType === 'boolean' || customFieldType === 'radio';
+    case 'boolean':
+      return customFieldType === 'boolean' || customFieldType === 'checkbox' || customFieldType === 'select';
+    case 'date':
+      return customFieldType === 'date';
+    default:
+      return true; // Unknown types are considered compatible
   }
 };
