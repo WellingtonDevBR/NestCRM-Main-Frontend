@@ -102,6 +102,19 @@
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
+  
+  /* Dark mode specific utility classes */
+  .dark-card {
+    @apply dark:bg-gray-800 dark:border-gray-700;
+  }
+  
+  .dark-form-control {
+    @apply dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300;
+  }
+  
+  .dark-input {
+    @apply dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:placeholder:text-gray-500;
+  }
 }
 
 /* Smooth scrolling */
@@ -120,6 +133,24 @@ html {
 .dark .glass {
   background: rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure all alerts in dark mode have proper styling */
+.dark .alert {
+  @apply bg-gray-800 border-gray-700;
+}
+
+/* Ensure all form inputs in dark mode have proper styling */
+.dark input,
+.dark select,
+.dark textarea {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+/* Ensure all cards in dark mode have proper styling */
+.dark .card,
+.dark [class*="Card"] {
+  @apply bg-gray-800 border-gray-700;
 }
 
 /* Page transitions */

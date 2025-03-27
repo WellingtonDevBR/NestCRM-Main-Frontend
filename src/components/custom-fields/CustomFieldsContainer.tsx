@@ -10,7 +10,7 @@ interface CustomFieldsContainerProps {
 
 const CustomFieldsContainer: React.FC<CustomFieldsContainerProps> = ({ children }) => {
   return (
-    <Card className="shadow-sm border-gray-200">
+    <Card className="shadow-sm border-gray-200 dark:border-gray-700 dark:bg-gray-800">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
           Field Customization
@@ -18,7 +18,7 @@ const CustomFieldsContainer: React.FC<CustomFieldsContainerProps> = ({ children 
             <TooltipTrigger asChild>
               <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
             </TooltipTrigger>
-            <TooltipContent className="max-w-sm">
+            <TooltipContent className="max-w-sm dark:bg-gray-800 dark:border-gray-700">
               <p>Define additional fields to collect from your customers. These will appear in customer forms and tables.</p>
             </TooltipContent>
           </Tooltip>

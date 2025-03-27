@@ -33,15 +33,15 @@ const Payments: React.FC = () => {
         </Button>
       </div>
       
-      <div className="flex items-center gap-4 bg-white rounded-lg p-3 shadow-sm border">
+      <div className="flex items-center gap-4 bg-card rounded-lg p-3 shadow-sm border border-border dark:bg-gray-800 dark:border-gray-700">
         <div className="flex-1">
-          <Input placeholder="Search payments..." className="w-full" />
+          <Input placeholder="Search payments..." className="w-full dark:bg-gray-800 dark:border-gray-700" />
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" size="sm" className="dark:border-gray-700 dark:hover:bg-gray-700">
           <Filter className="mr-2 h-4 w-4" />
           Filter
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => refetch()}>
+        <Button variant="ghost" size="sm" onClick={() => refetch()} className="dark:hover:bg-gray-700">
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>

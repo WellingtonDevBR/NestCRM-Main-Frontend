@@ -124,7 +124,7 @@ const CustomFields = () => {
           <Button 
             variant="outline" 
             size="icon"
-            className="fixed top-4 left-4 z-50 shadow-md bg-white md:hidden" 
+            className="fixed top-4 left-4 z-50 shadow-md bg-background border-border dark:bg-gray-800 dark:border-gray-700 md:hidden" 
             onClick={() => {
               window.dispatchEvent(new CustomEvent("sidebar:toggle"));
             }}
@@ -135,7 +135,7 @@ const CustomFields = () => {
           <div className="max-w-4xl mx-auto space-y-8 pt-6">
             <CustomFieldsHeader />
             
-            <Alert>
+            <Alert className="dark:bg-gray-800 dark:border-gray-700">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Important</AlertTitle>
               <AlertDescription>
@@ -143,10 +143,10 @@ const CustomFields = () => {
               </AlertDescription>
             </Alert>
             
-            <Tabs value={activeCategory} onValueChange={handleTabChange}>
-              <TabsList className="w-full border-b">
+            <Tabs value={activeCategory} onValueChange={handleTabChange} className="dark:text-white">
+              <TabsList className="w-full border-b dark:bg-gray-800 dark:border-gray-700">
                 {FIELD_CATEGORIES.map(category => (
-                  <TabsTrigger key={category} value={category} className="flex-1">
+                  <TabsTrigger key={category} value={category} className="flex-1 dark:data-[state=active]:bg-gray-700">
                     {category}
                   </TabsTrigger>
                 ))}

@@ -11,19 +11,19 @@ const CustomFieldsHeader: React.FC = () => {
     <div>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" asChild className="h-8 w-8">
+          <Button variant="outline" size="icon" asChild className="h-8 w-8 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
             <Link to="/settings">
               <ChevronLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div className="flex items-center gap-2">
-            <Database className="h-6 w-6 text-purple-600" />
+            <Database className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             <h1 className="text-2xl font-bold">Custom Data Fields</h1>
           </div>
         </div>
       </div>
       <p className="text-muted-foreground mt-2 ml-12">Customize what information you collect across different modules</p>
-      <Separator className="mt-6" />
+      <Separator className="mt-6 dark:bg-gray-700" />
     </div>
   );
 };
