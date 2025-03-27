@@ -100,6 +100,7 @@ const CustomFields = () => {
       setIsUpdating(true);
       console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
       
+      // Send the complete payload with category and all fields
       const validFields = categoryFields.filter(field => field.key && field.label);
       await updateCategoryFields({
         category: activeCategory,

@@ -98,7 +98,7 @@ export function useCustomFields() {
     mutationFn: async (categoryData: CustomFieldCategory) => {
       try {
         console.log(`Updating fields for ${categoryData.category} category...`);
-        // Try to update via API
+        // Try to update via API - sending the complete category object with all fields
         const response = await saveCustomFieldCategory(categoryData);
         console.log(`Updated ${categoryData.category} fields on API:`, response);
         

@@ -73,8 +73,7 @@ export async function fetchCategoryFields(category: string): Promise<CustomField
 
 /**
  * Save custom fields for a specific category to the API
- * @param category The category name
- * @param fields The fields array to save
+ * @param categoryData The category and fields data to save
  * @returns Promise with the saved custom fields
  */
 export async function saveCustomFieldCategory(categoryData: CustomFieldCategory): Promise<CustomField[]> {
@@ -82,9 +81,11 @@ export async function saveCustomFieldCategory(categoryData: CustomFieldCategory)
     const { category, fields } = categoryData;
     console.log(`Saving custom fields for ${category}:`, fields);
     
-    // Format for the API - needs to send only the fields array
-    const endpoint = `${CUSTOM_FIELDS_ENDPOINT}?category=${encodeURIComponent(category)}`;
-    const response = await api.post<CustomField[]>(endpoint, fields);
+    // Format for the API - send the entire category object with all fields
+    const response = await api.post<CustomField[]>(CUSTOM_FIELDS_ENDPOINT, {
+      category,
+      fields
+    });
     
     return Array.isArray(response) ? response : [];
   } catch (error) {
