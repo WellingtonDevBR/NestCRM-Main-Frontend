@@ -95,15 +95,50 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
     });
   };
   
-  const availableUiTypes = [
-    { value: "default", label: "Default" },
-    { value: "badge", label: "Badge" },
-    { value: "pill", label: "Pill" },
-    { value: "currency", label: "Currency" },
-    { value: "percent", label: "Percent" },
-    { value: "rating", label: "Rating Stars" },
-    { value: "boolean", label: "Boolean" }
-  ];
+  // Get UI type options based on field type
+  const getUiTypeOptions = () => {
+    switch (field.type) {
+      case "select":
+        return [
+          { value: "default", label: "Default" },
+          { value: "badge", label: "Badge" },
+          { value: "pill", label: "Pill" },
+          { value: "icon", label: "Icon" },
+          { value: "chip", label: "Chip" }
+        ];
+      case "text":
+        return [
+          { value: "default", label: "Default" },
+          { value: "link", label: "Link" },
+          { value: "highlight", label: "Highlight" },
+          { value: "tooltip-only", label: "Tooltip Only" },
+          { value: "avatar", label: "Avatar" }
+        ];
+      case "date":
+        return [
+          { value: "default", label: "Default" },
+          { value: "date", label: "Date" },
+          { value: "time", label: "Time" },
+          { value: "calendar", label: "Calendar" }
+        ];
+      case "number":
+        return [
+          { value: "default", label: "Default" },
+          { value: "currency", label: "Currency" },
+          { value: "percent", label: "Percent" },
+          { value: "progress", label: "Progress Bar" },
+          { value: "rating", label: "Rating Stars" }
+        ];
+      default:
+        return [
+          { value: "default", label: "Default" },
+          { value: "boolean", label: "Boolean" },
+          { value: "status-dot", label: "Status Dot" }
+        ];
+    }
+  };
+
+  const availableUiTypes = getUiTypeOptions();
 
   const availableColors = [
     { value: "green", label: "Green" },
@@ -114,6 +149,33 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
     { value: "purple", label: "Purple" },
     { value: "pink", label: "Pink" }
   ];
+  
+  // Check if the current UI type is valid for the field type
+  const validateAndUpdateUiType = (value: string) => {
+    const validOptions = getUiTypeOptions().map(option => option.value);
+    
+    if (value === "default") {
+      // Remove the type property
+      const { type, ...rest } = field.uiConfig || {};
+      onUpdateField(index, { uiConfig: Object.keys(rest).length ? rest : undefined });
+    } else if (validOptions.includes(value)) {
+      updateUIConfig({ type: value as UIConfig["type"] });
+    } else {
+      // If current UI type is not valid for the field type, reset to default
+      const { type, ...rest } = field.uiConfig || {};
+      onUpdateField(index, { uiConfig: Object.keys(rest).length ? rest : undefined });
+    }
+  };
+  
+  // Ensure UI type is valid when field type changes
+  React.useEffect(() => {
+    if (field.uiConfig?.type) {
+      const validOptions = getUiTypeOptions().map(option => option.value);
+      if (!validOptions.includes(field.uiConfig.type)) {
+        validateAndUpdateUiType("default");
+      }
+    }
+  }, [field.type]);
   
   return (
     <div className="grid grid-cols-12 gap-4 items-center p-4 border rounded-lg bg-white shadow-sm hover:border-purple-200 transition-colors">
@@ -225,15 +287,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                 <Label>Display Type</Label>
                 <Select
                   value={field.uiConfig?.type || "default"}
-                  onValueChange={(value) => {
-                    if (value === "default") {
-                      // Remove the type property
-                      const { type, ...rest } = field.uiConfig || {};
-                      onUpdateField(index, { uiConfig: Object.keys(rest).length ? rest : undefined });
-                    } else {
-                      updateUIConfig({ type: value as UIConfig["type"] });
-                    }
-                  }}
+                  onValueChange={validateAndUpdateUiType}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Default" />
@@ -248,7 +302,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                 </Select>
               </div>
               
-              {(field.uiConfig?.type === "badge" || field.uiConfig?.type === "pill") && field.type === "select" && (
+              {(field.uiConfig?.type === "badge" || field.uiConfig?.type === "pill" || field.uiConfig?.type === "chip") && field.type === "select" && (
                 <div className="space-y-2">
                   <Label>Color Mappings</Label>
                   <div className="flex items-center gap-2 mb-2">

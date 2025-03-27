@@ -3,6 +3,8 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { UIConfig } from "@/domain/models/customField";
 import * as Icons from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 
 interface DynamicFieldRendererProps {
   value: any;
@@ -26,24 +28,55 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
 
   // Handle different rendering types
   switch (uiConfig.type) {
+    // Select field types
     case "badge":
       return renderBadge(value, uiConfig, className);
     case "pill":
       return renderPill(value, uiConfig, className);
+    case "icon":
+      return renderIcon(value, uiConfig, className);
+    case "chip":
+      return renderChip(value, uiConfig, className);
+    
+    // Text field types
+    case "link":
+      return renderLink(value, uiConfig, className);
+    case "highlight":
+      return renderHighlight(value, uiConfig, className);
+    case "tooltip-only":
+      return renderTooltipOnly(value, uiConfig, className);
+    case "avatar":
+      return renderAvatar(value, uiConfig, className);
+    
+    // Date field types
+    case "date":
+    case "time":
+    case "calendar":
+      return renderDateFormat(value, uiConfig, className);
+    
+    // Number field types
     case "currency":
       return renderCurrency(value, uiConfig, className);
     case "percent":
       return renderPercent(value, uiConfig, className);
+    case "progress":
+      return renderProgress(value, uiConfig, className);
     case "rating":
       return renderRating(value, uiConfig, className);
+    
+    // Boolean field types
     case "boolean":
       return renderBoolean(value, uiConfig, className);
+    case "status-dot":
+      return renderStatusDot(value, uiConfig, className);
+    
     default:
       return <span className={className}>{String(value)}</span>;
   }
 };
 
 // Rendering functions for each uiConfig type
+// Select field renderers
 const renderBadge = (value: any, uiConfig: UIConfig, className: string) => {
   const color = uiConfig.colorMap?.[value] || "default";
   const badgeClass = getBadgeColorClass(color);
@@ -66,16 +99,151 @@ const renderPill = (value: any, uiConfig: UIConfig, className: string) => {
   );
 };
 
+const renderIcon = (value: any, uiConfig: UIConfig, className: string) => {
+  // Use iconMap to determine which icon to show
+  const iconName = uiConfig.iconMap?.[value];
+  
+  if (!iconName) {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  // @ts-ignore - Dynamic icon lookup
+  const IconComponent = Icons[iconName];
+  
+  if (!IconComponent) {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  const color = uiConfig.colorMap?.[value] || "default";
+  const colorClass = getTextColorClass(color);
+  
+  return (
+    <div className={`flex items-center space-x-1 ${className}`}>
+      <IconComponent className={`w-4 h-4 ${colorClass}`} />
+      <span>{String(value)}</span>
+    </div>
+  );
+};
+
+const renderChip = (value: any, uiConfig: UIConfig, className: string) => {
+  const color = uiConfig.colorMap?.[value] || "default";
+  const chipClass = getChipColorClass(color);
+  
+  return (
+    <span className={`inline-block px-2 py-1 text-xs rounded ${chipClass} ${className}`}>
+      {String(value)}
+    </span>
+  );
+};
+
+// Text field renderers
+const renderLink = (value: any, uiConfig: UIConfig, className: string) => {
+  return (
+    <a 
+      href={value.startsWith('http') ? value : `https://${value}`} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className={`text-blue-600 hover:underline ${className}`}
+    >
+      {String(value)}
+    </a>
+  );
+};
+
+const renderHighlight = (value: any, uiConfig: UIConfig, className: string) => {
+  const color = uiConfig.colorMap?.[value] || "yellow";
+  const highlightClass = getHighlightClass(color);
+  
+  return (
+    <span className={`${highlightClass} px-1 rounded ${className}`}>
+      {String(value)}
+    </span>
+  );
+};
+
+const renderTooltipOnly = (value: any, uiConfig: UIConfig, className: string) => {
+  if (!uiConfig.tooltip) {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  return (
+    <span 
+      className={`cursor-help border-b border-dotted border-gray-400 ${className}`}
+      title={uiConfig.tooltip}
+    >
+      {String(value)}
+    </span>
+  );
+};
+
+const renderAvatar = (value: any, uiConfig: UIConfig, className: string) => {
+  // Use first letter(s) for the fallback
+  const initials = String(value)
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+    
+  return (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <Avatar className="h-6 w-6">
+        <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+      </Avatar>
+      <span>{String(value)}</span>
+    </div>
+  );
+};
+
+// Date field renderers
+const renderDateFormat = (value: any, uiConfig: UIConfig, className: string) => {
+  try {
+    const date = new Date(value);
+    
+    if (isNaN(date.getTime())) {
+      return <span className={className}>{String(value)}</span>;
+    }
+    
+    let formattedDate = '';
+    
+    switch (uiConfig.type) {
+      case 'date':
+        formattedDate = date.toLocaleDateString();
+        break;
+      case 'time':
+        formattedDate = date.toLocaleTimeString();
+        break;
+      case 'calendar':
+        formattedDate = date.toLocaleDateString(undefined, {
+          weekday: 'short',
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+        break;
+      default:
+        formattedDate = date.toLocaleString();
+    }
+    
+    return <span className={className}>{formattedDate}</span>;
+  } catch (error) {
+    return <span className={className}>{String(value)}</span>;
+  }
+};
+
+// Number field renderers
 const renderCurrency = (value: any, uiConfig: UIConfig, className: string) => {
   if (typeof value !== 'number') {
     return <span className={className}>{String(value)}</span>;
   }
   
+  const currency = uiConfig.format || 'USD';
+  
   return (
     <span className={className}>
       {new Intl.NumberFormat('en-US', { 
         style: 'currency', 
-        currency: 'USD' 
+        currency: currency
       }).format(value)}
     </span>
   );
@@ -93,6 +261,22 @@ const renderPercent = (value: any, uiConfig: UIConfig, className: string) => {
         maximumFractionDigits: 2
       }).format(value / 100)}
     </span>
+  );
+};
+
+const renderProgress = (value: any, uiConfig: UIConfig, className: string) => {
+  if (typeof value !== 'number') {
+    return <span className={className}>{String(value)}</span>;
+  }
+  
+  // Ensure value is between 0 and 100
+  const progressValue = Math.max(0, Math.min(100, value));
+  
+  return (
+    <div className={`w-full space-y-1 ${className}`}>
+      <Progress value={progressValue} className="h-2" />
+      <p className="text-xs text-right text-muted-foreground">{progressValue}%</p>
+    </div>
   );
 };
 
@@ -120,6 +304,7 @@ const renderRating = (value: any, uiConfig: UIConfig, className: string) => {
   );
 };
 
+// Boolean field renderers
 const renderBoolean = (value: any, uiConfig: UIConfig, className: string) => {
   const isTrue = value === true || value === "true" || value === 1 || value === "1";
   
@@ -131,6 +316,17 @@ const renderBoolean = (value: any, uiConfig: UIConfig, className: string) => {
         <div className="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
       )}
       <span>{isTrue ? "Yes" : "No"}</span>
+    </div>
+  );
+};
+
+const renderStatusDot = (value: any, uiConfig: UIConfig, className: string) => {
+  const isTrue = value === true || value === "true" || value === 1 || value === "1";
+  const color = isTrue ? "green" : "red";
+  
+  return (
+    <div className={`flex items-center ${className}`}>
+      <div className={`w-3 h-3 rounded-full ${getDotColorClass(color)}`}></div>
     </div>
   );
 };
@@ -200,6 +396,94 @@ const getPillColorClass = (color: string): string => {
       return "bg-pink-100 text-pink-800";
     default:
       return "bg-gray-100 text-gray-800";
+  }
+};
+
+// Helper function to get chip color classes
+const getChipColorClass = (color: string): string => {
+  switch (color.toLowerCase()) {
+    case "green":
+      return "bg-green-500 text-white";
+    case "red":
+      return "bg-red-500 text-white";
+    case "yellow":
+      return "bg-amber-500 text-white";
+    case "blue":
+      return "bg-blue-500 text-white";
+    case "indigo":
+      return "bg-indigo-500 text-white";
+    case "purple":
+      return "bg-purple-500 text-white";
+    case "pink":
+      return "bg-pink-500 text-white";
+    default:
+      return "bg-gray-500 text-white";
+  }
+};
+
+// Helper function to get text color class
+const getTextColorClass = (color: string): string => {
+  switch (color.toLowerCase()) {
+    case "green":
+      return "text-green-600";
+    case "red":
+      return "text-red-600";
+    case "yellow":
+      return "text-amber-600";
+    case "blue":
+      return "text-blue-600";
+    case "indigo":
+      return "text-indigo-600";
+    case "purple":
+      return "text-purple-600";
+    case "pink":
+      return "text-pink-600";
+    default:
+      return "text-gray-600";
+  }
+};
+
+// Helper function to get highlight color class
+const getHighlightClass = (color: string): string => {
+  switch (color.toLowerCase()) {
+    case "green":
+      return "bg-green-100";
+    case "red":
+      return "bg-red-100";
+    case "yellow":
+      return "bg-amber-100";
+    case "blue":
+      return "bg-blue-100";
+    case "indigo":
+      return "bg-indigo-100";
+    case "purple":
+      return "bg-purple-100";
+    case "pink":
+      return "bg-pink-100";
+    default:
+      return "bg-yellow-100";
+  }
+};
+
+// Helper function to get dot color class
+const getDotColorClass = (color: string): string => {
+  switch (color.toLowerCase()) {
+    case "green":
+      return "bg-green-500";
+    case "red":
+      return "bg-red-500";
+    case "yellow":
+      return "bg-amber-500";
+    case "blue":
+      return "bg-blue-500";
+    case "indigo":
+      return "bg-indigo-500";
+    case "purple":
+      return "bg-purple-500";
+    case "pink":
+      return "bg-pink-500";
+    default:
+      return "bg-gray-500";
   }
 };
 

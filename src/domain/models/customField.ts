@@ -6,12 +6,31 @@ export interface CustomField {
   type: "text" | "date" | "number" | "select";
   required: boolean;
   options?: string[]; // For select type fields
-  uiConfig?: UIConfig; // New property for UI rendering configuration
+  uiConfig?: UIConfig; // Property for UI rendering configuration
 }
 
 // UI Configuration for custom field rendering
 export interface UIConfig {
-  type?: "default" | "badge" | "pill" | "currency" | "percent" | "rating" | "boolean";
+  // Display types based on field type
+  type?: 
+    // Default for all field types
+    "default" | 
+    
+    // Select field types
+    "badge" | "pill" | "icon" | "chip" | 
+    
+    // Text field types
+    "link" | "highlight" | "tooltip-only" | "avatar" | 
+    
+    // Date field types
+    "date" | "time" | "calendar" | 
+    
+    // Number field types
+    "currency" | "percent" | "progress" | "rating" | 
+    
+    // Boolean field types
+    "boolean" | "status-dot";
+    
   colorMap?: Record<string, string>; // Maps values to color names (e.g., "Active": "green")
   iconMap?: Record<string, string>; // Maps values to icon names (e.g., "Active": "check-circle")
   format?: string; // For number/date formatting (e.g., "currency", "percent")
