@@ -31,17 +31,10 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   selectedField,
   onFieldChange
 }) => {
+  console.log(`FieldMappingRow - ${modelFeature.modelField} - selectedField:`, selectedField);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(
     getFieldCategory(selectedField, customFieldCategories)
   );
-
-  useEffect(() => {
-    // Update selected category when selectedField changes
-    const category = getFieldCategory(selectedField, customFieldCategories);
-    if (category !== selectedCategory) {
-      setSelectedCategory(category);
-    }
-  }, [selectedField, customFieldCategories]);
 
   // Function to find the category for a given field key
   function getFieldCategory(fieldKey: string | undefined, categories: CustomFieldCategory[]): string | undefined {
@@ -56,6 +49,14 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     }
     return undefined;
   }
+
+  useEffect(() => {
+    // Update selected category when selectedField changes
+    const category = getFieldCategory(selectedField, customFieldCategories);
+    if (category !== selectedCategory) {
+      setSelectedCategory(category);
+    }
+  }, [selectedField, customFieldCategories, selectedCategory]);
 
   // Get fields from the selected category
   const getCategoryFields = (category: string | undefined): CustomField[] => {
@@ -79,12 +80,14 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     : availableFields || [];
 
   const handleCategoryChange = (category: string) => {
+    console.log(`${modelFeature.modelField} - Category changed to:`, category);
     setSelectedCategory(category);
     // Clear the field selection when category changes
     onFieldChange(modelFeature.modelField, "not_mapped");
   };
 
   const handleFieldChange = (value: string) => {
+    console.log(`${modelFeature.modelField} - Field changed to:`, value);
     onFieldChange(modelFeature.modelField, value);
   };
 

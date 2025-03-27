@@ -42,6 +42,7 @@ const PredictionMapping: React.FC = () => {
   // Initialize local state from API data
   useEffect(() => {
     if (mappingData && mappingData.mappings) {
+      console.log("Setting localMappings from mappingData:", mappingData);
       setLocalMappings(mappingData);
       setIsModified(false);
     }
@@ -51,6 +52,7 @@ const PredictionMapping: React.FC = () => {
   const getLocalMapping = (modelField: string): string | undefined => {
     if (!localMappings || !localMappings.mappings) return undefined;
     const mapping = localMappings.mappings.find(m => m.modelField === modelField);
+    console.log(`getLocalMapping for ${modelField}:`, mapping?.tenantField);
     return mapping?.tenantField;
   };
   
@@ -89,7 +91,13 @@ const PredictionMapping: React.FC = () => {
   };
   
   const handleFieldChange = (modelField: string, tenantField: string) => {
-    const updated = updateMapping(modelField, tenantField);
+    console.log(`handleFieldChange - modelField: ${modelField}, tenantField: ${tenantField}`);
+    console.log('Current localMappings before update:', JSON.stringify(localMappings));
+    
+    // Use the updateMapping function from the hook but pass the local mappings
+    const updated = updateMapping(modelField, tenantField, localMappings);
+    console.log('Updated localMappings:', JSON.stringify(updated));
+    
     setLocalMappings(updated);
     setIsModified(true);
   };

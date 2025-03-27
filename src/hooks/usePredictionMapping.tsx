@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { PredictionMapping, LIGHT_FEATURES, FULL_FEATURES } from '@/domain/models/predictionMapping';
+import { PredictionMapping, LIGHT_FEATURES, FULL_FEATURES, FieldMapping } from '@/domain/models/predictionMapping';
 import { PredictionMappingRepository } from '@/domain/repositories/predictionMappingRepository';
 import { PredictionMappingRepositoryImpl } from '@/infrastructure/repositories/predictionMappingRepositoryImpl';
 import { PredictionMappingService } from '@/application/services/predictionMappingService';
@@ -43,12 +43,35 @@ export function usePredictionMapping() {
   });
 
   // Update a specific mapping
-  const updateMapping = (modelField: string, tenantField: string) => {
-    return mappingService.updateMapping(
-      mappingData || { mappings: [] }, 
-      modelField, 
-      tenantField
-    );
+  const updateMapping = (modelField: string, tenantField: string, currentMappings: PredictionMapping = mappingData || { mappings: [] }): PredictionMapping => {
+    console.log(`updateMapping - modelField: ${modelField}, tenantField: ${tenantField}`);
+    console.log('Current mappings before update:', JSON.stringify(currentMappings));
+    
+    // Create a deep copy of the mappings
+    const mappingsCopy: PredictionMapping = { 
+      mappings: Array.isArray(currentMappings.mappings) 
+        ? [...currentMappings.mappings]
+        : []
+    };
+    
+    const existingIndex = mappingsCopy.mappings.findIndex(m => m.modelField === modelField);
+    
+    if (existingIndex !== -1) {
+      // Update existing mapping
+      mappingsCopy.mappings[existingIndex] = {
+        ...mappingsCopy.mappings[existingIndex],
+        tenantField
+      };
+    } else {
+      // Add new mapping
+      mappingsCopy.mappings.push({
+        modelField,
+        tenantField
+      });
+    }
+    
+    console.log('Mappings after update:', JSON.stringify(mappingsCopy));
+    return mappingsCopy;
   };
 
   return {
