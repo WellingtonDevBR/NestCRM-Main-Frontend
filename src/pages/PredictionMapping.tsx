@@ -15,6 +15,11 @@ import MappingHelpAccordion from "@/components/prediction/MappingHelpAccordion";
 import FieldMappingConfiguration from "@/components/prediction/FieldMappingConfiguration";
 
 const PredictionMapping: React.FC = () => {
+  // First, define state and hooks
+  const [activeModel, setActiveModel] = useState<"lightweight" | "full">("lightweight");
+  const [localMappings, setLocalMappings] = useState<PredictionMappingType>({ mappings: [] });
+  const [isModified, setIsModified] = useState(false);
+  
   const { customFieldCategories, isLoading: isLoadingFields } = useCustomFields();
   
   const { 
@@ -28,10 +33,10 @@ const PredictionMapping: React.FC = () => {
     FULL_FEATURES
   } = usePredictionMapping();
   
-  // Local state to track changes
-  const [localMappings, setLocalMappings] = useState<PredictionMappingType>({ mappings: [] });
-  const [isModified, setIsModified] = useState(false);
-  const [activeModel, setActiveModel] = useState<"lightweight" | "full">("lightweight");
+  // Get advanced features by filtering out the lightweight features
+  const advancedFeatures = FULL_FEATURES.filter(
+    fullFeature => !LIGHT_FEATURES.some(lightFeature => lightFeature.modelField === fullFeature.modelField)
+  );
   
   // Count how many fields are mapped vs unmapped
   const countMappedFields = () => {
@@ -51,11 +56,6 @@ const PredictionMapping: React.FC = () => {
   
   const { mapped, total } = countMappedFields();
   const mappingProgress = total > 0 ? Math.round((mapped / total) * 100) : 0;
-  
-  // Get advanced features by filtering out the lightweight features
-  const advancedFeatures = FULL_FEATURES.filter(
-    f => !LIGHT_FEATURES.some(lf => lf.modelField === f.modelField)
-  );
   
   // Initialize local state from API data
   useEffect(() => {

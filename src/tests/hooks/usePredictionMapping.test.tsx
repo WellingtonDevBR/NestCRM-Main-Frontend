@@ -3,6 +3,7 @@ import { renderHook, act } from '@testing-library/react-hooks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePredictionMapping } from '@/hooks/usePredictionMapping';
 import React from 'react';
+import '@testing-library/jest-dom';
 
 // Mock the repository implementation
 jest.mock('@/infrastructure/repositories/predictionMappingRepositoryImpl', () => {

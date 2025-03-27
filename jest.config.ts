@@ -10,4 +10,6 @@ export default {
       tsconfig: './tsconfig.app.json'
     }]
   },
+  setupFilesAfterEnv: ['@testing-library/jest-dom/extend-expect'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 };

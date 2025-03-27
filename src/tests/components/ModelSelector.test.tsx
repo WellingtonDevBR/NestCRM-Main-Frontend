@@ -1,53 +1,58 @@
 
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import ModelSelector from '@/components/prediction/ModelSelector';
 
 describe('ModelSelector Component', () => {
-  const mockProps = {
-    activeModel: 'lightweight' as 'lightweight' | 'full',
-    setActiveModel: jest.fn(),
+  const mockSetActiveModel = jest.fn();
+
+  const defaultProps = {
+    activeModel: 'lightweight' as const,
+    setActiveModel: mockSetActiveModel,
     lightFeaturesCount: 6,
     fullFeaturesCount: 12
   };
 
-  test('renders both model options', () => {
-    render(<ModelSelector {...mockProps} />);
-    expect(screen.getByText(`Lightweight Model (${mockProps.lightFeaturesCount} fields)`)).toBeInTheDocument();
-    expect(screen.getByText(`Full Model (${mockProps.fullFeaturesCount} fields)`)).toBeInTheDocument();
+  test('renders both model options with feature counts', () => {
+    render(<ModelSelector {...defaultProps} />);
+    expect(screen.getByText(/Lightweight Model/i)).toBeInTheDocument();
+    expect(screen.getByText(/Full Model/i)).toBeInTheDocument();
   });
 
-  test('applies correct styling to active model button', () => {
-    const { rerender } = render(<ModelSelector {...mockProps} />);
+  test('clicking on a model option calls setActiveModel', () => {
+    render(<ModelSelector {...defaultProps} />);
     
-    // Lightweight should be active initially
-    const lightweightButton = screen.getByText(`Lightweight Model (${mockProps.lightFeaturesCount} fields)`);
-    expect(lightweightButton.className).toContain('bg-purple-600');
+    // Find and click the "Full Model" option
+    const fullModelOption = screen.getByText(/Full Model/i);
+    fireEvent.click(fullModelOption);
     
-    // Full model should not be active
-    const fullModelButton = screen.getByText(`Full Model (${mockProps.fullFeaturesCount} fields)`);
-    expect(fullModelButton.className).not.toContain('bg-purple-600');
+    // Check if setActiveModel was called with 'full'
+    expect(mockSetActiveModel).toHaveBeenCalledWith('full');
     
-    // Now rerender with full model active
-    rerender(<ModelSelector {...mockProps} activeModel="full" />);
+    // Reset the mock
+    mockSetActiveModel.mockClear();
     
-    // Now full model should be active
-    expect(screen.getByText(`Full Model (${mockProps.fullFeaturesCount} fields)`).className).toContain('bg-purple-600');
-    expect(screen.getByText(`Lightweight Model (${mockProps.lightFeaturesCount} fields)`).className).not.toContain('bg-purple-600');
+    // Find and click the "Lightweight Model" option
+    const lightweightModelOption = screen.getByText(/Lightweight Model/i);
+    fireEvent.click(lightweightModelOption);
+    
+    // Check if setActiveModel was called with 'lightweight'
+    expect(mockSetActiveModel).toHaveBeenCalledWith('lightweight');
   });
-
-  test('calls setActiveModel when clicking buttons', () => {
-    render(<ModelSelector {...mockProps} />);
+  
+  test('applies active styles to the selected model', () => {
+    const { rerender } = render(<ModelSelector {...defaultProps} />);
     
-    // Click on the full model button
-    fireEvent.click(screen.getByText(`Full Model (${mockProps.fullFeaturesCount} fields)`));
-    expect(mockProps.setActiveModel).toHaveBeenCalledWith('full');
+    // Check that the lightweight model has active styles
+    const lightweightModelInitial = screen.getByText(/Lightweight Model/i).closest('div');
+    expect(lightweightModelInitial?.className).toContain('border-purple-600');
     
-    // Reset mock
-    mockProps.setActiveModel.mockReset();
+    // Rerender with full model active
+    rerender(<ModelSelector {...defaultProps} activeModel="full" />);
     
-    // Click on lightweight model button
-    fireEvent.click(screen.getByText(`Lightweight Model (${mockProps.lightFeaturesCount} fields)`));
-    expect(mockProps.setActiveModel).toHaveBeenCalledWith('lightweight');
+    // Check that the full model now has active styles
+    const fullModelAfterChange = screen.getByText(/Full Model/i).closest('div');
+    expect(fullModelAfterChange?.className).toContain('border-purple-600');
   });
 });

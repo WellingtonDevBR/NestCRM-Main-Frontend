@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import FieldMappingTable from '@/components/prediction/FieldMappingTable';
 import { LIGHT_FEATURES } from '@/domain/models/predictionMapping';
 import { CustomFieldCategory } from '@/domain/models/customField';
