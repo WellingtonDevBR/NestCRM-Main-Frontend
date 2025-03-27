@@ -19,7 +19,7 @@ const Orders: React.FC = () => {
           New Order
         </Button>
       </div>
-      
+
       <div className="flex items-center gap-4 bg-card rounded-lg p-3 shadow-sm border border-border">
         <div className="flex-1">
           <Input placeholder="Search orders..." className="w-full" />
@@ -33,7 +33,7 @@ const Orders: React.FC = () => {
           Refresh
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
@@ -45,7 +45,7 @@ const Orders: React.FC = () => {
             <div className="text-2xl font-bold">{orders.length}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -58,7 +58,7 @@ const Orders: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -71,7 +71,7 @@ const Orders: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -85,7 +85,7 @@ const Orders: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Recent Orders</CardTitle>

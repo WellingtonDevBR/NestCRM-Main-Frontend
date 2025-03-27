@@ -17,12 +17,12 @@ const Support: React.FC = () => {
   const inProgressTickets = tickets.filter(ticket => ticket.status === 'in_progress').length;
   const resolvedTickets = tickets.filter(ticket => ticket.status === 'resolved').length;
   const closedTickets = tickets.filter(ticket => ticket.status === 'closed').length;
-  
+
   const criticalTickets = tickets.filter(ticket => ticket.priority === 'critical').length;
   const highPriorityTickets = tickets.filter(ticket => ticket.priority === 'high').length;
 
-  const resolvedPercentage = tickets.length > 0 
-    ? Math.round(((resolvedTickets + closedTickets) / tickets.length) * 100) 
+  const resolvedPercentage = tickets.length > 0
+    ? Math.round(((resolvedTickets + closedTickets) / tickets.length) * 100)
     : 0;
 
   return (
@@ -34,8 +34,8 @@ const Support: React.FC = () => {
           New Ticket
         </Button>
       </div>
-      
-      <div className="flex items-center gap-4 bg-white rounded-lg p-3 shadow-sm border">
+
+      <div className="flex items-center gap-4 bg-card rounded-lg p-3 shadow-sm border border-border">
         <div className="flex-1">
           <Input placeholder="Search tickets..." className="w-full" />
         </div>
@@ -48,7 +48,7 @@ const Support: React.FC = () => {
           Refresh
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-2">
@@ -68,7 +68,7 @@ const Support: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -96,7 +96,7 @@ const Support: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className={criticalTickets > 0 ? "border-red-200 bg-red-50" : ""}>
           <CardHeader className="pb-2">
             <CardTitle className={`text-sm font-medium ${criticalTickets > 0 ? "text-red-800" : "text-muted-foreground"}`}>
@@ -123,7 +123,7 @@ const Support: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <Tabs defaultValue="all">

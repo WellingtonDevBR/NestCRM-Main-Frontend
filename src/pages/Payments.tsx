@@ -32,21 +32,21 @@ const Payments: React.FC = () => {
           Record Payment
         </Button>
       </div>
-      
-      <div className="flex items-center gap-4 bg-card rounded-lg p-3 shadow-sm border border-border dark:bg-gray-800 dark:border-gray-700">
+
+      <div className="flex items-center gap-4 bg-card rounded-lg p-3 shadow-sm border border-border">
         <div className="flex-1">
-          <Input placeholder="Search payments..." className="w-full dark:bg-gray-800 dark:border-gray-700" />
+          <Input placeholder="Search payments..." className="w-full" />
         </div>
-        <Button variant="outline" size="sm" className="dark:border-gray-700 dark:hover:bg-gray-700">
+        <Button variant="outline" size="sm">
           <Filter className="mr-2 h-4 w-4" />
           Filter
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => refetch()} className="dark:hover:bg-gray-700">
+        <Button variant="ghost" size="sm" onClick={() => refetch()}>
           <RefreshCw className="mr-2 h-4 w-4" />
           Refresh
         </Button>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
@@ -58,7 +58,7 @@ const Payments: React.FC = () => {
             <div className="text-2xl font-bold">{formatCurrency(totalCompletedAmount)}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -71,7 +71,7 @@ const Payments: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -84,7 +84,7 @@ const Payments: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -98,7 +98,7 @@ const Payments: React.FC = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Recent Payments</CardTitle>
