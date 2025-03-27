@@ -26,7 +26,12 @@ export function usePredictionMapping() {
 
   // Get mapping for a specific model field
   const getMapping = (modelField: string): string | undefined => {
-    return mappingService.getMappingForField(mappingData || { mappings: [] }, modelField);
+    if (!mappingData || !mappingData.mappings) return undefined;
+    
+    const mapping = mappingData.mappings.find(m => m.modelField === modelField);
+    console.log(`getMapping for ${modelField}:`, mapping?.tenantField);
+    
+    return mapping?.tenantField === "not_mapped" ? undefined : mapping?.tenantField;
   };
 
   // Save mappings mutation

@@ -110,7 +110,7 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   const handleCategoryChange = (category: string) => {
     console.log(`${modelFeature.modelField} - Category changed to:`, category);
     setSelectedCategory(category);
-    // Clear the field selection when category changes
+    // Reset field selection when category changes
     onFieldChange(modelFeature.modelField, "not_mapped");
   };
 
@@ -149,7 +149,10 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
         </div>
       </td>
       <td className="py-3 px-2">
-        <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+        <Select 
+          value={selectedCategory} 
+          onValueChange={handleCategoryChange}
+        >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
