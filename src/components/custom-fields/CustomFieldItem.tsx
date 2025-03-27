@@ -96,7 +96,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   };
   
   const availableUiTypes = [
-    { value: "", label: "Default" },
+    { value: "default", label: "Default" },
     { value: "badge", label: "Badge" },
     { value: "pill", label: "Pill" },
     { value: "currency", label: "Currency" },
@@ -224,9 +224,9 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
               <div className="space-y-2">
                 <Label>Display Type</Label>
                 <Select
-                  value={field.uiConfig?.type || ""}
+                  value={field.uiConfig?.type || "default"}
                   onValueChange={(value) => {
-                    if (value === "") {
+                    if (value === "default") {
                       // Remove the type property
                       const { type, ...rest } = field.uiConfig || {};
                       onUpdateField(index, { uiConfig: Object.keys(rest).length ? rest : undefined });

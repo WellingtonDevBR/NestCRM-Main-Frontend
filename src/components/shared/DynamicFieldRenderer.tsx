@@ -19,8 +19,8 @@ const DynamicFieldRenderer: React.FC<DynamicFieldRendererProps> = ({
     return <span className="text-muted-foreground">—</span>;
   }
 
-  // If no uiConfig is provided, render default
-  if (!uiConfig || !uiConfig.type) {
+  // If no uiConfig is provided, or type is not specified or "default", render default
+  if (!uiConfig || !uiConfig.type || uiConfig.type === "default") {
     return <span className={className}>{String(value)}</span>;
   }
 

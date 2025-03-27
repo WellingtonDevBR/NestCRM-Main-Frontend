@@ -11,7 +11,7 @@ export interface CustomField {
 
 // UI Configuration for custom field rendering
 export interface UIConfig {
-  type?: "badge" | "pill" | "currency" | "percent" | "rating" | "boolean";
+  type?: "default" | "badge" | "pill" | "currency" | "percent" | "rating" | "boolean";
   colorMap?: Record<string, string>; // Maps values to color names (e.g., "Active": "green")
   iconMap?: Record<string, string>; // Maps values to icon names (e.g., "Active": "check-circle")
   format?: string; // For number/date formatting (e.g., "currency", "percent")
