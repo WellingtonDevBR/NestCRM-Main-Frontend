@@ -2,14 +2,14 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CustomField } from "@/domain/models/customField";
+import { CustomField, CustomFieldCategory } from "@/domain/models/customField";
 import FieldMappingRow from "./FieldMappingRow";
 import { FieldMapping } from "@/utils/predictionMappingApi";
 
 interface FieldMappingTableProps {
   title: string;
   features: Omit<FieldMapping, 'tenantField'>[];
-  customFields: CustomField[];
+  customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
   onFieldChange: (modelField: string, tenantField: string) => void;
 }
@@ -17,7 +17,7 @@ interface FieldMappingTableProps {
 const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
   title,
   features,
-  customFields,
+  customFieldCategories,
   getMappedField,
   onFieldChange
 }) => {
@@ -27,8 +27,8 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
     return !mapping || mapping === "not_mapped";
   }).length;
   
-  // Ensure customFields is an array
-  const safeCustomFields = Array.isArray(customFields) ? customFields : [];
+  // Ensure customFieldCategories is an array
+  const safeCustomFieldCategories = Array.isArray(customFieldCategories) ? customFieldCategories : [];
   
   return (
     <div className="space-y-3">
@@ -49,6 +49,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="py-3 pl-4 pr-2 text-left text-sm font-medium text-gray-500">Model Feature</th>
+              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500">Category</th>
               <th className="py-3 px-2 text-left text-sm font-medium text-gray-500">Mapped Field</th>
               <th className="py-3 px-2 text-left text-sm font-medium text-gray-500">Type</th>
             </tr>
@@ -58,7 +59,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
               <FieldMappingRow
                 key={feature.modelField}
                 modelFeature={feature}
-                customFields={safeCustomFields}
+                customFieldCategories={safeCustomFieldCategories}
                 selectedField={getMappedField(feature.modelField)}
                 onFieldChange={onFieldChange}
               />

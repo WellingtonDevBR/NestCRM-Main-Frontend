@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -14,7 +13,7 @@ export const LIGHTWEIGHT_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   { 
     modelField: "Gender", 
     modelType: "select", 
-    description: "Customer gender (typically M/F or other categories)" 
+    description: "Customer gender" 
   },
   { 
     modelField: "Partner", 
@@ -22,93 +21,53 @@ export const LIGHTWEIGHT_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
     description: "Whether customer has a partner" 
   },
   { 
-    modelField: "Dependents", 
-    modelType: "select", 
-    description: "Whether customer has dependents" 
-  },
-  { 
     modelField: "Tenure", 
     modelType: "number", 
     description: "Number of months the customer has been with the company" 
+  },
+  { 
+    modelField: "Usage_Frequency", 
+    modelType: "number", 
+    description: "How often the customer uses the service" 
+  },
+  { 
+    modelField: "Days_Since_Last_Interaction", 
+    modelType: "number", 
+    description: "Number of days since the customer's last interaction with the company" 
   }
 ];
 
 export const FULL_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   ...LIGHTWEIGHT_MODEL_FEATURES,
   { 
-    modelField: "PhoneService", 
+    modelField: "Dependents", 
     modelType: "select", 
-    description: "Whether customer has phone service" 
+    description: "Whether customer has dependents" 
   },
   { 
-    modelField: "MultipleLines", 
-    modelType: "select", 
-    description: "Whether customer has multiple lines" 
-  },
-  { 
-    modelField: "InternetService", 
-    modelType: "select", 
-    description: "Type of internet service" 
-  },
-  { 
-    modelField: "OnlineSecurity", 
-    modelType: "select", 
-    description: "Whether customer has online security" 
-  },
-  { 
-    modelField: "OnlineBackup", 
-    modelType: "select", 
-    description: "Whether customer has online backup" 
-  },
-  { 
-    modelField: "DeviceProtection", 
-    modelType: "select", 
-    description: "Whether customer has device protection" 
-  },
-  { 
-    modelField: "TechSupport", 
-    modelType: "select", 
-    description: "Whether customer has tech support" 
-  },
-  { 
-    modelField: "StreamingTV", 
-    modelType: "select", 
-    description: "Whether customer has streaming TV" 
-  },
-  { 
-    modelField: "StreamingMovies", 
-    modelType: "select", 
-    description: "Whether customer has streaming movies" 
-  },
-  { 
-    modelField: "Contract", 
-    modelType: "select", 
-    description: "Contract type" 
-  },
-  { 
-    modelField: "PaperlessBilling", 
-    modelType: "select", 
-    description: "Whether customer has paperless billing" 
-  },
-  { 
-    modelField: "PaymentMethod", 
-    modelType: "select", 
-    description: "Payment method" 
-  },
-  { 
-    modelField: "MonthlyCharges", 
+    modelField: "Total_Spend", 
     modelType: "number", 
-    description: "Monthly charges in currency units" 
+    description: "Total amount spent by the customer" 
   },
   { 
-    modelField: "TotalCharges", 
+    modelField: "Support_Calls", 
     modelType: "number", 
-    description: "Total charges in currency units" 
+    description: "Number of support calls made by the customer" 
   },
   { 
-    modelField: "Churn", 
+    modelField: "Payment_Delay", 
+    modelType: "number", 
+    description: "Average payment delay in days" 
+  },
+  { 
+    modelField: "Subscription_Type", 
     modelType: "select", 
-    description: "Whether customer churned (target variable)" 
+    description: "Type of subscription" 
+  },
+  { 
+    modelField: "Contract_Length", 
+    modelType: "select", 
+    description: "Length of customer contract" 
   }
 ];
 

@@ -29,20 +29,6 @@ const PredictionMapping: React.FC = () => {
   const [localMappings, setLocalMappings] = useState<PredictionMappingData>({ mappings: [] });
   const [isModified, setIsModified] = useState(false);
   
-  // Flatten all custom fields from categories for easier access
-  const allCustomFields = useMemo(() => {
-    if (!customFieldCategories || customFieldCategories.length === 0) return [];
-    
-    return customFieldCategories.flatMap(category => 
-      category.fields && Array.isArray(category.fields) 
-        ? category.fields.map(field => ({
-            ...field,
-            category: category.category
-          }))
-        : []
-    );
-  }, [customFieldCategories]);
-  
   // Initialize local state from API data
   useEffect(() => {
     if (mappingData && mappingData.mappings) {
@@ -96,6 +82,11 @@ const PredictionMapping: React.FC = () => {
   
   const isLoading = isLoadingFields || isLoadingMappings;
   
+  // Get advanced features by filtering out the lightweight features
+  const advancedFeatures = FULL_MODEL_FEATURES.filter(
+    f => !LIGHTWEIGHT_MODEL_FEATURES.some(lf => lf.modelField === f.modelField)
+  );
+  
   if (isLoading) {
     return (
       <div className="container py-6 space-y-6">
@@ -133,18 +124,16 @@ const PredictionMapping: React.FC = () => {
           <FieldMappingTable
             title="Lightweight Model Features (Basic)"
             features={LIGHTWEIGHT_MODEL_FEATURES}
-            customFields={allCustomFields}
+            customFieldCategories={customFieldCategories || []}
             getMappedField={getLocalMapping}
             onFieldChange={handleFieldChange}
           />
           
-          {/* Full Model Features */}
+          {/* Advanced Model Features */}
           <FieldMappingTable
-            title="Full Model Features (Advanced)"
-            features={FULL_MODEL_FEATURES.filter(
-              f => !LIGHTWEIGHT_MODEL_FEATURES.some(lf => lf.modelField === f.modelField)
-            )}
-            customFields={allCustomFields}
+            title="Advanced Model Features"
+            features={advancedFeatures}
+            customFieldCategories={customFieldCategories || []}
             getMappedField={getLocalMapping}
             onFieldChange={handleFieldChange}
           />
