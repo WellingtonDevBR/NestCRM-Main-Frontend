@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Sliders, ArrowLeft, Bell, Moon, Monitor } from "lucide-react";
+import { Sliders, ArrowLeft, Bell, Moon, Monitor, Sun } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -10,17 +10,17 @@ import { Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { storeItem, getStoredItem } from "@/utils/localStorage";
+import { useTheme } from "@/context/ThemeContext";
 
-// Local storage keys
-const SETTINGS_THEME_KEY = "nestcrm-theme";
+// Local storage keys for notifications and data privacy
 const SETTINGS_NOTIFICATIONS_KEY = "nestcrm-notifications";
 const SETTINGS_DATA_PRIVACY_KEY = "nestcrm-data-privacy";
 
 const GeneralSettings = () => {
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   
   // Load settings from localStorage with defaults
-  const [theme, setTheme] = useState(getStoredItem(SETTINGS_THEME_KEY, "system"));
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: getStoredItem(`${SETTINGS_NOTIFICATIONS_KEY}-email`, true),
     inAppNotifications: getStoredItem(`${SETTINGS_NOTIFICATIONS_KEY}-inapp`, true),
@@ -35,7 +35,6 @@ const GeneralSettings = () => {
   // Handle theme change
   const handleThemeChange = (newTheme) => {
     setTheme(newTheme);
-    storeItem(SETTINGS_THEME_KEY, newTheme);
     
     toast({
       title: "Theme preference saved",
@@ -74,7 +73,7 @@ const GeneralSettings = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <Card className="overflow-hidden border-0 shadow-sm">
-        <CardHeader className="border-b bg-white px-6 py-4">
+        <CardHeader className="border-b bg-card px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button variant="outline" size="icon" asChild>
@@ -84,8 +83,8 @@ const GeneralSettings = () => {
               </Button>
               
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Sliders className="h-5 w-5 text-purple-600" />
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Sliders className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
                   <CardTitle className="text-xl">General Settings</CardTitle>
@@ -113,7 +112,7 @@ const GeneralSettings = () => {
                     variant={theme === "light" ? "default" : "outline"}
                     className={theme === "light" ? "bg-purple-600 hover:bg-purple-700" : ""}
                   >
-                    <Monitor className="h-4 w-4 mr-2" />
+                    <Sun className="h-4 w-4 mr-2" />
                     Light
                   </Button>
                   <Button 

@@ -33,10 +33,10 @@ const Settings = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-card rounded-xl p-6 shadow-sm border border-border">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-purple-100 rounded-lg">
-            <SettingsIcon className="h-6 w-6 text-purple-600" />
+          <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+            <SettingsIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
             <h1 className="text-2xl font-bold">Settings</h1>
@@ -51,14 +51,14 @@ const Settings = () => {
         {settingsCategories.map((category, index) => (
           <Card 
             key={index} 
-            className="overflow-hidden transition-all duration-200 hover:shadow-md hover:border-purple-200"
+            className="overflow-hidden transition-all duration-200 hover:shadow-md hover:border-purple-200 dark:hover:border-purple-800"
           >
             <div className="relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-purple-600"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-purple-600 dark:bg-purple-500"></div>
             </div>
             <CardHeader className="flex flex-row items-center gap-4 pb-2">
-              <div className="p-3 rounded-md bg-purple-100 shrink-0">
-                <category.icon className="h-5 w-5 text-purple-600" />
+              <div className="p-3 rounded-md bg-purple-100 dark:bg-purple-900/30 shrink-0">
+                <category.icon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
                 <CardTitle className="text-xl">{category.title}</CardTitle>
@@ -67,7 +67,7 @@ const Settings = () => {
             </CardHeader>
             <CardContent>
               <Button 
-                className="w-full bg-purple-600 hover:bg-purple-700 mt-2 font-medium" 
+                className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-700 mt-2 font-medium" 
                 disabled={category.disabled}
                 asChild={!category.disabled}
               >
