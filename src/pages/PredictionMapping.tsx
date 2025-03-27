@@ -1,34 +1,36 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
-import { Database, Settings as SettingsIcon } from "lucide-react";
-import FieldMappingTable from "@/components/prediction/FieldMappingTable";
+import { TrendingUp } from "lucide-react";
 import { useCustomFields } from "@/hooks/useCustomFields";
-import { usePredictionMapping } from "@/hooks/usePredictionMapping";
-import { PredictionMappingData } from "@/utils/predictionMappingApi";
+import { 
+  usePredictionMapping, 
+  LIGHTWEIGHT_MODEL_FEATURES, 
+  FULL_MODEL_FEATURES 
+} from "@/hooks/usePredictionMapping";
+import FieldMappingTable from "@/components/prediction/FieldMappingTable";
+import { FieldMapping, PredictionMappingData } from "@/utils/predictionMappingApi";
 
 const PredictionMapping: React.FC = () => {
-  const { customFieldCategories, isLoadingCategories } = useCustomFields();
+  const { customFieldCategories, isLoading: isLoadingFields } = useCustomFields();
+  
   const { 
     mappingData, 
     isLoading: isLoadingMappings, 
-    getMapping, 
-    updateMapping, 
-    saveMappings, 
+    saveMappings,
     isSaving,
-    LIGHTWEIGHT_MODEL_FEATURES,
-    FULL_MODEL_FEATURES
+    getMapping
   } = usePredictionMapping();
-
-  const [localMappings, setLocalMappings] = useState<PredictionMappingData>({ mappings: [] });
   
-  // Flatten all custom fields from all categories for dropdown options
-  const allCustomFields = React.useMemo(() => {
+  // Local state to track changes
+  const [localMappings, setLocalMappings] = useState<PredictionMappingData>({ mappings: [] });
+  const [isModified, setIsModified] = useState(false);
+  
+  // Flatten all custom fields from categories for easier access
+  const allCustomFields = useMemo(() => {
     if (!customFieldCategories || customFieldCategories.length === 0) return [];
     
     return customFieldCategories.flatMap(category => 
@@ -41,26 +43,29 @@ const PredictionMapping: React.FC = () => {
     );
   }, [customFieldCategories]);
   
-  // Initialize local mappings when data loads
+  // Initialize local state from API data
   useEffect(() => {
-    if (mappingData) {
+    if (mappingData && mappingData.mappings) {
       setLocalMappings(mappingData);
+      setIsModified(false);
     }
   }, [mappingData]);
-  
-  const handleFieldChange = (modelField: string, tenantField: string) => {
-    const updatedMappings = updateMapping(modelField, tenantField);
-    if (updatedMappings) {
-      setLocalMappings(updatedMappings);
-    }
-  };
-  
+
   const handleSave = async () => {
     try {
-      await saveMappings(localMappings);
+      // Filter out not_mapped values
+      const cleanedMappings = {
+        mappings: localMappings.mappings.filter(mapping => 
+          mapping.tenantField && mapping.tenantField !== "not_mapped"
+        )
+      };
+      
+      await saveMappings(cleanedMappings);
+      setIsModified(false);
+      toast.success("Field mappings saved successfully");
     } catch (error) {
-      console.error("Error saving mappings:", error);
       toast.error("Failed to save field mappings");
+      console.error("Save error:", error);
     }
   };
   
@@ -70,79 +75,92 @@ const PredictionMapping: React.FC = () => {
     return mapping?.tenantField;
   };
   
-  const isLoading = isLoadingCategories || isLoadingMappings;
-
-  return (
-    <SidebarProvider>
-      <div className="min-h-screen flex">
-        <DashboardSidebar />
-        <main className="flex-1 p-6 ml-0 md:ml-[var(--sidebar-width-icon)] lg:ml-0 transition-all duration-300">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <SettingsIcon className="h-6 w-6 text-purple-600" />
-                <h1 className="text-3xl font-bold">Churn Prediction Field Mapping</h1>
-              </div>
-              <p className="text-muted-foreground">
-                Map your custom fields to the fields required by our churn prediction models
-              </p>
-              <Separator className="mt-6" />
-            </div>
-            
-            {isLoading ? (
-              <div className="flex justify-center p-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="p-6 space-y-8">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Database className="h-5 w-5 text-purple-600" />
-                      <h2 className="text-xl font-semibold">Field Mapping Configuration</h2>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Our churn prediction model expects specific field names. 
-                      Map your custom fields to these model features to enable accurate predictions.
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-8">
-                    <FieldMappingTable
-                      title="Lightweight Model Features"
-                      features={LIGHTWEIGHT_MODEL_FEATURES}
-                      customFields={allCustomFields}
-                      getMappedField={getLocalMapping}
-                      onFieldChange={handleFieldChange}
-                    />
-                    
-                    <Separator />
-                    
-                    <FieldMappingTable
-                      title="Full Model Features (Additional)"
-                      features={FULL_MODEL_FEATURES.slice(LIGHTWEIGHT_MODEL_FEATURES.length)}
-                      customFields={allCustomFields}
-                      getMappedField={getLocalMapping}
-                      onFieldChange={handleFieldChange}
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <Button 
-                      onClick={handleSave} 
-                      disabled={isSaving} 
-                      className="bg-purple-600 hover:bg-purple-700"
-                    >
-                      {isSaving ? "Saving..." : "Save Mappings"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </main>
+  const handleFieldChange = (modelField: string, tenantField: string) => {
+    const updatedMappings = [...(localMappings.mappings || [])];
+    const existingIndex = updatedMappings.findIndex(m => m.modelField === modelField);
+    
+    if (existingIndex >= 0) {
+      // Update existing mapping
+      updatedMappings[existingIndex] = {
+        ...updatedMappings[existingIndex],
+        tenantField
+      };
+    } else {
+      // Add new mapping
+      updatedMappings.push({ modelField, tenantField });
+    }
+    
+    setLocalMappings({ mappings: updatedMappings });
+    setIsModified(true);
+  };
+  
+  const isLoading = isLoadingFields || isLoadingMappings;
+  
+  if (isLoading) {
+    return (
+      <div className="container py-6 space-y-6">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-6 w-6 text-purple-600" />
+          <h1 className="text-3xl font-bold">Churn Prediction Field Mapping</h1>
+        </div>
+        <p className="text-muted-foreground">Loading field configuration...</p>
       </div>
-    </SidebarProvider>
+    );
+  }
+  
+  return (
+    <div className="container py-6 space-y-6">
+      <div className="flex items-center gap-2">
+        <TrendingUp className="h-6 w-6 text-purple-600" />
+        <h1 className="text-3xl font-bold">Churn Prediction Field Mapping</h1>
+      </div>
+      <p className="text-muted-foreground">
+        Map your custom fields to match the prediction model features for accurate churn prediction.
+      </p>
+      
+      <Separator className="my-6" />
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Field Mapping Configuration</CardTitle>
+          <CardDescription>
+            Select which of your custom fields correspond to each model feature.
+            This mapping is required for the prediction model to work properly.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* Lightweight Model Features */}
+          <FieldMappingTable
+            title="Lightweight Model Features (Basic)"
+            features={LIGHTWEIGHT_MODEL_FEATURES}
+            customFields={allCustomFields}
+            getMappedField={getLocalMapping}
+            onFieldChange={handleFieldChange}
+          />
+          
+          {/* Full Model Features */}
+          <FieldMappingTable
+            title="Full Model Features (Advanced)"
+            features={FULL_MODEL_FEATURES.filter(
+              f => !LIGHTWEIGHT_MODEL_FEATURES.some(lf => lf.modelField === f.modelField)
+            )}
+            customFields={allCustomFields}
+            getMappedField={getLocalMapping}
+            onFieldChange={handleFieldChange}
+          />
+          
+          <div className="flex justify-end mt-6">
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving || !isModified} 
+              className="bg-purple-600 hover:bg-purple-700"
+            >
+              {isSaving ? "Saving..." : "Save Mappings"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

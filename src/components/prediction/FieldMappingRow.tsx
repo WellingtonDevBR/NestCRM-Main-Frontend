@@ -72,7 +72,7 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
             <SelectValue placeholder="Select a field" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Not mapped</SelectItem>
+            <SelectItem value="not_mapped">Not mapped</SelectItem>
             {compatibleFields.map(field => (
               <SelectItem key={field.key} value={field.key}>
                 {field.label} ({field.key})

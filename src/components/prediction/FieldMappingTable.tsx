@@ -22,7 +22,10 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
   onFieldChange
 }) => {
   // Count how many fields are not mapped
-  const unmappedCount = features.filter(f => !getMappedField(f.modelField)).length;
+  const unmappedCount = features.filter(f => {
+    const mapping = getMappedField(f.modelField);
+    return !mapping || mapping === "not_mapped";
+  }).length;
   
   // Ensure customFields is an array
   const safeCustomFields = Array.isArray(customFields) ? customFields : [];

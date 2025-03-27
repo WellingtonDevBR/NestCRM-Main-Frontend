@@ -130,7 +130,7 @@ export function usePredictionMapping() {
   const getMapping = (modelField: string): string | undefined => {
     if (!mappingData?.mappings) return undefined;
     const mapping = mappingData.mappings.find(m => m.modelField === modelField);
-    return mapping?.tenantField;
+    return mapping?.tenantField === "not_mapped" ? undefined : mapping?.tenantField;
   };
 
   // Save mappings mutation
