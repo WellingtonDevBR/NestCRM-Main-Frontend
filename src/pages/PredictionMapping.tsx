@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { usePredictionMapping } from "@/hooks/usePredictionMapping";
-import { PredictionMappingData } from "@/utils/predictionMappingApi";
+import { PredictionMapping as PredictionMappingType } from "@/domain/models/predictionMapping";
 
 // Import refactored components
 import PredictionMappingHeader from "@/components/prediction/PredictionMappingHeader";
@@ -23,12 +23,13 @@ const PredictionMapping: React.FC = () => {
     saveMappings,
     isSaving,
     getMapping,
+    updateMapping,
     LIGHT_FEATURES,
     FULL_FEATURES
   } = usePredictionMapping();
   
   // Local state to track changes
-  const [localMappings, setLocalMappings] = useState<PredictionMappingData>({ mappings: [] });
+  const [localMappings, setLocalMappings] = useState<PredictionMappingType>({ mappings: [] });
   const [isModified, setIsModified] = useState(false);
   const [activeModel, setActiveModel] = useState<"lightweight" | "full">("lightweight");
   
@@ -66,14 +67,7 @@ const PredictionMapping: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      // Filter out not_mapped values
-      const cleanedMappings = {
-        mappings: localMappings.mappings.filter(mapping => 
-          mapping.tenantField && mapping.tenantField !== "not_mapped"
-        )
-      };
-      
-      await saveMappings(cleanedMappings);
+      await saveMappings(localMappings);
       setIsModified(false);
       toast.success("Field mappings saved successfully", {
         description: "Your custom field mappings have been updated."
@@ -93,21 +87,8 @@ const PredictionMapping: React.FC = () => {
   };
   
   const handleFieldChange = (modelField: string, tenantField: string) => {
-    const updatedMappings = [...(localMappings.mappings || [])];
-    const existingIndex = updatedMappings.findIndex(m => m.modelField === modelField);
-    
-    if (existingIndex >= 0) {
-      // Update existing mapping
-      updatedMappings[existingIndex] = {
-        ...updatedMappings[existingIndex],
-        tenantField
-      };
-    } else {
-      // Add new mapping
-      updatedMappings.push({ modelField, tenantField });
-    }
-    
-    setLocalMappings({ mappings: updatedMappings });
+    const updated = updateMapping(modelField, tenantField);
+    setLocalMappings(updated);
     setIsModified(true);
   };
   

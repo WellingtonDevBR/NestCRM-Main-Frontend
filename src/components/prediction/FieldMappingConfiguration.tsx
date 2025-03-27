@@ -19,14 +19,14 @@ import {
 } from "@/components/ui/tooltip";
 import FieldMappingTable from "./FieldMappingTable";
 import { CustomFieldCategory } from "@/domain/models/customField";
-import { FieldMapping } from "@/utils/predictionMappingApi";
+import { ModelFeature } from "@/domain/models/predictionMapping";
 
 interface FieldMappingConfigurationProps {
   activeModel: "lightweight" | "full";
   isModified: boolean;
   isSaving: boolean;
-  lightFeatures: Omit<FieldMapping, 'tenantField'>[];
-  advancedFeatures: Omit<FieldMapping, 'tenantField'>[];
+  lightFeatures: ModelFeature[];
+  advancedFeatures: ModelFeature[];
   customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
   onFieldChange: (modelField: string, tenantField: string) => void;

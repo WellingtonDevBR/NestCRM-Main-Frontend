@@ -2,9 +2,9 @@
 import React from "react";
 import { AlertTriangle, HelpCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CustomField, CustomFieldCategory } from "@/domain/models/customField";
+import { CustomFieldCategory } from "@/domain/models/customField";
 import FieldMappingRow from "./FieldMappingRow";
-import { FieldMapping } from "@/utils/predictionMappingApi";
+import { ModelFeature } from "@/domain/models/predictionMapping";
 import {
   Tooltip,
   TooltipContent,
@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface FieldMappingTableProps {
   title: string;
-  features: Omit<FieldMapping, 'tenantField'>[];
+  features: ModelFeature[];
   customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
   onFieldChange: (modelField: string, tenantField: string) => void;

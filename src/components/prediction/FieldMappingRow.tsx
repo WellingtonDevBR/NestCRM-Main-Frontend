@@ -15,11 +15,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
-import { FieldMapping } from "@/utils/predictionMappingApi";
+import { ModelFeature } from "@/domain/models/predictionMapping";
 import { Badge } from "@/components/ui/badge";
 
 interface FieldMappingRowProps {
-  modelFeature: Omit<FieldMapping, 'tenantField'>;
+  modelFeature: ModelFeature;
   customFieldCategories: CustomFieldCategory[];
   selectedField?: string;
   onFieldChange: (modelField: string, tenantField: string) => void;
