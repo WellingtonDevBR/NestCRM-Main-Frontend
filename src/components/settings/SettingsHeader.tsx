@@ -9,7 +9,7 @@ const SettingsHeader = () => {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+        <Button variant="outline" size="icon" asChild className="dark:border-gray-700 dark:hover:bg-gray-800">
           <Link to="/settings">
             <ArrowLeft className="h-4 w-4" />
           </Link>

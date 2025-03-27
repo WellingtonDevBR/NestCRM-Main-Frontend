@@ -12,7 +12,7 @@ export { SidebarToggleButton };
 
 const DashboardSidebar: React.FC = () => {
   return (
-    <Sidebar className="border-r border-purple-100" data-sidebar="sidebar">
+    <Sidebar className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-colors duration-200" data-sidebar="sidebar">
       <DashboardSidebarHeader />
       
       <SidebarContent>

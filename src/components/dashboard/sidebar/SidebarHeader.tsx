@@ -12,7 +12,7 @@ export const DashboardSidebarHeader: React.FC = () => {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <SidebarHeader className="py-4">
+    <SidebarHeader className="py-4 transition-colors duration-200">
       <div className="px-2 flex items-center justify-between">
         <Link to="/dashboard" className="flex items-center gap-2">
           <img 
@@ -27,7 +27,7 @@ export const DashboardSidebarHeader: React.FC = () => {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="mr-1"
+          className="mr-1 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100"
           onClick={toggleSidebar}
         >
           <PanelLeft className="h-4 w-4" />
