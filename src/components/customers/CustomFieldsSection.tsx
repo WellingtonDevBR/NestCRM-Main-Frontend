@@ -2,7 +2,6 @@
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { 
   Select,
   SelectContent,
@@ -64,31 +63,26 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
   };
   
   return (
-    <>
-      <Separator />
-      <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-muted-foreground">ADDITIONAL INFORMATION</h3>
-        
-        {/* Required custom fields */}
-        {requiredFields.map(field => (
-          <div key={field.key} className="space-y-2">
-            <Label htmlFor={field.key} className="flex items-center">
-              {field.label}
-              <span className="text-destructive ml-1">*</span>
-            </Label>
-            {renderField(field)}
-          </div>
-        ))}
-        
-        {/* Optional custom fields */}
-        {optionalFields.map(field => (
-          <div key={field.key} className="space-y-2">
-            <Label htmlFor={field.key}>{field.label}</Label>
-            {renderField(field)}
-          </div>
-        ))}
-      </div>
-    </>
+    <div className="space-y-4">
+      {/* Required custom fields */}
+      {requiredFields.map(field => (
+        <div key={field.key} className="space-y-2">
+          <Label htmlFor={field.key} className="flex items-center">
+            {field.label}
+            <span className="text-destructive ml-1">*</span>
+          </Label>
+          {renderField(field)}
+        </div>
+      ))}
+      
+      {/* Optional custom fields */}
+      {optionalFields.map(field => (
+        <div key={field.key} className="space-y-2">
+          <Label htmlFor={field.key}>{field.label}</Label>
+          {renderField(field)}
+        </div>
+      ))}
+    </div>
   );
 };
 

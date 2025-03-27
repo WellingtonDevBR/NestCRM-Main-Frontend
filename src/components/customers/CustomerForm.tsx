@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { Customer, CustomerFormData } from "@/domain/models/customer";
-import BasicInformationFields from "./BasicInformationFields";
 import CustomFieldsSection from "./CustomFieldsSection";
 import { processFieldValue } from "./utils/fieldUtils";
 import { CustomField } from "@/domain/models/customField";
@@ -117,11 +116,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
-        <BasicInformationFields 
-          formData={formData}
-          setFormData={setFormData}
-        />
-
         <CustomFieldsSection
           customFields={customerFields}
           formData={formData}
