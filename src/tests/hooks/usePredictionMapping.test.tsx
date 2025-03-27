@@ -1,4 +1,3 @@
-
 import { renderHook, act } from '@testing-library/react-hooks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePredictionMapping } from '@/hooks/usePredictionMapping';

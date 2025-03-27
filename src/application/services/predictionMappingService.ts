@@ -1,6 +1,7 @@
 
 import { PredictionMapping, FieldMapping, ModelFeature } from "@/domain/models/predictionMapping";
 import { PredictionMappingRepository } from "@/domain/repositories/predictionMappingRepository";
+import { getMappingForField, updateMappingForField, calculateMappingStats } from "@/domain/utils/predictionMappingUtils";
 
 /**
  * Application service for prediction mapping
@@ -34,35 +35,14 @@ export class PredictionMappingService {
    * Get mapping for a specific model field
    */
   getMappingForField(mappings: PredictionMapping, modelField: string): string | undefined {
-    if (!mappings?.mappings) return undefined;
-    const mapping = mappings.mappings.find(m => m.modelField === modelField);
-    return mapping?.tenantField === "not_mapped" ? undefined : mapping?.tenantField;
+    return getMappingForField(mappings, modelField);
   }
 
   /**
    * Update a specific mapping
    */
   updateMapping(mappings: PredictionMapping, modelField: string, tenantField: string): PredictionMapping {
-    if (!mappings) return { mappings: [{ modelField, tenantField }] };
-    
-    // Make sure mappings exists and is an array
-    const currentMappings = Array.isArray(mappings.mappings) ? mappings.mappings : [];
-    const updatedMappings = [...currentMappings];
-    
-    const existingIndex = updatedMappings.findIndex(m => m.modelField === modelField);
-    
-    if (existingIndex >= 0) {
-      // Update existing mapping
-      updatedMappings[existingIndex] = {
-        ...updatedMappings[existingIndex],
-        tenantField
-      };
-    } else {
-      // Add new mapping
-      updatedMappings.push({ modelField, tenantField });
-    }
-    
-    return { mappings: updatedMappings };
+    return updateMappingForField(mappings, modelField, tenantField);
   }
 
   /**
@@ -73,14 +53,7 @@ export class PredictionMappingService {
     total: number;
     percentage: number;
   } {
-    if (!mappings?.mappings) return { mapped: 0, total: features.length, percentage: 0 };
-    
-    const mapped = features.filter(feature => {
-      const mapping = this.getMappingForField(mappings, feature.modelField);
-      return mapping && mapping !== "not_mapped";
-    }).length;
-    
-    const total = features.length;
+    const { mapped, total } = calculateMappingStats(mappings, features);
     const percentage = total > 0 ? Math.round((mapped / total) * 100) : 0;
     
     return { mapped, total, percentage };
