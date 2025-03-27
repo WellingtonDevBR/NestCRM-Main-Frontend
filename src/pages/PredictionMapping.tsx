@@ -15,11 +15,7 @@ import MappingHelpAccordion from "@/components/prediction/MappingHelpAccordion";
 import FieldMappingConfiguration from "@/components/prediction/FieldMappingConfiguration";
 
 const PredictionMapping: React.FC = () => {
-  // First, define state and hooks
-  const [activeModel, setActiveModel] = useState<"lightweight" | "full">("lightweight");
-  const [localMappings, setLocalMappings] = useState<PredictionMappingType>({ mappings: [] });
-  const [isModified, setIsModified] = useState(false);
-  
+  // First, define hooks to fetch data
   const { customFieldCategories, isLoading: isLoadingFields } = useCustomFields();
   
   const { 
@@ -33,10 +29,30 @@ const PredictionMapping: React.FC = () => {
     FULL_FEATURES
   } = usePredictionMapping();
   
-  // Get advanced features by filtering out the lightweight features
+  // Then define component state
+  const [activeModel, setActiveModel] = useState<"lightweight" | "full">("lightweight");
+  const [localMappings, setLocalMappings] = useState<PredictionMappingType>({ mappings: [] });
+  const [isModified, setIsModified] = useState(false);
+  
+  // Calculate advanced features by filtering out the lightweight features
   const advancedFeatures = FULL_FEATURES.filter(
     fullFeature => !LIGHT_FEATURES.some(lightFeature => lightFeature.modelField === fullFeature.modelField)
   );
+  
+  // Initialize local state from API data
+  useEffect(() => {
+    if (mappingData && mappingData.mappings) {
+      setLocalMappings(mappingData);
+      setIsModified(false);
+    }
+  }, [mappingData]);
+
+  // Define helper functions
+  const getLocalMapping = (modelField: string): string | undefined => {
+    if (!localMappings || !localMappings.mappings) return undefined;
+    const mapping = localMappings.mappings.find(m => m.modelField === modelField);
+    return mapping?.tenantField;
+  };
   
   // Count how many fields are mapped vs unmapped
   const countMappedFields = () => {
@@ -56,14 +72,6 @@ const PredictionMapping: React.FC = () => {
   
   const { mapped, total } = countMappedFields();
   const mappingProgress = total > 0 ? Math.round((mapped / total) * 100) : 0;
-  
-  // Initialize local state from API data
-  useEffect(() => {
-    if (mappingData && mappingData.mappings) {
-      setLocalMappings(mappingData);
-      setIsModified(false);
-    }
-  }, [mappingData]);
 
   const handleSave = async () => {
     try {
@@ -78,12 +86,6 @@ const PredictionMapping: React.FC = () => {
       });
       console.error("Save error:", error);
     }
-  };
-  
-  const getLocalMapping = (modelField: string): string | undefined => {
-    if (!localMappings || !localMappings.mappings) return undefined;
-    const mapping = localMappings.mappings.find(m => m.modelField === modelField);
-    return mapping?.tenantField;
   };
   
   const handleFieldChange = (modelField: string, tenantField: string) => {
