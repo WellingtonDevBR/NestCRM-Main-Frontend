@@ -29,18 +29,18 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-10 w-full dark:bg-gray-700" />
+        <Skeleton className="h-32 w-full dark:bg-gray-700" />
+        <Skeleton className="h-32 w-full dark:bg-gray-700" />
       </div>
     );
   }
   
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <div className="bg-amber-50 p-4 rounded-lg border border-amber-200 mb-4">
+      <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
         <div className="flex gap-2">
-          <div className="text-sm text-amber-800">
+          <div className="text-sm text-amber-800 dark:text-amber-200">
             Customer ID, Name, Email, and Phone are built-in fields and don't need to be added here.
             Fields configured here will appear in the corresponding section of the application.
           </div>
@@ -72,8 +72,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
       )}
 
       {fields.length > 0 && (
-        <div className="flex items-center justify-between pt-4 border-t">
-          <Button type="button" variant="outline" onClick={onAddField} className="gap-1">
+        <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
+          <Button type="button" variant="outline" onClick={onAddField} className="gap-1 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
             <Plus className="h-4 w-4" />
             Add Another Field
           </Button>

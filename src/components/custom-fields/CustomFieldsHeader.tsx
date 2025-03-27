@@ -1,29 +1,19 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
-import { ChevronLeft, Database, HelpCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Database } from "lucide-react";
 
 const CustomFieldsHeader: React.FC = () => {
   return (
-    <div>
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="icon" asChild className="h-8 w-8 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-            <Link to="/settings">
-              <ChevronLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div className="flex items-center gap-2">
-            <Database className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            <h1 className="text-2xl font-bold">Custom Data Fields</h1>
-          </div>
-        </div>
+    <div className="flex items-center gap-3 bg-card dark:bg-gray-800 rounded-lg p-6 border border-border dark:border-gray-700 shadow-sm">
+      <div className="p-2.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+        <Database className="h-6 w-6 text-purple-600 dark:text-purple-400" />
       </div>
-      <p className="text-muted-foreground mt-2 ml-12">Customize what information you collect across different modules</p>
-      <Separator className="mt-6 dark:bg-gray-700" />
+      <div>
+        <h1 className="text-2xl font-bold">Custom Data Fields</h1>
+        <p className="text-muted-foreground mt-1">
+          Configure custom fields to collect additional information across different modules
+        </p>
+      </div>
     </div>
   );
 };

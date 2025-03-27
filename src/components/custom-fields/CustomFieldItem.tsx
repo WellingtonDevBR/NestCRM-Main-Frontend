@@ -178,13 +178,13 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   }, [field.type]);
   
   return (
-    <div className="grid grid-cols-12 gap-4 items-center p-4 border rounded-lg bg-white shadow-sm hover:border-purple-200 transition-colors">
+    <div className="grid grid-cols-12 gap-4 items-center p-4 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-700 transition-colors">
       <div className="col-span-3">
         <Input
           value={field.key}
           onChange={e => onUpdateField(index, { key: e.target.value })}
           placeholder="e.g., loyaltyPoints"
-          className="font-mono text-sm"
+          className="font-mono text-sm dark:bg-gray-800 dark:border-gray-700"
         />
         <p className="text-xs text-muted-foreground mt-1">API identifier</p>
       </div>
@@ -193,6 +193,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
           value={field.label}
           onChange={e => onUpdateField(index, { label: e.target.value })}
           placeholder="e.g., Loyalty Points"
+          className="dark:bg-gray-800 dark:border-gray-700"
         />
         <p className="text-xs text-muted-foreground mt-1">Shown to users</p>
       </div>
@@ -205,10 +206,10 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
             ...(value === "select" && !field.options ? { options: [] } : {})
           })}
         >
-          <SelectTrigger>
+          <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
             <SelectItem value="text">Text</SelectItem>
             <SelectItem value="date">Date</SelectItem>
             <SelectItem value="number">Number</SelectItem>
@@ -233,7 +234,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                 value={newOption}
                 onChange={e => setNewOption(e.target.value)}
                 placeholder="Add option"
-                className="text-sm mr-2"
+                className="text-sm mr-2 dark:bg-gray-800 dark:border-gray-700"
                 onKeyDown={e => e.key === 'Enter' && addOption()}
               />
               <Button 
@@ -241,6 +242,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                 variant="outline" 
                 size="sm"
                 onClick={addOption}
+                className="dark:bg-gray-800 dark:border-gray-700"
               >
                 <Plus className="h-3 w-3" />
               </Button>
@@ -248,7 +250,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
             
             <div className="flex flex-wrap gap-1 mt-1">
               {(field.options || []).map((option, i) => (
-                <Badge key={i} variant="secondary" className="flex items-center gap-1">
+                <Badge key={i} variant="secondary" className="flex items-center gap-1 dark:bg-gray-700 dark:text-gray-200">
                   {option}
                   <Button
                     type="button"
@@ -275,12 +277,12 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
               type="button"
               variant="ghost"
               size="icon"
-              className="text-primary hover:bg-primary/10"
+              className="text-primary hover:bg-primary/10 dark:hover:bg-gray-700"
             >
               <Settings2 className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80">
+          <PopoverContent className="w-80 dark:bg-gray-800 dark:border-gray-700">
             <div className="space-y-4">
               <h4 className="font-medium">UI Display Settings</h4>
               <div className="space-y-2">
@@ -289,10 +291,10 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                   value={field.uiConfig?.type || "default"}
                   onValueChange={validateAndUpdateUiType}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
                     <SelectValue placeholder="Default" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                     {availableUiTypes.map(type => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
@@ -310,13 +312,13 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                       value={colorKey}
                       onChange={(e) => setColorKey(e.target.value)}
                       placeholder="Value"
-                      className="text-sm flex-1"
+                      className="text-sm flex-1 dark:bg-gray-800 dark:border-gray-700"
                     />
                     <Select value={colorValue} onValueChange={setColorValue}>
-                      <SelectTrigger className="w-24">
+                      <SelectTrigger className="w-24 dark:bg-gray-800 dark:border-gray-700">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                         {availableColors.map(color => (
                           <SelectItem key={color.value} value={color.value}>
                             {color.label}
@@ -329,6 +331,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                       variant="outline" 
                       size="sm"
                       onClick={addColorMapping}
+                      className="dark:bg-gray-800 dark:border-gray-700"
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
@@ -371,6 +374,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                     value={field.uiConfig?.format || ""}
                     onChange={(e) => updateUIConfig({ format: e.target.value })}
                     placeholder="e.g., USD or EUR for currency"
+                    className="dark:bg-gray-800 dark:border-gray-700"
                   />
                 </div>
               )}
@@ -382,6 +386,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
                   onChange={(e) => updateUIConfig({ tooltip: e.target.value })}
                   placeholder="Helpful information about this field"
                   rows={2}
+                  className="dark:bg-gray-800 dark:border-gray-700"
                 />
               </div>
             </div>

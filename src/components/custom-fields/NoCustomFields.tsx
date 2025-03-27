@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Plus, Database } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NoCustomFieldsProps {
@@ -9,20 +9,25 @@ interface NoCustomFieldsProps {
 
 const NoCustomFields: React.FC<NoCustomFieldsProps> = ({ onAddField }) => {
   return (
-    <div className="text-center p-8 border border-dashed rounded-lg bg-gray-50">
-      <Database className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-40" />
-      <h3 className="text-lg font-medium mb-2">No custom fields defined yet</h3>
-      <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-        Add custom fields to collect additional information about your customers.
+    <div className="text-center p-8 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700">
+      <div className="flex justify-center">
+        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-full">
+          <FileText className="h-6 w-6 text-gray-500 dark:text-gray-400" />
+        </div>
+      </div>
+      <h3 className="mt-4 text-sm font-medium text-gray-900 dark:text-gray-200">No custom fields</h3>
+      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Get started by creating a new custom field.
       </p>
-      <Button 
-        type="button" 
-        onClick={onAddField} 
-        className="mt-2 bg-purple-600 hover:bg-purple-700"
-      >
-        <Plus className="mr-2 h-4 w-4" />
-        Add Your First Field
-      </Button>
+      <div className="mt-6">
+        <Button 
+          onClick={onAddField}
+          className="gap-2 bg-purple-600 hover:bg-purple-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add First Field
+        </Button>
+      </div>
     </div>
   );
 };
