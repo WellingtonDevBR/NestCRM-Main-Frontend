@@ -1,69 +1,62 @@
-# Welcome to your Lovable project
+## 🧾 Introduction
 
-## Project info
+NestCRM is an AI-powered Customer Relationship Management (CRM) platform tailored for businesses that want to understand and retain their customers better. By leveraging artificial intelligence and machine learning, NestCRM predicts customer behavior, detects churn risks, and empowers sales and support teams with intelligent, data-driven insights.
 
-**URL**: https://lovable.dev/projects/d0825ce5-b3fd-4dd5-8fb3-51f411b3534b
+This repository contains the **frontend code** for the NestCRM Dashboard — a modern, responsive, and customizable interface used by end-users to interact with their CRM data. It is built as a **single-tenant application**, where each client gets their own isolated environment, database, and backend infrastructure.
 
-## How can I edit this code?
+Each tenant accesses the application through their own subdomain: https://{tenant}.nestcrm.com.au/dashboard
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## ✨ Key Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d0825ce5-b3fd-4dd5-8fb3-51f411b3534b) and start prompting.
+- 🔮 **AI-Driven Customer Prediction** – Anticipate customer behavior and identify churn risks in real-time.
+- 📊 **Custom Dashboards** – Visualize client activity, leads, and predictive insights.
+- 📁 **Contact & Task Management** – Centralized workspace for managing customer relationships.
+- 📈 **Reporting & Analytics** – Actionable insights into customer behavior and business performance.
+- 🔒 **Per-Tenant Isolation** – Individual databases and servers per customer ensure security and scalability.
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🧱 Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+**Frontend:**
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- React (TypeScript)
+- Vite
+- Tailwind CSS
+- Shadcn UI
 
-Follow these steps:
+**Backend Infrastructure (Per-Tenant):**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+- AWS S3 (Static Asset Hosting)
+- AWS CloudFront (CDN & Caching)
+- AWS EC2 (Server Hosting)
+- AWS DynamoDB (Per-Tenant Database)
+- AWS Load Balancers (Scalability & Redundancy)
+- AI Services for Prediction Models (Custom ML Pipelines)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 🚀 Getting Started
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Prerequisites
+
+- Node.js (recommended via [nvm](https://github.com/nvm-sh/nvm))
+- npm
+
+### Local Setup
+
+```bash
+# 1. Clone the repo
+git clone git@github.com:WellingtonDevBR/NestCRM-Dashboard-Frontend.git
+
+# 2. Navigate into the project
+cd NestCRM-Dashboard-Frontend
+
+# 3. Install dependencies
+npm install
+
+# 4. Start the local dev server
 npm run dev
 ```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/d0825ce5-b3fd-4dd5-8fb3-51f411b3534b) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
