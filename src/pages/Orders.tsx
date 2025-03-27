@@ -20,7 +20,7 @@ const Orders: React.FC = () => {
         </Button>
       </div>
       
-      <div className="flex items-center gap-4 bg-white rounded-lg p-3 shadow-sm border">
+      <div className="flex items-center gap-4 bg-card rounded-lg p-3 shadow-sm border border-border">
         <div className="flex-1">
           <Input placeholder="Search orders..." className="w-full" />
         </div>

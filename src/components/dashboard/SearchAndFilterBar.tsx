@@ -42,24 +42,24 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
           placeholder="Search customers..."
           value={searchTerm}
           onChange={onSearch}
-          className="max-w-sm"
+          className="max-w-sm bg-background"
         />
       </div>
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
               Status: {filterStatus === 'all' ? 'All' : filterStatus}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="dark:bg-gray-800 dark:border-gray-700">
             <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="dark:bg-gray-700" />
             <DropdownMenuRadioGroup value={filterStatus} onValueChange={onFilterChange}>
-              <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="active">Active</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="warning">Warning</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="critical">Critical</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all" className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">All</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="active" className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">Active</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="warning" className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">Warning</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="critical" className="dark:hover:bg-gray-700 dark:focus:bg-gray-700">Critical</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>

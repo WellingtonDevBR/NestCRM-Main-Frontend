@@ -127,7 +127,7 @@ const PredictionMapping: React.FC = () => {
         mappingProgress={mappingProgress} 
       />
       
-      <div className="bg-white border rounded-lg shadow-sm p-4">
+      <div className="bg-card border rounded-lg shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
         <ModelSelector 
           activeModel={activeModel}
           setActiveModel={setActiveModel}

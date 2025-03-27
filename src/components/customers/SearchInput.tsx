@@ -13,7 +13,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ searchTerm, onSearch }) => {
       placeholder="Search customers..."
       value={searchTerm}
       onChange={onSearch}
-      className="max-w-sm"
+      className="max-w-sm bg-background border-border"
     />
   );
 };

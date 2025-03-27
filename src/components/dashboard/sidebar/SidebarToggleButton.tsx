@@ -11,7 +11,7 @@ export const SidebarToggleButton: React.FC = () => {
     <Button 
       variant="outline" 
       size="icon"
-      className="fixed top-4 left-4 z-50 shadow-md bg-background border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+      className="fixed top-4 left-4 z-50 shadow-md bg-background border-border dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
       onClick={toggleSidebar}
       style={{ 
         opacity: state === 'collapsed' ? 1 : 0,

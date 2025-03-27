@@ -54,10 +54,10 @@ const HelpAndSupport: React.FC = () => {
       </div>
       
       {/* Search section */}
-      <Card className="bg-purple-50 border-purple-100">
+      <Card className="dark:bg-purple-900/20 dark:border-purple-800/30 bg-purple-50 border-purple-100">
         <CardContent className="p-6">
           <div className="text-center max-w-2xl mx-auto">
-            <HelpCircle className="h-12 w-12 text-purple-500 mx-auto mb-4" />
+            <HelpCircle className="h-12 w-12 text-purple-500 dark:text-purple-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">How can we help you?</h2>
             <p className="text-muted-foreground mb-6">
               Search our knowledge base, FAQs, or contact our support team
@@ -67,7 +67,7 @@ const HelpAndSupport: React.FC = () => {
                 placeholder="Search for help..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="rounded-r-none focus-visible:ring-purple-400"
+                className="rounded-r-none focus-visible:ring-purple-400 dark:bg-gray-800 dark:border-gray-700"
               />
               <Button className="rounded-l-none">
                 <Search className="h-4 w-4 mr-2" />
@@ -85,7 +85,7 @@ const HelpAndSupport: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="faqs" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full md:w-auto">
+            <TabsList className="w-full md:w-auto dark:bg-gray-800">
               <TabsTrigger value="faqs">Frequently Asked Questions</TabsTrigger>
               <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
               <TabsTrigger value="contact">Contact Us</TabsTrigger>
@@ -206,7 +206,7 @@ const HelpAndSupport: React.FC = () => {
                       <textarea
                         id="message"
                         rows={4}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                        className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400 dark:bg-gray-800 text-foreground"
                         placeholder="How can we help you?"
                       ></textarea>
                     </div>
