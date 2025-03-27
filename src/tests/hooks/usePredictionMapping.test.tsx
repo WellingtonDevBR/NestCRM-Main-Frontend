@@ -1,3 +1,4 @@
+
 import { renderHook, act } from '@testing-library/react-hooks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePredictionMapping } from '@/hooks/usePredictionMapping';
@@ -27,7 +28,7 @@ jest.mock('sonner', () => ({
 }));
 
 describe('usePredictionMapping', () => {
-  const wrapper = ({ children }) => {
+  const wrapper = ({ children }: { children: React.ReactNode }) => {
     const queryClient = new QueryClient({
       defaultOptions: {
         queries: {
