@@ -49,6 +49,11 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
     }));
   };
 
+  // Function to get the custom field definition by key
+  const getFieldByKey = (key: string) => {
+    return interactionCustomFields.find(field => field.key === key);
+  };
+
   if (isLoading || isLoadingInteractionFields) {
     return (
       <div className="space-y-4">

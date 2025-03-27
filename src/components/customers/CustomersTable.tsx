@@ -15,9 +15,7 @@ import { Customer } from "@/domain/models/customer";
 import SearchInput from "./SearchInput";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
-import { format } from "date-fns";
-import { Edit, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import CustomerTableRow from "./CustomerTableRow";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomersTableProps {
@@ -26,7 +24,14 @@ interface CustomersTableProps {
 
 const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   const { customers, isLoading, error, deleteCustomer } = useCustomers();
-  const { customFields, isLoading: isLoadingFields } = useCustomFields();
+  
+  // Use the new categorized API to get Customer fields specifically
+  const { data: customerFieldsData, isLoading: isLoadingFields } = 
+    useCustomFields().useCategoryFields("Customer");
+  
+  // Get the customer custom fields
+  const customFields = customerFieldsData?.fields || [];
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -145,37 +150,14 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <TableRow key={customer.id} className="hover:bg-gray-50">
-                  {/* Render custom field values if present */}
-                  {customFields?.map(field => 
-                    columnVisibility[field.key] && (
-                      <TableCell key={field.key}>
-                        {customer.customFields && field.key in customer.customFields
-                          ? String(customer.customFields[field.key])
-                          : '—'}
-                      </TableCell>
-                    )
-                  )}
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEdit(customer)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(customer.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <CustomerTableRow
+                  key={customer.id}
+                  customer={customer}
+                  visibleColumns={columnVisibility}
+                  customFields={customFields}
+                  onEdit={onEdit}
+                  onDelete={handleDelete}
+                />
               ))
             )}
           </TableBody>

@@ -5,7 +5,6 @@ import { CustomerRiskData } from '@/domain/models/customerRisk';
 import { CustomField } from '@/domain/models/customField';
 import { Edit } from 'lucide-react';
 import DynamicFieldRenderer from '@/components/shared/DynamicFieldRenderer';
-import { TableCell } from '@/components/ui/table';
 
 interface CustomerRiskRowProps {
   customer: CustomerRiskData;

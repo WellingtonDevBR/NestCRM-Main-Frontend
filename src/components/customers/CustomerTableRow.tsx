@@ -30,12 +30,13 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
   onEdit,
   onDelete
 }) => {
+  // Function to get the custom field definition by key
+  const getFieldByKey = (key: string): CustomField | undefined => {
+    return customFields.find(field => field.key === key);
+  };
+
   return (
     <TableRow key={customer.id}>
-      {visibleColumns.name && <TableCell>{customer.name}</TableCell>}
-      {visibleColumns.email && <TableCell>{customer.email}</TableCell>}
-      {visibleColumns.phone && <TableCell>{customer.phone}</TableCell>}
-      
       {/* Custom fields from settings */}
       {customFields.map(field => 
         visibleColumns[field.key] && (
@@ -46,12 +47,6 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
             />
           </TableCell>
         )
-      )}
-      
-      {visibleColumns.createdAt && (
-        <TableCell>
-          {new Date(customer.createdAt).toLocaleDateString()}
-        </TableCell>
       )}
       
       <TableCell className="text-right">

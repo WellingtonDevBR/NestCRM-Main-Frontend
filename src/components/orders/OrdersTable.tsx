@@ -49,6 +49,11 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
     }));
   };
 
+  // Function to get the custom field definition by key
+  const getFieldByKey = (key: string) => {
+    return orderCustomFields.find(field => field.key === key);
+  };
+
   if (isLoading || isLoadingOrderFields) {
     return (
       <div className="space-y-4">

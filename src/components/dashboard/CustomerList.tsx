@@ -8,7 +8,12 @@ import CustomerRiskRow from './CustomerRiskRow';
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CustomerList: React.FC = () => {
-  const { customFields, isLoading: isLoadingFields } = useCustomFields();
+  // Using the targeted query to only fetch Customer specific fields
+  const { data: customerFieldsData, isLoading: isLoadingFields } = 
+    useCustomFields().useCategoryFields("Customer");
+  
+  // Get the customer custom fields
+  const customFields = customerFieldsData?.fields || [];
   
   const {
     searchTerm,

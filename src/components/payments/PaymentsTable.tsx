@@ -49,6 +49,11 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments, isLoading }) =>
     }));
   };
 
+  // Function to get the custom field definition by key
+  const getFieldByKey = (key: string) => {
+    return paymentCustomFields.find(field => field.key === key);
+  };
+
   if (isLoading || isLoadingPaymentFields) {
     return (
       <div className="space-y-4">
