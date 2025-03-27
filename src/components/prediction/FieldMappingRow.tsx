@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HelpCircle } from "lucide-react";
 import { 
   Select,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
 import { FieldMapping } from "@/utils/predictionMappingApi";
+import { Badge } from "@/components/ui/badge";
 
 interface FieldMappingRowProps {
   modelFeature: Omit<FieldMapping, 'tenantField'>;
@@ -34,9 +35,17 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     getFieldCategory(selectedField, customFieldCategories)
   );
 
+  useEffect(() => {
+    // Update selected category when selectedField changes
+    const category = getFieldCategory(selectedField, customFieldCategories);
+    if (category !== selectedCategory) {
+      setSelectedCategory(category);
+    }
+  }, [selectedField, customFieldCategories]);
+
   // Function to find the category for a given field key
   function getFieldCategory(fieldKey: string | undefined, categories: CustomFieldCategory[]): string | undefined {
-    if (!fieldKey || !categories || !Array.isArray(categories)) return undefined;
+    if (!fieldKey || !categories || !Array.isArray(categories) || fieldKey === "not_mapped") return undefined;
     
     for (const category of categories) {
       if (!category?.fields || !Array.isArray(category.fields)) continue;
@@ -79,11 +88,19 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     onFieldChange(modelFeature.modelField, value);
   };
 
+  const getTypeColor = (type?: string) => {
+    switch (type) {
+      case "number": return "bg-blue-100 text-blue-700";
+      case "select": return "bg-purple-100 text-purple-700";
+      default: return "bg-gray-100 text-gray-700";
+    }
+  };
+
   return (
-    <tr className="border-b border-gray-100">
+    <tr className="hover:bg-gray-50 transition-colors">
       <td className="py-3 pl-4 pr-2">
         <div className="flex items-center">
-          <span className="font-medium">{modelFeature.modelField}</span>
+          <span className="font-medium">{modelFeature.modelField.replace(/_/g, ' ')}</span>
           {modelFeature.description && (
             <TooltipProvider>
               <Tooltip>
@@ -92,8 +109,8 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
                     <HelpCircle size={16} />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">{modelFeature.description}</p>
+                <TooltipContent className="max-w-xs p-3 text-sm">
+                  <p>{modelFeature.description}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -130,11 +147,18 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
                 {field.label} ({field.key})
               </SelectItem>
             ))}
+            {compatibleFields.length === 0 && selectedCategory && (
+              <div className="p-2 text-sm text-center text-gray-500">
+                No compatible fields found in this category
+              </div>
+            )}
           </SelectContent>
         </Select>
       </td>
-      <td className="py-3 px-2 text-sm text-gray-500">
-        {modelFeature.modelType || "any"}
+      <td className="py-3 px-2 text-sm">
+        <Badge variant="outline" className={`font-normal ${getTypeColor(modelFeature.modelType)}`}>
+          {modelFeature.modelType || "any"}
+        </Badge>
       </td>
     </tr>
   );

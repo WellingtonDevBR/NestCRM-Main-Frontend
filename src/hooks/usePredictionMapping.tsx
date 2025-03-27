@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -13,12 +14,12 @@ export const LIGHTWEIGHT_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   { 
     modelField: "Gender", 
     modelType: "select", 
-    description: "Customer gender" 
+    description: "Customer gender (e.g., male, female, non-binary)" 
   },
   { 
     modelField: "Partner", 
     modelType: "select", 
-    description: "Whether customer has a partner" 
+    description: "Whether customer has a partner or spouse" 
   },
   { 
     modelField: "Tenure", 
@@ -28,7 +29,7 @@ export const LIGHTWEIGHT_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   { 
     modelField: "Usage_Frequency", 
     modelType: "number", 
-    description: "How often the customer uses the service" 
+    description: "How often the customer uses the service (e.g., logins per month)" 
   },
   { 
     modelField: "Days_Since_Last_Interaction", 
@@ -42,32 +43,32 @@ export const FULL_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   { 
     modelField: "Dependents", 
     modelType: "select", 
-    description: "Whether customer has dependents" 
+    description: "Whether customer has dependents (e.g., children, elderly parents)" 
   },
   { 
     modelField: "Total_Spend", 
     modelType: "number", 
-    description: "Total amount spent by the customer" 
+    description: "Total amount spent by the customer (e.g., lifetime value or annual spend)" 
   },
   { 
     modelField: "Support_Calls", 
     modelType: "number", 
-    description: "Number of support calls made by the customer" 
+    description: "Number of support calls made by the customer in the last 6 months" 
   },
   { 
     modelField: "Payment_Delay", 
     modelType: "number", 
-    description: "Average payment delay in days" 
+    description: "Average payment delay in days (higher values indicate payment issues)" 
   },
   { 
     modelField: "Subscription_Type", 
     modelType: "select", 
-    description: "Type of subscription" 
+    description: "Type of subscription or plan the customer is enrolled in" 
   },
   { 
     modelField: "Contract_Length", 
     modelType: "select", 
-    description: "Length of customer contract" 
+    description: "Length of customer contract (e.g., month-to-month, one year, two year)" 
   }
 ];
 
