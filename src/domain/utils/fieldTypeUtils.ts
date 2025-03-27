@@ -25,10 +25,13 @@ export const getTypeColor = (type?: string): string => {
  * Check if a custom field is compatible with the model field type
  */
 export const isFieldCompatible = (customField: CustomField, modelType?: string): boolean => {
-  if (!modelType) return true; // If no type is specified, all fields are compatible
+  if (!modelType || !customField || !customField.type) return true; // If no type is specified, all fields are compatible
   
   const customFieldType = customField.type?.toLowerCase();
   const modelTypeNormalized = modelType.toLowerCase();
+  
+  // Log for debugging
+  console.log(`Checking compatibility: ${customFieldType} with ${modelTypeNormalized}`);
   
   // Direct type matching
   if (customFieldType === modelTypeNormalized) {

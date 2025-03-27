@@ -27,11 +27,14 @@ export function useFieldMapping(
   const initialCategory = getFieldCategory(selectedField, customFieldCategories);
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(initialCategory);
 
+  // Update selected category when selectedField changes
   useEffect(() => {
-    // Update selected category when selectedField changes
-    const category = getFieldCategory(selectedField, customFieldCategories);
-    if (category !== selectedCategory) {
-      setSelectedCategory(category);
+    // Only update if the selected field has changed and has a value
+    if (selectedField && selectedField !== "not_mapped") {
+      const category = getFieldCategory(selectedField, customFieldCategories);
+      if (category && category !== selectedCategory) {
+        setSelectedCategory(category);
+      }
     }
   }, [selectedField, customFieldCategories, selectedCategory]);
 
@@ -55,6 +58,13 @@ export function useFieldMapping(
   const compatibleFields = availableFields.filter(field => 
     field && isFieldCompatible(field, modelFeature.modelType)
   );
+
+  // Log for debugging
+  console.log(`useFieldMapping for ${modelFeature.modelField}:`, {
+    selectedCategory,
+    selectedField,
+    compatibleFieldsCount: compatibleFields.length
+  });
 
   return {
     selectedCategory,

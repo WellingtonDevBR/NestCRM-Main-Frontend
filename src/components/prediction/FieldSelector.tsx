@@ -22,9 +22,12 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
   disabled = false,
   onFieldChange
 }) => {
+  // Make sure we have a valid selectedField value
+  const safeSelectedField = selectedField || "not_mapped";
+  
   return (
     <Select 
-      value={selectedField || "not_mapped"} 
+      value={safeSelectedField} 
       onValueChange={onFieldChange}
       disabled={disabled}
     >
@@ -33,7 +36,7 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="not_mapped">Not mapped</SelectItem>
-        {compatibleFields.length > 0 ? (
+        {compatibleFields && compatibleFields.length > 0 ? (
           compatibleFields.map(field => (
             <SelectItem key={field.key} value={field.key}>
               {field.label} ({field.key})
