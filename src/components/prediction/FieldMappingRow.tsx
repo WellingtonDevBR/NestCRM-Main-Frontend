@@ -59,7 +59,7 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     }
   }, [selectedField, customFieldCategories, selectedCategory]);
 
-  // Get fields from the selected category
+  // Get all available fields from a specific category
   const getCategoryFields = (category: string | undefined): CustomField[] => {
     if (!category || !customFieldCategories || !Array.isArray(customFieldCategories)) {
       console.log(`No fields found for category: ${category}`);
@@ -67,26 +67,43 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     }
     
     const categoryData = customFieldCategories.find(c => c.category === category);
-    console.log(`Fields for category ${category}:`, categoryData?.fields);
-    return categoryData?.fields || [];
+    if (categoryData && categoryData.fields) {
+      console.log(`Fields for category ${category}:`, categoryData.fields);
+      return categoryData.fields || [];
+    }
+    return [];
   };
 
-  // Fields available for the selected category
+  // Get fields available for the selected category
   const availableFields = getCategoryFields(selectedCategory);
   
-  // Filter compatible fields by matching type if modelType is specified
-  const compatibleFields = modelFeature.modelType && Array.isArray(availableFields)
-    ? availableFields.filter(field => {
-        if (!field) return false;
+  // Filter compatible fields based on the model field type
+  const compatibleFields = React.useMemo(() => {
+    if (!modelFeature.modelType || !Array.isArray(availableFields) || availableFields.length === 0) {
+      return availableFields || [];
+    }
 
-        // Log field types for debugging
-        console.log(`Comparing field ${field.key} (${field.type}) with model type ${modelFeature.modelType}`);
-        
-        if (modelFeature.modelType === "number") return field.type === "number";
-        if (modelFeature.modelType === "select") return field.type === "select";
+    return availableFields.filter(field => {
+      if (!field) return false;
+
+      // Log field types for debugging
+      console.log(`Comparing field ${field.key} (${field.type}) with model type ${modelFeature.modelType}`);
+      
+      if (modelFeature.modelType === "number" && field.type === "number") {
         return true;
-      })
-    : availableFields || [];
+      }
+      
+      if (modelFeature.modelType === "select" && (field.type === "select" || (field.options && field.options.length > 0))) {
+        return true;
+      }
+      
+      if (!modelFeature.modelType || modelFeature.modelType === "any") {
+        return true;
+      }
+      
+      return false;
+    });
+  }, [availableFields, modelFeature.modelType]);
   
   console.log(`Compatible fields for ${modelFeature.modelField}:`, compatibleFields);
 
@@ -147,7 +164,7 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
       </td>
       <td className="py-3 px-2">
         <Select 
-          value={selectedField} 
+          value={selectedField || "not_mapped"} 
           onValueChange={handleFieldChange}
           disabled={!selectedCategory}
         >

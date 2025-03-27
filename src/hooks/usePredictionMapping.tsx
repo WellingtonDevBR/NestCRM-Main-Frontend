@@ -48,16 +48,13 @@ export function usePredictionMapping() {
     console.log('Current mappings before update:', JSON.stringify(currentMappings));
     
     // Ensure we have a valid mappings array
-    if (!currentMappings || !currentMappings.mappings) {
-      console.warn('Invalid current mappings provided, creating new mappings object');
-      currentMappings = { mappings: [] };
-    }
+    const validCurrentMappings = (currentMappings && currentMappings.mappings && Array.isArray(currentMappings.mappings))
+      ? currentMappings
+      : { mappings: [] };
     
     // Create a deep copy of the mappings
     const updatedMappings: PredictionMapping = { 
-      mappings: Array.isArray(currentMappings.mappings) 
-        ? [...currentMappings.mappings]
-        : []
+      mappings: [...validCurrentMappings.mappings]
     };
     
     // Find if mapping already exists for this model field
