@@ -42,7 +42,7 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   const isFieldSelectorDisabled = !selectedCategory;
 
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
+    <tr className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
       <td className="py-3 pl-4 pr-2">
         <div className="flex items-center">
           <span className="font-medium">{modelFeature.modelField.replace(/_/g, ' ')}</span>

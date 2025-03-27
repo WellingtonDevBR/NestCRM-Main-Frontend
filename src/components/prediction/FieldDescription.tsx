@@ -19,11 +19,11 @@ const FieldDescription: React.FC<FieldDescriptionProps> = ({ description }) => {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button className="ml-1.5 text-gray-400 hover:text-gray-500">
+          <button className="ml-1.5 text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
             <HelpCircle size={16} />
           </button>
         </TooltipTrigger>
-        <TooltipContent className="max-w-xs p-3 text-sm">
+        <TooltipContent className="max-w-xs p-3 text-sm dark:bg-gray-800 dark:border-gray-700">
           <p>{description}</p>
         </TooltipContent>
       </Tooltip>

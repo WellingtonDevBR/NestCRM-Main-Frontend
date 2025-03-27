@@ -31,10 +31,10 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
       onValueChange={onFieldChange}
       disabled={disabled}
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
         <SelectValue placeholder={disabled ? "Select category first" : "Select a field"} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
         <SelectItem value="not_mapped">Not mapped</SelectItem>
         {compatibleFields && compatibleFields.length > 0 ? (
           compatibleFields.map(field => (
@@ -43,7 +43,7 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
             </SelectItem>
           ))
         ) : !disabled ? (
-          <div className="p-2 text-sm text-center text-gray-500">
+          <div className="p-2 text-sm text-center text-gray-500 dark:text-gray-400">
             No compatible fields found in this category
           </div>
         ) : null}

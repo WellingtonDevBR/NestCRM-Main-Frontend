@@ -23,10 +23,10 @@ const CategorySelector: React.FC<CategorySelectorProps> = ({
       value={selectedCategory} 
       onValueChange={onCategoryChange}
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
         <SelectValue placeholder="Select category" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
         {FIELD_CATEGORIES.map(category => (
           <SelectItem key={category} value={category}>
             {category}

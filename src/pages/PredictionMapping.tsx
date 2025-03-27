@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useCustomFields } from "@/hooks/useCustomFields";
@@ -126,7 +127,7 @@ const PredictionMapping: React.FC = () => {
         mappingProgress={mappingProgress} 
       />
       
-      <div className="bg-card border rounded-lg shadow-sm p-4 dark:bg-gray-800 dark:border-gray-700">
+      <div className="bg-card dark:bg-gray-800 border rounded-lg shadow-sm p-4 dark:border-gray-700">
         <ModelSelector 
           activeModel={activeModel}
           setActiveModel={setActiveModel}

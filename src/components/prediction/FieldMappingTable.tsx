@@ -53,7 +53,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="text-gray-400 hover:text-gray-500">
+                <button className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
                   <HelpCircle size={16} />
                 </button>
               </TooltipTrigger>
@@ -66,7 +66,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
       </div>
       
       {unmappedCount > 0 && (
-        <Alert variant="destructive" className="bg-red-50 text-red-800 border border-red-200 py-2">
+        <Alert variant="destructive" className="bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800/30 py-2">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             {unmappedCount} field{unmappedCount > 1 ? 's are' : ' is'} not mapped. 
@@ -75,17 +75,17 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
         </Alert>
       )}
       
-      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+      <div className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-750">
             <tr>
-              <th className="py-3 pl-4 pr-2 text-left text-sm font-medium text-gray-500">Model Feature</th>
-              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500">Category</th>
-              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500">Mapped Field</th>
-              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500">Type</th>
+              <th className="py-3 pl-4 pr-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Model Feature</th>
+              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Category</th>
+              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Mapped Field</th>
+              <th className="py-3 px-2 text-left text-sm font-medium text-gray-500 dark:text-gray-400">Type</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
             {features.map(feature => (
               <FieldMappingRow
                 key={feature.modelField}

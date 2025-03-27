@@ -49,7 +49,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
   totalCount
 }) => {
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 dark:bg-gray-800 dark:border-gray-700">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div>
@@ -63,7 +63,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
                       <span className="sr-only">Help</span>
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent className="max-w-sm">
+                  <TooltipContent className="max-w-sm dark:bg-gray-800 dark:border-gray-700">
                     <p>Match each model feature to a corresponding field in your system. Compatible field types are shown.</p>
                   </TooltipContent>
                 </Tooltip>
@@ -77,7 +77,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
             </CardDescription>
           </div>
           {isModified && (
-            <div className="flex items-center gap-2 bg-amber-50 px-3 py-1.5 rounded-md text-sm text-amber-700 border border-amber-200">
+            <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-md text-sm text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/30">
               <AlertCircle className="h-4 w-4" />
               <span>Unsaved changes</span>
             </div>
@@ -115,7 +115,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
           </>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between border-t bg-gray-50 p-4">
+      <CardFooter className="flex justify-between border-t bg-gray-50 dark:bg-gray-750 dark:border-gray-700 p-4">
         <div className="text-sm text-muted-foreground">
           {mappedCount} of {totalCount} fields mapped ({Math.round((mappedCount / totalCount) * 100)}% complete)
         </div>
