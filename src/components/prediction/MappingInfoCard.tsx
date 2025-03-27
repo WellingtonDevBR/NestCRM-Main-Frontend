@@ -1,0 +1,27 @@
+
+import React from "react";
+import { AlertCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+
+const MappingInfoCard: React.FC = () => {
+  return (
+    <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-none shadow-sm">
+      <CardContent className="pt-6">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
+          <div className="p-3 bg-purple-100 rounded-full">
+            <AlertCircle className="h-6 w-6 text-purple-600" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="font-medium text-lg">Why Map Your Fields?</h3>
+            <p className="text-muted-foreground">
+              Field mapping connects your custom data fields to our churn prediction model, 
+              enabling accurate predictions based on your customer data.
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default MappingInfoCard;
