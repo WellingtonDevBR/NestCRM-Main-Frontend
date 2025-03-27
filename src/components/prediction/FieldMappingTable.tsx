@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface FieldMappingTableProps {
   title: string;
@@ -33,25 +34,35 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
     return !mapping || mapping === "not_mapped";
   }).length;
   
+  // Calculate completion percentage
+  const completionPercentage = features.length > 0 
+    ? Math.round(((features.length - unmappedCount) / features.length) * 100) 
+    : 0;
+  
   // Ensure customFieldCategories is an array
   const safeCustomFieldCategories = Array.isArray(customFieldCategories) ? customFieldCategories : [];
   
   return (
     <div className="space-y-4 animate-slide-up">
-      <div className="flex items-center gap-2">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button className="text-gray-400 hover:text-gray-500">
-                <HelpCircle size={16} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" className="max-w-xs">
-              <p>These features are used by the prediction model. Match each one to your custom fields.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">{title}</h3>
+          <Badge variant={unmappedCount === 0 ? "success" : "warning"}>
+            {completionPercentage}% Complete
+          </Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="text-gray-400 hover:text-gray-500">
+                  <HelpCircle size={16} />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="max-w-xs">
+                <p>These features are used by the prediction model. Match each one to your custom fields.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
       
       {unmappedCount > 0 && (

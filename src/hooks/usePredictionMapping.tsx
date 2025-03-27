@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { fetchPredictionMapping, savePredictionMapping, FieldMapping, PredictionMappingData } from '@/utils/predictionMappingApi';
 
-// Predefined model features with their expected types and descriptions
-export const LIGHTWEIGHT_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
+// Define the model features first before using them in any functions
+const LIGHT_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   { 
     modelField: "Age", 
     modelType: "number", 
@@ -38,8 +37,8 @@ export const LIGHTWEIGHT_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
   }
 ];
 
-export const FULL_MODEL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
-  ...LIGHTWEIGHT_MODEL_FEATURES,
+const FULL_FEATURES: Omit<FieldMapping, 'tenantField'>[] = [
+  ...LIGHT_FEATURES,
   { 
     modelField: "Dependents", 
     modelType: "select", 
@@ -139,7 +138,7 @@ export function usePredictionMapping() {
     isSaving,
     updateMapping,
     refetch,
-    LIGHTWEIGHT_MODEL_FEATURES,
-    FULL_MODEL_FEATURES
+    LIGHT_FEATURES,
+    FULL_FEATURES
   };
 }
