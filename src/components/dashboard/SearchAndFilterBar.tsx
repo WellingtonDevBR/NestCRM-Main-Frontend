@@ -14,11 +14,12 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { CustomField } from '@/domain/models/customField';
+import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 
 interface SearchAndFilterBarProps {
   searchTerm: string;
   filterStatus: string;
-  onSearch: (value: string) => void;
+  onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onFilterChange: (value: string) => void;
   columnVisibility: Record<string, boolean>;
   onToggleColumn: (column: string) => void;
@@ -40,7 +41,7 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
         <Input
           placeholder="Search customers..."
           value={searchTerm}
-          onChange={(e) => onSearch(e.target.value)}
+          onChange={onSearch}
           className="max-w-sm"
         />
       </div>
@@ -63,28 +64,11 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            
-            {customFields.map(field => (
-              <DropdownMenuCheckboxItem
-                key={field.key}
-                checked={columnVisibility[field.key]}
-                onCheckedChange={() => onToggleColumn(field.key)}
-              >
-                {field.label}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ColumnVisibilityDropdown
+          columnVisibility={columnVisibility}
+          customFields={customFields}
+          onToggleColumn={onToggleColumn}
+        />
       </div>
     </div>
   );

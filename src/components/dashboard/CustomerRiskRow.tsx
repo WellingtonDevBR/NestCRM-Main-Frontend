@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { CustomerRiskData } from '@/domain/models/customerRisk';
-import { CustomField } from '@/domain/models/customer';
+import { CustomField } from '@/domain/models/customField';
 import { Edit } from 'lucide-react';
 
 interface CustomerRiskRowProps {

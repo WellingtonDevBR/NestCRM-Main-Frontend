@@ -12,4 +12,5 @@ export interface SupportTicket {
   assignedTo: string;
   createdAt: string;
   updatedAt: string;
+  customFields?: Record<string, any>;
 }
