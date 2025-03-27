@@ -20,6 +20,7 @@ import * as React from "react";
 import { isOnDashboardSubdomain } from "@/utils/subdomain";
 import Settings from "./pages/Settings";
 import CustomFields from "./pages/CustomFields";
+import PredictionMapping from "./pages/PredictionMapping";
 import AppLayout from "./components/dashboard/AppLayout";
 import Profile from "./pages/Profile";
 
@@ -114,6 +115,11 @@ const App: React.FC = () => {
             <Route path="/settings/custom-fields" element={
               <AppLayout>
                 <CustomFields />
+              </AppLayout>
+            } />
+            <Route path="/settings/prediction-mapping" element={
+              <AppLayout>
+                <PredictionMapping />
               </AppLayout>
             } />
             

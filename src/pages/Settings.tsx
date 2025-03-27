@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { User, Sliders, Database, Settings as SettingsIcon } from "lucide-react";
+import { User, Sliders, Database, Settings as SettingsIcon, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
@@ -20,6 +20,13 @@ const Settings = () => {
       description: "Customize what information you collect across different modules",
       icon: Database,
       path: "/settings/custom-fields",
+      disabled: false,
+    },
+    {
+      title: "Churn Prediction Field Mapping",
+      description: "Map your custom fields to our churn prediction model features",
+      icon: TrendingUp,
+      path: "/settings/prediction-mapping",
       disabled: false,
     },
     {
