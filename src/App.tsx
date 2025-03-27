@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,6 +22,7 @@ import CustomFields from "./pages/CustomFields";
 import PredictionMapping from "./pages/PredictionMapping";
 import AppLayout from "./components/dashboard/AppLayout";
 import Profile from "./pages/Profile";
+import GeneralSettings from "./pages/GeneralSettings";
 
 // Create a function component for our app
 const App: React.FC = () => {
@@ -107,9 +107,15 @@ const App: React.FC = () => {
               </AppLayout>
             } />
             
+            {/* Settings routes */}
             <Route path="/settings" element={
               <AppLayout>
                 <Settings />
+              </AppLayout>
+            } />
+            <Route path="/settings/general" element={
+              <AppLayout>
+                <GeneralSettings />
               </AppLayout>
             } />
             <Route path="/settings/custom-fields" element={
