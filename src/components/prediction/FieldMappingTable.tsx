@@ -24,6 +24,9 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
   // Count how many fields are not mapped
   const unmappedCount = features.filter(f => !getMappedField(f.modelField)).length;
   
+  // Ensure customFields is an array
+  const safeCustomFields = Array.isArray(customFields) ? customFields : [];
+  
   return (
     <div className="space-y-3">
       <h3 className="text-lg font-semibold">{title}</h3>
@@ -52,7 +55,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
               <FieldMappingRow
                 key={feature.modelField}
                 modelFeature={feature}
-                customFields={customFields}
+                customFields={safeCustomFields}
                 selectedField={getMappedField(feature.modelField)}
                 onFieldChange={onFieldChange}
               />

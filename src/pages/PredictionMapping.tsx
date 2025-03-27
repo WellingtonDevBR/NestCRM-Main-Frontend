@@ -32,10 +32,12 @@ const PredictionMapping: React.FC = () => {
     if (!customFieldCategories || customFieldCategories.length === 0) return [];
     
     return customFieldCategories.flatMap(category => 
-      category.fields.map(field => ({
-        ...field,
-        category: category.category
-      }))
+      category.fields && Array.isArray(category.fields) 
+        ? category.fields.map(field => ({
+            ...field,
+            category: category.category
+          }))
+        : []
     );
   }, [customFieldCategories]);
   
@@ -63,6 +65,7 @@ const PredictionMapping: React.FC = () => {
   };
   
   const getLocalMapping = (modelField: string): string | undefined => {
+    if (!localMappings || !localMappings.mappings) return undefined;
     const mapping = localMappings.mappings.find(m => m.modelField === modelField);
     return mapping?.tenantField;
   };

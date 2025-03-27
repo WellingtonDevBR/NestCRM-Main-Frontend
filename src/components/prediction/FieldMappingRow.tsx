@@ -35,13 +35,15 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   };
 
   // Filter custom fields by matching type if modelType is specified
-  const compatibleFields = modelFeature.modelType
+  // Ensure customFields is an array before filtering
+  const compatibleFields = modelFeature.modelType && Array.isArray(customFields)
     ? customFields.filter(field => {
+        if (!field) return false;
         if (modelFeature.modelType === "number") return field.type === "number";
         if (modelFeature.modelType === "select") return field.type === "select";
         return true;
       })
-    : customFields;
+    : customFields || [];
 
   return (
     <tr className="border-b border-gray-100">

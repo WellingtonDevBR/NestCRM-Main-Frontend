@@ -23,7 +23,16 @@ export async function fetchPredictionMapping(): Promise<PredictionMappingData> {
   try {
     const response = await api.get<PredictionMappingData>(PREDICTION_MAPPING_ENDPOINT);
     console.log("Fetched prediction mappings:", response);
-    return response;
+    
+    // Ensure response has the expected structure
+    if (response && typeof response === 'object') {
+      return {
+        mappings: Array.isArray(response.mappings) ? response.mappings : []
+      };
+    }
+    
+    // Return empty mappings for any unexpected response format
+    return { mappings: [] };
   } catch (error) {
     console.error("Failed to fetch prediction mappings:", error);
     // Return empty mappings on error
@@ -36,9 +45,22 @@ export async function fetchPredictionMapping(): Promise<PredictionMappingData> {
  */
 export async function savePredictionMapping(data: PredictionMappingData): Promise<PredictionMappingData> {
   try {
-    console.log("Saving prediction mappings:", data);
-    const response = await api.post<PredictionMappingData>(PREDICTION_MAPPING_ENDPOINT, data);
-    return response;
+    // Ensure data has the expected structure
+    const safeData = {
+      mappings: Array.isArray(data.mappings) ? data.mappings : []
+    };
+    
+    console.log("Saving prediction mappings:", safeData);
+    const response = await api.post<PredictionMappingData>(PREDICTION_MAPPING_ENDPOINT, safeData);
+    
+    // Ensure response has the expected structure
+    if (response && typeof response === 'object') {
+      return {
+        mappings: Array.isArray(response.mappings) ? response.mappings : []
+      };
+    }
+    
+    return safeData;
   } catch (error) {
     console.error("Failed to save prediction mappings:", error);
     throw error;

@@ -148,9 +148,12 @@ export function usePredictionMapping() {
 
   // Update a specific mapping
   const updateMapping = (modelField: string, tenantField: string) => {
-    if (!mappingData) return;
+    if (!mappingData) return { mappings: [{ modelField, tenantField }] };
     
-    const updatedMappings = [...(mappingData.mappings || [])];
+    // Make sure mappings exists and is an array
+    const currentMappings = Array.isArray(mappingData.mappings) ? mappingData.mappings : [];
+    const updatedMappings = [...currentMappings];
+    
     const existingIndex = updatedMappings.findIndex(m => m.modelField === modelField);
     
     if (existingIndex >= 0) {
@@ -168,7 +171,7 @@ export function usePredictionMapping() {
   };
 
   return {
-    mappingData,
+    mappingData: mappingData || { mappings: [] },
     isLoading,
     error,
     getMapping,
