@@ -5,7 +5,6 @@ import { useCustomerRisk } from '@/hooks/useCustomerRisk';
 import { useCustomFields } from '@/hooks/useCustomFields';
 import SearchAndFilterBar from './SearchAndFilterBar';
 import CustomerRiskRow from './CustomerRiskRow';
-import { ColumnVisibility } from '@/domain/models/customerRisk';
 import { Skeleton } from "@/components/ui/skeleton";
 
 const CustomerList: React.FC = () => {
@@ -19,15 +18,8 @@ const CustomerList: React.FC = () => {
     handleStatusFilter
   } = useCustomerRisk();
 
-  // Default column visibility
-  const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
-    name: true,
-    email: true,
-    industry: true,
-    value: true,
-    riskScore: true,
-    status: true
-  });
+  // Default column visibility - start with all custom fields visible
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Update column visibility when custom fields change
   useEffect(() => {
@@ -37,10 +29,7 @@ const CustomerList: React.FC = () => {
         customFieldsVisibility[field.key] = true;
       });
       
-      setColumnVisibility(prev => ({
-        ...prev,
-        ...customFieldsVisibility
-      }));
+      setColumnVisibility(customFieldsVisibility);
     }
   }, [customFields]);
 
@@ -85,25 +74,6 @@ const CustomerList: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                {columnVisibility.name && (
-                  <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Company</th>
-                )}
-                {!columnVisibility.name && columnVisibility.email && (
-                  <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Email</th>
-                )}
-                {columnVisibility.industry && (
-                  <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Industry</th>
-                )}
-                {columnVisibility.value && (
-                  <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Value</th>
-                )}
-                {columnVisibility.riskScore && (
-                  <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Risk Score</th>
-                )}
-                {columnVisibility.status && (
-                  <th className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                )}
-                
                 {/* Display custom field columns - only display if column visibility is enabled */}
                 {customFields?.map(field => 
                   columnVisibility[field.key] && (

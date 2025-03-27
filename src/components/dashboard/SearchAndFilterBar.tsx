@@ -1,43 +1,68 @@
 
 import React from 'react';
-import { Input } from '@/components/ui/input';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Button } from '@/components/ui/button';
-import { Settings, Search, Filter } from 'lucide-react';
-import { CustomField } from '@/domain/models/customer';
-import { ColumnVisibility } from '@/domain/models/customerRisk';
+import { CustomField } from '@/domain/models/customField';
 
 interface SearchAndFilterBarProps {
   searchTerm: string;
   filterStatus: string;
-  columnVisibility: ColumnVisibility;
-  customFields: CustomField[];
-  onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onFilterChange: (status: string) => void;
+  onSearch: (value: string) => void;
+  onFilterChange: (value: string) => void;
+  columnVisibility: Record<string, boolean>;
   onToggleColumn: (column: string) => void;
+  customFields: CustomField[];
 }
 
 const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
   searchTerm,
   filterStatus,
-  columnVisibility,
-  customFields,
   onSearch,
   onFilterChange,
-  onToggleColumn
+  columnVisibility,
+  onToggleColumn,
+  customFields,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4">
+      <div className="flex-1">
+        <Input
+          placeholder="Search customers..."
+          value={searchTerm}
+          onChange={(e) => onSearch(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              Status: {filterStatus === 'all' ? 'All' : filterStatus}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={filterStatus} onValueChange={onFilterChange}>
+              <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="active">Active</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="warning">Warning</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="critical">Critical</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
@@ -45,92 +70,19 @@ const SearchAndFilterBar: React.FC<SearchAndFilterBarProps> = ({
               Columns
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuContent align="end">
             <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            
+            {customFields.map(field => (
               <DropdownMenuCheckboxItem
-                checked={columnVisibility.name}
-                onCheckedChange={() => onToggleColumn('name')}
+                key={field.key}
+                checked={columnVisibility[field.key]}
+                onCheckedChange={() => onToggleColumn(field.key)}
               >
-                Company Name
+                {field.label}
               </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.email}
-                onCheckedChange={() => onToggleColumn('email')}
-              >
-                Email
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.industry}
-                onCheckedChange={() => onToggleColumn('industry')}
-              >
-                Industry
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.value}
-                onCheckedChange={() => onToggleColumn('value')}
-              >
-                Value
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.riskScore}
-                onCheckedChange={() => onToggleColumn('riskScore')}
-              >
-                Risk Score
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={columnVisibility.status}
-                onCheckedChange={() => onToggleColumn('status')}
-              >
-                Status
-              </DropdownMenuCheckboxItem>
-              
-              {/* Custom fields column toggles */}
-              {customFields.length > 0 && <DropdownMenuSeparator />}
-              {customFields.map(field => (
-                <DropdownMenuCheckboxItem
-                  key={field.key}
-                  checked={columnVisibility[field.key] ?? false}
-                  onCheckedChange={() => onToggleColumn(field.key)}
-                >
-                  {field.label}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search customers..." 
-            value={searchTerm} 
-            onChange={onSearch}
-            className="w-full pl-8 sm:w-64"
-          />
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-1">
-              <Filter className="h-4 w-4" />
-              {filterStatus === 'All' ? 'All Risks' : filterStatus}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onFilterChange('All')}>
-              All Risks
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFilterChange('High Risk')}>
-              High Risk
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFilterChange('Medium Risk')}>
-              Medium Risk
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onFilterChange('Low Risk')}>
-              Low Risk
-            </DropdownMenuItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

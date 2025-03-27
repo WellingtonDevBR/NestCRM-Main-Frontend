@@ -13,10 +13,12 @@ import { useCustomFields } from "@/hooks/useCustomFields";
 import { toast } from "sonner";
 import { Customer } from "@/domain/models/customer";
 import SearchInput from "./SearchInput";
-import ColumnVisibilityDropdown from "./ColumnVisibilityDropdown";
-import CustomerTableRow from "./CustomerTableRow";
-import CustomerTableSkeleton from "./CustomerTableSkeleton";
+import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import { format } from "date-fns";
+import { Edit, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomersTableProps {
   onEdit: (customer: Customer) => void;
@@ -30,13 +32,8 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
   
-  // Column visibility state
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
-    name: true,
-    email: true,
-    phone: true,
-    createdAt: true
-  });
+  // Column visibility state - start with all custom fields visible
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (customers) {
@@ -57,10 +54,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
         customFieldVisibility[field.key] = true;
       });
       
-      setColumnVisibility(prev => ({
-        ...prev,
-        ...customFieldVisibility
-      }));
+      setColumnVisibility(customFieldVisibility);
     }
   }, [customFields]);
 
@@ -93,24 +87,24 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
       [column]: !prev[column]
     }));
   };
-  
-  // Get visible columns
-  const visibleColumns = Object.entries(columnVisibility)
-    .filter(([_, isVisible]) => isVisible)
-    .map(([column]) => column);
-
-  // Get custom field keys that should be visible
-  const visibleCustomFieldKeys = customFields
-    ? customFields
-        .filter(field => columnVisibility[field.key])
-        .map(field => field.key)
-    : [];
 
   if (error) {
     return (
       <div className="p-4 text-center">
         <div className="text-red-500">Error loading customers</div>
         <div className="text-sm text-muted-foreground">{error.message}</div>
+      </div>
+    );
+  }
+
+  if (isLoading || isLoadingFields) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
@@ -130,31 +124,20 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
         <Table>
           <TableHeader>
             <TableRow>
-              {columnVisibility.name && <TableHead>Name</TableHead>}
-              {columnVisibility.email && <TableHead>Email</TableHead>}
-              {columnVisibility.phone && <TableHead>Phone</TableHead>}
-              
-              {/* Custom fields from settings */}
+              {/* Render custom field headers dynamically */}
               {customFields?.map(field => 
                 columnVisibility[field.key] && (
                   <TableHead key={field.key}>{field.label}</TableHead>
                 )
               )}
-              
-              {columnVisibility.createdAt && <TableHead>Created</TableHead>}
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading || isLoadingFields ? (
-              <CustomerTableSkeleton 
-                visibleColumns={columnVisibility}
-                visibleCustomFields={customFields || []}
-              />
-            ) : filteredCustomers.length === 0 ? (
+            {filteredCustomers.length === 0 ? (
               <TableRow>
                 <TableCell 
-                  colSpan={visibleColumns.length + 1} 
+                  colSpan={Object.values(columnVisibility).filter(Boolean).length + 1} 
                   className="h-32 text-center"
                 >
                   No customers found.
@@ -162,14 +145,37 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <CustomerTableRow
-                  key={customer.id}
-                  customer={customer}
-                  visibleColumns={columnVisibility}
-                  customFields={customFields || []}
-                  onEdit={onEdit}
-                  onDelete={handleDelete}
-                />
+                <TableRow key={customer.id} className="hover:bg-gray-50">
+                  {/* Render custom field values if present */}
+                  {customFields?.map(field => 
+                    columnVisibility[field.key] && (
+                      <TableCell key={field.key}>
+                        {customer.customFields && field.key in customer.customFields
+                          ? String(customer.customFields[field.key])
+                          : '—'}
+                      </TableCell>
+                    )
+                  )}
+                  <TableCell className="text-right space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onEdit(customer)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(customer.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))
             )}
           </TableBody>

@@ -52,15 +52,8 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
   // Get the order custom fields
   const orderCustomFields = orderFieldsData?.fields || [];
 
-  // Column visibility state
-  const [columnVisibility, setColumnVisibility] = useState({
-    orderNumber: true,
-    customerName: true,
-    date: true,
-    status: true,
-    items: true,
-    total: true
-  });
+  // Column visibility state - start with all custom fields visible
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize column visibility for custom fields
   useEffect(() => {
@@ -70,10 +63,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
         customFieldVisibility[field.key] = true;
       });
       
-      setColumnVisibility(prev => ({
-        ...prev,
-        ...customFieldVisibility
-      }));
+      setColumnVisibility(customFieldVisibility);
     }
   }, [orderCustomFields]);
 
@@ -103,55 +93,32 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
     );
   }
 
+  // Get all visible columns
+  const visibleColumns = Object.entries(columnVisibility)
+    .filter(([_, isVisible]) => isVisible)
+    .map(([column]) => column);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <ColumnVisibilityDropdown
           columnVisibility={columnVisibility}
-          customFields={orderCustomFields || []}
+          customFields={orderCustomFields}
           onToggleColumn={toggleColumnVisibility}
-          basicColumns={[
-            { key: 'orderNumber', label: 'Order #' },
-            { key: 'customerName', label: 'Customer' },
-            { key: 'date', label: 'Date' },
-            { key: 'status', label: 'Status' },
-            { key: 'items', label: 'Items' },
-            { key: 'total', label: 'Total' }
-          ]}
         />
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            {columnVisibility.orderNumber && <TableHead>Order #</TableHead>}
-            {columnVisibility.customerName && <TableHead>Customer</TableHead>}
-            {columnVisibility.date && <TableHead>Date</TableHead>}
-            {columnVisibility.status && <TableHead>Status</TableHead>}
-            {columnVisibility.items && <TableHead>Items</TableHead>}
-            
             {/* Render custom field headers dynamically */}
             {orderCustomFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
-            
-            {columnVisibility.total && <TableHead className="text-right">Total</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
             <TableRow key={order.id} className="cursor-pointer hover:bg-gray-50">
-              {columnVisibility.orderNumber && <TableCell className="font-medium">{order.orderNumber}</TableCell>}
-              {columnVisibility.customerName && <TableCell>{order.customerName}</TableCell>}
-              {columnVisibility.date && <TableCell>{format(new Date(order.date), 'dd MMM yyyy')}</TableCell>}
-              {columnVisibility.status && (
-                <TableCell>
-                  <Badge variant="outline" className={getStatusColor(order.status)}>
-                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                  </Badge>
-                </TableCell>
-              )}
-              {columnVisibility.items && <TableCell>{order.items.length}</TableCell>}
-              
               {/* Render custom field values if present */}
               {orderCustomFields.map(field => (
                 columnVisibility[field.key] && (
@@ -164,12 +131,6 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
                   </TableCell>
                 )
               ))}
-              
-              {columnVisibility.total && (
-                <TableCell className="text-right font-medium">
-                  {formatCurrency(order.total)}
-                </TableCell>
-              )}
             </TableRow>
           ))}
         </TableBody>

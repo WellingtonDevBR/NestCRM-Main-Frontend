@@ -22,14 +22,14 @@ interface ColumnVisibilityDropdownProps {
   columnVisibility: Record<string, boolean>;
   customFields: CustomField[];
   onToggleColumn: (column: string) => void;
-  basicColumns: BasicColumn[];
+  basicColumns?: BasicColumn[];
 }
 
 const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
   columnVisibility,
   customFields,
   onToggleColumn,
-  basicColumns,
+  basicColumns = [],
 }) => {
   return (
     <DropdownMenu>
@@ -55,7 +55,7 @@ const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
           ))}
           
           {/* Custom fields from settings */}
-          {customFields.length > 0 && <DropdownMenuSeparator />}
+          {customFields.length > 0 && basicColumns.length > 0 && <DropdownMenuSeparator />}
           {customFields.length > 0 && (
             <DropdownMenuLabel className="text-xs text-muted-foreground pt-2">
               Custom Fields

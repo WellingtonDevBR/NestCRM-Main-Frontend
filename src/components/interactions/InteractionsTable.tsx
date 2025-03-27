@@ -9,7 +9,6 @@ import {
   TableRow, 
   TableCell 
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { useCustomFields } from "@/hooks/useCustomFields";
@@ -20,21 +19,6 @@ interface InteractionsTableProps {
   isLoading: boolean;
 }
 
-const getTypeIcon = (type: Interaction['type']) => {
-  switch (type) {
-    case 'email':
-      return "📧";
-    case 'call':
-      return "📞";
-    case 'meeting':
-      return "👥";
-    case 'note':
-      return "📝";
-    default:
-      return "💬";
-  }
-};
-
 const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isLoading }) => {
   // Using the targeted query to only fetch Interaction specific fields
   const { data: interactionFieldsData, isLoading: isLoadingInteractionFields } = 
@@ -43,14 +27,8 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
   // Get the interaction custom fields
   const interactionCustomFields = interactionFieldsData?.fields || [];
 
-  // Column visibility state
-  const [columnVisibility, setColumnVisibility] = useState({
-    date: true,
-    customerName: true,
-    type: true,
-    subject: true,
-    status: true
-  });
+  // Column visibility state - start with all custom fields visible
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize column visibility for custom fields
   useEffect(() => {
@@ -60,10 +38,7 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
         customFieldVisibility[field.key] = true;
       });
       
-      setColumnVisibility(prev => ({
-        ...prev,
-        ...customFieldVisibility
-      }));
+      setColumnVisibility(customFieldVisibility);
     }
   }, [interactionCustomFields]);
 
@@ -97,46 +72,22 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
       <div className="flex justify-end">
         <ColumnVisibilityDropdown
           columnVisibility={columnVisibility}
-          customFields={interactionCustomFields || []}
+          customFields={interactionCustomFields}
           onToggleColumn={toggleColumnVisibility}
-          basicColumns={[
-            { key: 'date', label: 'Date' },
-            { key: 'customerName', label: 'Customer' },
-            { key: 'type', label: 'Type' },
-            { key: 'subject', label: 'Subject' },
-            { key: 'status', label: 'Status' }
-          ]}
         />
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            {columnVisibility.date && <TableHead>Date</TableHead>}
-            {columnVisibility.customerName && <TableHead>Customer</TableHead>}
-            {columnVisibility.type && <TableHead>Type</TableHead>}
-            {columnVisibility.subject && <TableHead>Subject</TableHead>}
-            
             {/* Render custom field headers dynamically */}
             {interactionCustomFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
-            
-            {columnVisibility.status && <TableHead>Status</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {interactions.map((interaction) => (
             <TableRow key={interaction.id} className="cursor-pointer hover:bg-gray-50">
-              {columnVisibility.date && <TableCell>{format(new Date(interaction.date), 'dd MMM yyyy HH:mm')}</TableCell>}
-              {columnVisibility.customerName && <TableCell>{interaction.customerName}</TableCell>}
-              {columnVisibility.type && (
-                <TableCell>
-                  <span className="mr-2">{getTypeIcon(interaction.type)}</span>
-                  {interaction.type.charAt(0).toUpperCase() + interaction.type.slice(1)}
-                </TableCell>
-              )}
-              {columnVisibility.subject && <TableCell className="font-medium">{interaction.subject}</TableCell>}
-              
               {/* Render custom field values if present */}
               {interactionCustomFields.map(field => (
                 columnVisibility[field.key] && (
@@ -149,14 +100,6 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
                   </TableCell>
                 )
               ))}
-              
-              {columnVisibility.status && (
-                <TableCell>
-                  <Badge variant={interaction.status === 'open' ? 'default' : 'secondary'}>
-                    {interaction.status.charAt(0).toUpperCase() + interaction.status.slice(1)}
-                  </Badge>
-                </TableCell>
-              )}
             </TableRow>
           ))}
         </TableBody>
