@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { CustomFieldCategory } from "@/domain/models/customField";
 import { ModelFeature } from "@/domain/models/predictionMapping";
@@ -22,6 +22,8 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
   selectedField,
   onFieldChange
 }) => {
+  console.log(`FieldMappingRow for ${modelFeature.modelField} - selectedField:`, selectedField);
+  
   const { 
     selectedCategory, 
     setSelectedCategory, 
@@ -30,8 +32,10 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    // Reset field selection when category changes
-    onFieldChange(modelFeature.modelField, "not_mapped");
+    // Only reset field selection if we actually had a category change
+    if (category !== selectedCategory) {
+      onFieldChange(modelFeature.modelField, "not_mapped");
+    }
   };
 
   const handleFieldChange = (value: string) => {

@@ -25,6 +25,8 @@ const FieldSelector: React.FC<FieldSelectorProps> = ({
   // Make sure we have a valid selectedField value
   const safeSelectedField = selectedField || "not_mapped";
   
+  console.log("FieldSelector - selectedField:", selectedField, "safeSelectedField:", safeSelectedField);
+  
   return (
     <Select 
       value={safeSelectedField} 

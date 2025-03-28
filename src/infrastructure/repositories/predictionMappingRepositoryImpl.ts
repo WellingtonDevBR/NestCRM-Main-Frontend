@@ -16,8 +16,19 @@ export class PredictionMappingRepositoryImpl implements PredictionMappingReposit
    */
   async fetchMappings(): Promise<PredictionMapping> {
     try {
-      const response = await api.get<PredictionMapping>(PREDICTION_MAPPING_ENDPOINT);
+      const response = await api.get<any>(PREDICTION_MAPPING_ENDPOINT);
       console.log("Fetched prediction mappings:", response);
+      
+      // Format the API response to match our domain model
+      // The API returns an array of mappings, but our domain model expects an object with a mappings array
+      if (Array.isArray(response)) {
+        return { mappings: response };
+      }
+      
+      // Handle the case where the response is already in the expected format
+      if (response && typeof response === 'object' && Array.isArray(response.mappings)) {
+        return response;
+      }
       
       // Ensure response has the expected structure
       if (response && typeof response === 'object') {
@@ -45,8 +56,16 @@ export class PredictionMappingRepositoryImpl implements PredictionMappingReposit
         mappings: Array.isArray(data.mappings) ? data.mappings : []
       };
       
-      console.log("Saving prediction mappings:", safeData);
-      const response = await api.post<PredictionMapping>(PREDICTION_MAPPING_ENDPOINT, safeData);
+      // If the API expects a flattened array, convert our domain model to match
+      const apiData = Array.isArray(safeData.mappings) ? safeData.mappings : [];
+      
+      console.log("Saving prediction mappings:", apiData);
+      const response = await api.post<any>(PREDICTION_MAPPING_ENDPOINT, apiData);
+      
+      // Format the response to match our domain model
+      if (Array.isArray(response)) {
+        return { mappings: response };
+      }
       
       // Ensure response has the expected structure
       if (response && typeof response === 'object') {
