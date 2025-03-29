@@ -1,26 +1,17 @@
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { usePayments } from "@/hooks/usePayments";
 import { Payment, PaymentApiRequest } from "@/domain/models/payment";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+// Import form section components
+import CustomerInfoFields from "./form/CustomerInfoFields";
+import OrderInfoFields from "./form/OrderInfoFields";
+import PaymentMethodFields from "./form/PaymentMethodFields";
+import PaymentDetailsFields from "./form/PaymentDetailsFields";
+import FormActions from "./form/FormActions";
 
 interface PaymentFormProps {
   isEditMode: boolean;
@@ -87,154 +78,17 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
-          <FormField
-            control={form.control}
-            name="customerName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Customer name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customerId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer ID</FormLabel>
-                <FormControl>
-                  <Input placeholder="Customer ID" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="orderNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Order Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="Order Number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="method"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Payment Method</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select payment method" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="credit_card">Credit Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="paypal">PayPal</SelectItem>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="refunded">Refunded</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Amount</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="Payment amount" 
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="reference"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reference</FormLabel>
-                <FormControl>
-                  <Input placeholder="Payment reference" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <CustomerInfoFields form={form} />
+          <OrderInfoFields form={form} />
+          <PaymentMethodFields form={form} />
+          <PaymentDetailsFields form={form} />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="bg-purple-600 hover:bg-purple-700"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : isEditMode ? "Update Payment" : "Record Payment"}
-          </Button>
-        </div>
+        <FormActions 
+          onCancel={onCancel} 
+          isSubmitting={isSubmitting} 
+          isEditMode={isEditMode} 
+        />
       </form>
     </Form>
   );
