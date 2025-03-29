@@ -23,18 +23,23 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
     associations.customer_id = customerId;
   }
   
-  // Add email to associations if available - could be derived from customFields
+  // Add email to associations - Either from direct email field or from customFields
   if (customerEmail) {
     associations.email = customerEmail;
-  } else if (customerData.customFields && customerData.customFields['Email']) {
-    const email = customerData.customFields['Email'];
-    if (typeof email === 'string') {
-      associations.email = email;
-    }
+  } else if (customerData.email) {
+    associations.email = customerData.email;
   }
   
+  // Extract basic information into customFields
+  const customFields = {
+    ...customerData.customFields,
+    Name: customerData.name,
+    Email: customerData.email,
+    Phone: customerData.phone
+  };
+  
   return {
-    customFields: customerData.customFields || {},
+    customFields,
     associations
   };
 };

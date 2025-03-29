@@ -9,6 +9,9 @@ export interface CustomField {
 }
 
 export interface CustomerFormData {
+  name: string;
+  email: string;
+  phone: string;
   customFields: {
     [key: string]: string | number | null;
   };
