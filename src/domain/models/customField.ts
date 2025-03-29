@@ -1,3 +1,4 @@
+
 // Custom field domain models
 export interface CustomField {
   key: string;
@@ -8,7 +9,7 @@ export interface CustomField {
   uiConfig?: UIConfig; // Property for UI rendering configuration
   isIdentifier?: boolean; // Property to mark a field as an identifier
   isAssociationField?: boolean; // Marks fields that link to customers
-  useAsAssociation?: boolean; // New property to mark if field should be used for association
+  useAsAssociation?: boolean; // Whether to use this field for association with other modules
 }
 
 // UI Configuration for custom field rendering

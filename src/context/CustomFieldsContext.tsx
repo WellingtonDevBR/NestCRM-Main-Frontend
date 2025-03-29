@@ -58,23 +58,28 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
   // Ensure association fields are present in each category
   useEffect(() => {
     // For all categories, ensure association fields exist
-    const missingAssociationFields = DEFAULT_ASSOCIATION_FIELDS.filter(defaultField => 
-      !categoryFields.some(field => field.key === defaultField.key)
-    );
+    const existingAssociationFields = categoryFields.filter(field => field.isAssociationField);
     
-    if (missingAssociationFields.length > 0) {
-      // Add association fields with default association state
-      const updatedFields = [
-        ...missingAssociationFields.map(field => ({
-          ...field,
-          // For non-Customer categories, make customer_id used for association by default
-          // For Customer category, don't use either by default
-          useAsAssociation: activeCategory !== "Customer" ? field.key === "customer_id" : false
-        })),
-        ...categoryFields
-      ];
+    // If no association fields exist or they're incomplete, add the default ones
+    if (existingAssociationFields.length < DEFAULT_ASSOCIATION_FIELDS.length) {
+      const existingKeys = new Set(existingAssociationFields.map(field => field.key));
       
-      setCategoryFields(updatedFields);
+      // Add any missing association fields
+      const fieldsToAdd = DEFAULT_ASSOCIATION_FIELDS
+        .filter(defaultField => !existingKeys.has(defaultField.key))
+        .map(defaultField => ({
+          ...defaultField,
+          // Initialize useAsAssociation based on category
+          // For Customer category, use realistic defaults
+          // For other categories, customer_id is usually the primary association
+          useAsAssociation: activeCategory !== "Customer" ? 
+            defaultField.key === "customer_id" : 
+            defaultField.key === "email" || defaultField.key === "customer_id"
+        }));
+      
+      if (fieldsToAdd.length > 0) {
+        setCategoryFields([...fieldsToAdd, ...categoryFields]);
+      }
     }
   }, [activeCategory, categoryFields]);
 
@@ -148,7 +153,7 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
       
       // Only include fields that are explicitly defined by the user
-      // For association fields, only include them if they have been explicitly viewed/configured
+      // For association fields, only include them if they have been explicitly set with useAsAssociation
       const fieldsToSave = categoryFields.filter(field => {
         // Always include regular custom fields that have both key and label
         if (!field.isAssociationField && field.key && field.label) {
