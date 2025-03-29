@@ -39,26 +39,26 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
   }
   
   // Only include non-empty values in customFields
-  const customFields: Record<string, string | number | null> = { ...customerData.customFields };
+  const customFields: Record<string, string | number | null> = {};
   
-  // Remove the empty Name, Email, and Phone fields if they're empty
-  // Only include these fields if they have actual values
+  // Copy all custom fields that have values
+  Object.entries(customerData.customFields).forEach(([key, value]) => {
+    if (value !== null && value !== "") {
+      customFields[key] = value;
+    }
+  });
+  
+  // Add standard fields only if they have values
   if (customerData.name) {
     customFields.Name = customerData.name;
-  } else {
-    delete customFields.Name;
   }
   
   if (customerData.email) {
     customFields.Email = customerData.email;
-  } else {
-    delete customFields.Email;
   }
   
   if (customerData.phone) {
     customFields.Phone = customerData.phone;
-  } else {
-    delete customFields.Phone;
   }
   
   return {
