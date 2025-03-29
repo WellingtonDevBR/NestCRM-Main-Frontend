@@ -12,8 +12,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Link2 } from "lucide-react";
-import { CustomField, IDENTIFIER_FIELD_TYPES } from "@/domain/models/customField";
+import { CustomField } from "@/domain/models/customField";
 
 interface BasicFieldControlsProps {
   field: CustomField;
@@ -30,9 +29,6 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
   category = "Customer",
   isSpecialAssociationField = false
 }) => {
-  // Check if field type is eligible to be an identifier
-  const canBeIdentifier = category === "Customer" && IDENTIFIER_FIELD_TYPES.includes(field.type);
-  
   return (
     <>
       <div className="col-span-3">
@@ -76,10 +72,6 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
               ...(value === "select" && !field.options ? { options: [] } : {})
             };
             
-            if (field.isIdentifier && !IDENTIFIER_FIELD_TYPES.includes(value)) {
-              updates.isIdentifier = false;
-            }
-            
             onUpdateField(index, updates);
           }}
           disabled={isSpecialAssociationField}
@@ -110,23 +102,6 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
               <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Always Required</Badge>
             )}
           </div>
-          
-          {canBeIdentifier && !isSpecialAssociationField && (
-            <div className="flex items-center gap-2">
-              <Switch
-                id={`identifier-${index}`}
-                checked={field.isIdentifier || false}
-                onCheckedChange={checked => onUpdateField(index, { isIdentifier: checked })}
-              />
-              <Label htmlFor={`identifier-${index}`} className="cursor-pointer flex items-center gap-1">
-                <Link2 className="h-3.5 w-3.5" />
-                <span>Use as identifier</span>
-              </Label>
-              {field.isIdentifier && (
-                <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Primary Link</Badge>
-              )}
-            </div>
-          )}
           
           {isSpecialAssociationField && (
             <div className="flex items-center gap-2 mt-1">

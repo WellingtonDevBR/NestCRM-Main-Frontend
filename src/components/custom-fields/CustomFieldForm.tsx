@@ -39,12 +39,6 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
-  // Check if there are identifier fields in the Customer category
-  const hasIdentifierField = fields.some(field => field.isIdentifier);
-  
-  // Get identifier fields that are being used
-  const identifierFields = fields.filter(field => field.isIdentifier);
-  
   // Get association fields if we're not in the Customer category
   const associationFields = activeCategory !== "Customer" 
     ? fields.filter(field => field.isAssociationField)
@@ -59,8 +53,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
         <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
           <div className="flex gap-2">
             <div className="text-sm text-amber-800 dark:text-amber-200">
-              Customer ID, Name, Email, and Phone are built-in fields. You need to mark at least one field as an identifier (
-              <Link2 className="inline h-3.5 w-3.5" />) to link customers across modules.
+              Customer ID, Name, Email, and Phone are built-in fields. These core fields are used throughout the CRM to identify and link customer data.
             </div>
           </div>
         </div>
@@ -70,38 +63,11 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
           <div className="flex gap-2">
             <div className="text-sm text-blue-800 dark:text-blue-200">
-              Customer ID and Email fields are automatically included to link {activeCategory} data back to customers.
-              At least one of these fields must be present and filled when creating {activeCategory} records.
+              <p><strong>Association Fields:</strong> Customer ID and Email fields are automatically included to link {activeCategory} data back to customers.</p>
+              <p className="mt-1">At least one of these fields (Customer ID or Email) must be present and filled when creating {activeCategory} records to maintain consistent data relationships across the CRM.</p>
             </div>
           </div>
         </div>
-      )}
-      
-      {activeCategory === "Customer" && !hasIdentifierField && fields.length > 0 && (
-        <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-          <AlertTitle className="text-blue-800 dark:text-blue-200">
-            <Link2 className="inline h-4 w-4 mr-2" />
-            Please designate an identifier field
-          </AlertTitle>
-          <AlertDescription className="text-blue-700 dark:text-blue-300">
-            Mark at least one text or number field as an identifier to link customers across modules.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {activeCategory === "Customer" && hasIdentifierField && (
-        <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-          <AlertTitle className="text-green-800 dark:text-green-200">
-            <Link2 className="inline h-4 w-4 mr-2" />
-            Identifier field configured
-          </AlertTitle>
-          <AlertDescription className="text-green-700 dark:text-green-300">
-            {identifierFields.length === 1 
-              ? `"${identifierFields[0].label}" will be used to identify customers` 
-              : `${identifierFields.length} fields will be used to identify customers`
-            }
-          </AlertDescription>
-        </Alert>
       )}
       
       {activeCategory !== "Customer" && associationFields.length > 0 && (
