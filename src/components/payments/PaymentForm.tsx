@@ -59,7 +59,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       const paymentData: PaymentApiRequest = {
         customFields: data.customFields,
         associations: {
-          customer_id: data.customerId,
+          id: data.customerId,
           email: data.email,
           order_id: data.orderId
         },

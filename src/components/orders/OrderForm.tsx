@@ -56,7 +56,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       const orderData: OrderApiRequest = {
         customFields: data.customFields,
         associations: {
-          customer_id: data.customerId,
+          id: data.customerId,
           email: data.email
         },
         items: data.items,
