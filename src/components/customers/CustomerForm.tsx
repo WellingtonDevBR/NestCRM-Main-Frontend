@@ -8,7 +8,6 @@ import { Customer, CustomerFormData } from "@/domain/models/customer";
 import CustomFieldsSection from "./CustomFieldsSection";
 import { processFieldValue } from "./utils/fieldUtils";
 import { CustomField } from "@/domain/models/customField";
-import BasicInformationFields from "./BasicInformationFields";
 
 interface CustomerFormProps {
   isEditMode: boolean;
@@ -38,27 +37,22 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   useEffect(() => {
     if (isEditMode && customer) {
       // For edit mode, extract data from existing customer
-      // Find basic fields in customFields or use direct properties
-      const name = customer.customFields?.['Name'] || customer.name || '';
-      const email = customer.customFields?.['Email'] || customer.email || '';
-      const phone = customer.customFields?.['Phone'] || customer.phone || '';
-      
       setFormData({
-        name: typeof name === 'string' ? name : '',
-        email: typeof email === 'string' ? email : '',
-        phone: typeof phone === 'string' ? phone : '',
+        name: customer.name || '',
+        email: customer.email || '',
+        phone: customer.phone || '',
         customFields: customer.customFields || {}
       });
-    } else if (!isEditMode) {
-      // Initialize empty form with default values for any required custom fields
+    } else {
+      // Initialize with empty form with default values for association fields
       const initialCustomFields: {[key: string]: string | number | null} = {};
       
-      // Pre-populate required fields with empty values
-      customerFields.forEach(field => {
+      // Pre-populate fields that are needed
+      const associationFields = customerFields.filter(f => f.isAssociationField && f.useAsAssociation === true);
+      
+      associationFields.forEach(field => {
         if (field.type === 'number') {
           initialCustomFields[field.label] = null;
-        } else if (field.type === 'date') {
-          initialCustomFields[field.label] = "";
         } else {
           initialCustomFields[field.label] = "";
         }
@@ -88,49 +82,49 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate required custom fields
-    const missingRequiredFields = customerFields
-      .filter(field => field.required)
-      .filter(field => {
-        const value = formData.customFields[field.label];
-        return value === undefined || value === null || value === "";
-      });
-
-    if (missingRequiredFields.length > 0) {
-      const fieldLabels = missingRequiredFields.map(f => f.label).join(", ");
-      toast.error(`Please fill in required fields: ${fieldLabels}`);
-      return;
-    }
-    
-    // Validate identifier fields
-    const identifierFields = customerFields.filter(field => field.isIdentifier);
-    
-    if (identifierFields.length > 0) {
-      const missingIdentifiers = identifierFields.filter(field => {
+    // Only validate association fields if not in edit mode
+    if (!isEditMode) {
+      const associationFields = customerFields.filter(f => 
+        f.isAssociationField && f.useAsAssociation === true
+      );
+      
+      const missingAssociations = associationFields.filter(field => {
         const value = formData.customFields[field.label];
         return value === undefined || value === null || value === "";
       });
       
-      if (missingIdentifiers.length > 0) {
-        const fieldLabels = missingIdentifiers.map(f => f.label).join(", ");
-        toast.error(`Please fill in identifier fields: ${fieldLabels}`);
+      if (missingAssociations.length > 0) {
+        const fieldLabels = missingAssociations.map(f => f.label).join(", ");
+        toast.error(`Please fill in association fields: ${fieldLabels}`);
+        return;
+      }
+    } else {
+      // In edit mode we still need basic information
+      if (!formData.name || !formData.email || !formData.phone) {
+        toast.error("Please fill in all required basic information fields");
+        return;
+      }
+      
+      // Validate required fields in edit mode
+      const requiredFields = customerFields.filter(field => field.required);
+      const missingRequiredFields = requiredFields.filter(field => {
+        const value = formData.customFields[field.label];
+        return value === undefined || value === null || value === "";
+      });
+
+      if (missingRequiredFields.length > 0) {
+        const fieldLabels = missingRequiredFields.map(f => f.label).join(", ");
+        toast.error(`Please fill in required fields: ${fieldLabels}`);
         return;
       }
     }
 
-    // Validate basic fields
-    if (!formData.name || !formData.email || !formData.phone) {
-      toast.error("Please fill in all required basic information fields");
-      return;
-    }
-
     // Filter out any fields that aren't in the customer fields configuration
-    // This ensures we only send data for fields defined in settings/custom-fields
     const validCustomFields = { ...formData.customFields };
     const validFieldLabels = customerFields.map(field => field.label);
     
     Object.keys(validCustomFields).forEach(key => {
-      if (!validFieldLabels.includes(key) && !['Name', 'Email', 'Phone'].includes(key)) {
+      if (!validFieldLabels.includes(key)) {
         delete validCustomFields[key];
       }
     });
@@ -161,15 +155,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
-        <BasicInformationFields
-          formData={formData}
-          setFormData={setFormData}
-        />
-        
         <CustomFieldsSection
           customFields={customerFields}
           formData={formData}
           onFieldChange={handleFieldChange}
+          isEditMode={isEditMode}
         />
       </div>
 

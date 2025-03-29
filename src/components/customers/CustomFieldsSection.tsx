@@ -17,21 +17,30 @@ interface CustomFieldsSectionProps {
   customFields: CustomField[];
   formData: CustomerFormData;
   onFieldChange: (field: CustomField, value: string) => void;
+  isEditMode?: boolean;
 }
 
 const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
   customFields,
   formData,
-  onFieldChange
+  onFieldChange,
+  isEditMode = false
 }) => {
   if (customFields.length === 0) {
     return null;
   }
 
-  // Group fields by whether they're required, association or regular fields
+  // Filter and group fields
+  const associationFields = customFields.filter(f => 
+    f.isAssociationField && (isEditMode || f.useAsAssociation === true)
+  );
   const requiredFields = customFields.filter(f => f.required && !f.isAssociationField);
-  const associationFields = customFields.filter(f => f.isAssociationField);
   const optionalFields = customFields.filter(f => !f.required && !f.isAssociationField);
+  
+  // Early return if no fields to display
+  if (associationFields.length === 0 && requiredFields.length === 0 && optionalFields.length === 0) {
+    return null;
+  }
   
   const renderField = (field: CustomField) => {
     const value = formData.customFields[field.label] ?? "";
