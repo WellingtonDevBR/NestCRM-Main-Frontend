@@ -84,6 +84,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
       
       const customFieldVisibility: Record<string, boolean> = {};
       visibleCustomFields.forEach(field => {
+        // Use field.key as the key for column visibility
         customFieldVisibility[field.key] = true;
       });
       
@@ -162,7 +163,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
         <Table>
           <TableHeader>
             <TableRow>
-              {/* Render custom field headers dynamically */}
+              {/* Render custom field headers using the label for display */}
               {visibleCustomFields?.map(field => 
                 columnVisibility[field.key] && (
                   <TableHead key={field.key}>{field.label}</TableHead>

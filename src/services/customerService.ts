@@ -33,6 +33,19 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     customer.customFields.customer_id = apiCustomer.CustomerID;
   }
   
+  // Add any regular fields to customFields for display consistency
+  if (apiCustomer.Name && !customer.customFields.Name) {
+    customer.customFields.Name = apiCustomer.Name;
+  }
+  
+  if (apiCustomer.Email && !customer.customFields.Email) {
+    customer.customFields.Email = apiCustomer.Email;
+  }
+  
+  if (apiCustomer.Phone && !customer.customFields.Phone) {
+    customer.customFields.Phone = apiCustomer.Phone;
+  }
+  
   console.log("Mapped to domain customer:", customer);
   return customer;
 };
