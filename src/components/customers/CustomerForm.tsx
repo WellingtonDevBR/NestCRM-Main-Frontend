@@ -8,6 +8,7 @@ import { Customer, CustomerFormData } from "@/domain/models/customer";
 import CustomFieldsSection from "./CustomFieldsSection";
 import { processFieldValue } from "./utils/fieldUtils";
 import { CustomField } from "@/domain/models/customField";
+import BasicInformationFields from "./BasicInformationFields";
 
 interface CustomerFormProps {
   isEditMode: boolean;
@@ -27,15 +28,26 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const customerFields = getCategoryFields("Customer");
   
   const [formData, setFormData] = useState<CustomerFormData>({
+    name: "",
+    email: "",
+    phone: "",
     customFields: {}
   });
 
   // Reset form when dialog opens/closes or customer changes
   useEffect(() => {
     if (isEditMode && customer) {
-      // For edit mode, use existing customer data
+      // For edit mode, extract data from existing customer
+      // Find basic fields in customFields or use direct properties
+      const name = customer.customFields?.['Name'] || customer.name || '';
+      const email = customer.customFields?.['Email'] || customer.email || '';
+      const phone = customer.customFields?.['Phone'] || customer.phone || '';
+      
       setFormData({
-        customFields: customer.customFields || {}
+        name: typeof name === 'string' ? name : '',
+        email: typeof email === 'string' ? email : '',
+        phone: typeof phone === 'string' ? phone : '',
+        customFields: { ...customer.customFields } || {}
       });
     } else if (!isEditMode) {
       // Initialize empty form with default values for any required custom fields
@@ -53,6 +65,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       });
       
       setFormData({
+        name: "",
+        email: "",
+        phone: "",
         customFields: initialCustomFields
       });
     }
@@ -103,6 +118,12 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       }
     }
 
+    // Validate basic fields
+    if (!formData.name || !formData.email || !formData.phone) {
+      toast.error("Please fill in all required basic information fields");
+      return;
+    }
+
     try {
       if (isEditMode && customer) {
         await updateCustomer({
@@ -124,6 +145,11 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
+        <BasicInformationFields
+          formData={formData}
+          setFormData={setFormData}
+        />
+        
         <CustomFieldsSection
           customFields={customerFields}
           formData={formData}
