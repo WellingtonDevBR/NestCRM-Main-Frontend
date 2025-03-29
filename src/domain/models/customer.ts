@@ -45,7 +45,7 @@ export interface CustomerApiResponse {
 }
 
 export interface CustomerAssociations {
-  customer_id?: string;
+  id?: string;
   email?: string;
 }
 

@@ -21,7 +21,7 @@ export interface OrderItem {
 }
 
 export interface OrderAssociations {
-  customer_id?: string;
+  id?: string;
   email?: string;
 }
 

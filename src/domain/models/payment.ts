@@ -14,7 +14,7 @@ export interface Payment {
 }
 
 export interface PaymentAssociations {
-  customer_id?: string;
+  id?: string;
   email?: string;
   order_id?: string;
 }

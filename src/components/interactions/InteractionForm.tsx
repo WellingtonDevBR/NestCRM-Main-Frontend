@@ -61,7 +61,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
       const interactionData: InteractionApiRequest = {
         customFields: data.customFields,
         associations: {
-          customer_id: data.customerId,
+          id: data.customerId,
           email: data.email
         },
         type: data.type as Interaction['type'],

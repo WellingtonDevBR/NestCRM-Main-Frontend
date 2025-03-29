@@ -1,5 +1,5 @@
 
-import { SupportTicket } from "@/domain/models/support";
+import { SupportTicket, SupportTicketApiRequest } from "@/domain/models/support";
 import { api } from "@/utils/api";
 
 export const supportService = {
@@ -15,16 +15,16 @@ export const supportService = {
 
   // Get support tickets by customer ID
   getSupportTicketsByCustomerId: async (customerId: string): Promise<SupportTicket[]> => {
-    return await api.get<SupportTicket[]>(`/support?customerId=${customerId}`);
+    return await api.get<SupportTicket[]>(`/support?id=${customerId}`);
   },
 
   // Create a new support ticket
-  createSupportTicket: async (ticketData: any): Promise<SupportTicket> => {
+  createSupportTicket: async (ticketData: SupportTicketApiRequest): Promise<SupportTicket> => {
     return await api.post<SupportTicket>("/support", ticketData);
   },
 
   // Update an existing support ticket
-  updateSupportTicket: async (id: string, ticketData: any): Promise<SupportTicket> => {
+  updateSupportTicket: async (id: string, ticketData: SupportTicketApiRequest): Promise<SupportTicket> => {
     return await api.put<SupportTicket>(`/support/${id}`, ticketData);
   },
 

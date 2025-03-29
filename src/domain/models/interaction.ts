@@ -16,7 +16,7 @@ export interface Interaction {
 }
 
 export interface InteractionAssociations {
-  customer_id?: string;
+  id?: string;
   email?: string;
 }
 

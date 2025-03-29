@@ -15,7 +15,7 @@ export const interactionService = {
 
   // Get interactions by customer ID
   getInteractionsByCustomerId: async (customerId: string): Promise<Interaction[]> => {
-    return await api.get<Interaction[]>(`/interaction?customerId=${customerId}`);
+    return await api.get<Interaction[]>(`/interaction?id=${customerId}`);
   },
 
   // Create a new interaction

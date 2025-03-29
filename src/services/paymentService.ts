@@ -15,7 +15,7 @@ export const paymentService = {
 
   // Get payments by customer ID
   getPaymentsByCustomerId: async (customerId: string): Promise<Payment[]> => {
-    return await api.get<Payment[]>(`/payment?customerId=${customerId}`);
+    return await api.get<Payment[]>(`/payment?id=${customerId}`);
   },
 
   // Create a new payment

@@ -1,43 +1,20 @@
 
-// Custom field domain models
+// Custom fields and field category models
 export interface CustomField {
-  key: string;
-  label: string;
-  type: "text" | "date" | "number" | "select";
-  required: boolean;
+  key: string; // Identifier used in API
+  label: string; // Display name shown to users
+  type: 'text' | 'date' | 'number' | 'select';
+  required?: boolean;
   options?: string[]; // For select type fields
-  uiConfig?: UIConfig; // Property for UI rendering configuration
-  isIdentifier?: boolean; // Property to mark a field as an identifier
-  isAssociationField?: boolean; // Marks fields that link to customers
-  useAsAssociation?: boolean; // Whether to use this field for association with other modules
+  isAssociationField?: boolean; // Flag for fields used to associate between entities
+  useAsAssociation?: boolean; // Flag to indicate if this association field should be used
+  uiConfig?: UIConfig; // Configuration for UI rendering
 }
 
-// UI Configuration for custom field rendering
 export interface UIConfig {
-  // Display types based on field type
-  type?: 
-    // Default for all field types
-    "default" | 
-    
-    // Select field types
-    "badge" | "pill" | "icon" | "chip" | 
-    
-    // Text field types
-    "link" | "highlight" | "tooltip-only" | "avatar" | 
-    
-    // Date field types
-    "date" | "time" | "calendar" | 
-    
-    // Number field types
-    "currency" | "percent" | "progress" | "rating" | 
-    
-    // Boolean field types
-    "boolean" | "status-dot";
-    
-  colorMap?: Record<string, string>; // Maps values to color names (e.g., "Active": "green")
-  iconMap?: Record<string, string>; // Maps values to icon names (e.g., "Active": "check-circle")
-  format?: string; // For number/date formatting (e.g., "currency", "percent")
-  tooltip?: string; // Optional tooltip text
+  type: 'text' | 'badge' | 'datetime' | 'currency' | 'percentage' | 'number' | 'status';
+  options?: Record<string, string>; // For mapping values to display representations
+  format?: string; // For formatting values (e.g., date format)
 }
 
 export interface CustomFieldCategory {
@@ -45,40 +22,28 @@ export interface CustomFieldCategory {
   fields: CustomField[];
 }
 
-// Available categories in the system
-export type FieldCategory = "Customer" | "Order" | "Payment" | "Interaction" | "Support";
+// Default association fields that should be included in each category
+export const ASSOCIATION_FIELD_KEYS = {
+  ID: 'id',
+  EMAIL: 'email'
+};
 
-// List of available categories for UI/UX purposes
-export const FIELD_CATEGORIES: FieldCategory[] = [
-  "Customer",
-  "Order", 
-  "Payment", 
-  "Interaction", 
-  "Support"
-];
-
-// Identifier field types
-export const IDENTIFIER_FIELD_TYPES = ["text", "number"];
-
-// Association field keys - these fields link back to the customer
-export const ASSOCIATION_FIELD_KEYS = ["customer_id", "email"];
-
-// Default association fields that should be available in all modules
+// Default values for association fields that should be present in all relevant categories
 export const DEFAULT_ASSOCIATION_FIELDS: CustomField[] = [
   {
-    key: "customer_id",
-    label: "Customer ID",
-    type: "text",
-    required: false,
+    key: ASSOCIATION_FIELD_KEYS.ID,
+    label: 'Customer ID',
+    type: 'text',
+    required: true,
     isAssociationField: true,
     useAsAssociation: true
   },
   {
-    key: "email",
-    label: "Email",
-    type: "text",
+    key: ASSOCIATION_FIELD_KEYS.EMAIL,
+    label: 'Email',
+    type: 'text',
     required: false,
     isAssociationField: true,
-    useAsAssociation: false
+    useAsAssociation: true
   }
 ];

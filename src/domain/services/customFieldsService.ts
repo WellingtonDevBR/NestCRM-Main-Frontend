@@ -1,124 +1,96 @@
 
-import { CustomField, DEFAULT_ASSOCIATION_FIELDS } from "@/domain/models/customField";
 import { toast } from "sonner";
+import { 
+  CustomField, 
+  CustomFieldCategory,
+  DEFAULT_ASSOCIATION_FIELDS,
+  ASSOCIATION_FIELD_KEYS
+} from "@/domain/models/customField";
 
-// Validate that all required fields have keys and labels
+// Validate custom fields before saving
 export const validateCustomFields = (fields: CustomField[]): boolean => {
-  // Check if all fields have keys and labels
-  const invalidFields = fields.filter(field => !field.key || !field.label);
-  if (invalidFields.length > 0) {
-    toast.error("Please fill in all field keys and labels");
-    return false;
-  }
-  
   // Check for duplicate keys
   const keys = fields.map(field => field.key);
   const hasDuplicates = keys.some((key, index) => keys.indexOf(key) !== index);
+  
   if (hasDuplicates) {
-    toast.error("Field keys must be unique");
+    toast.error("Each field key must be unique");
     return false;
   }
   
-  // Validate key format (alphanumeric and underscores only)
-  const invalidKeyFormat = fields.some(field => !/^[a-zA-Z0-9_]+$/.test(field.key));
-  if (invalidKeyFormat) {
-    toast.error("Field keys must contain only letters, numbers, and underscores");
-    return false;
-  }
+  // Check for empty keys or labels
+  const hasEmptyKey = fields.some(field => !field.key.trim());
+  const hasEmptyLabel = fields.some(field => !field.label.trim());
   
-  return true;
-};
-
-// Validate association fields specifically
-export const validateAssociationFields = (
-  fields: CustomField[],
-  category: string
-): boolean => {
-  // Get association fields
-  const associationFields = fields.filter(field => field.isAssociationField);
-  
-  // Ensure at least one association field is marked for use
-  const hasAssociationFieldForUse = associationFields.some(field => field.useAsAssociation);
-  
-  if (!hasAssociationFieldForUse) {
-    // Different error messages for Customer vs other categories
-    if (category === "Customer") {
-      toast.error("At least one association field (Customer ID or Email) must be marked to use as association for better data integrity");
-    } else {
-      toast.error("At least one customer association field (Customer ID or Email) must be marked to use as association to link data to customers");
-    }
+  if (hasEmptyKey || hasEmptyLabel) {
+    toast.error("Field keys and labels cannot be empty");
     return false;
   }
   
   return true;
 };
 
-// Ensure BOTH association fields exist for all categories
-export const ensureAssociationFields = (
-  fields: CustomField[],
-  category: string
-): CustomField[] => {
-  // Check existing association fields
-  const existingAssociationFields = fields.filter(field => field.isAssociationField);
-  const existingKeys = new Set(existingAssociationFields.map(field => field.key));
-  
-  // Create a map of existing association fields by key for easy lookup
-  const existingFieldMap = existingAssociationFields.reduce((map, field) => {
-    map[field.key] = field;
-    return map;
-  }, {} as Record<string, CustomField>);
-  
-  // Always make sure BOTH customer_id and email association fields exist
-  let fieldsToAdd: CustomField[] = [];
-  
-  // Go through each DEFAULT_ASSOCIATION_FIELD
-  DEFAULT_ASSOCIATION_FIELDS.forEach(defaultField => {
-    if (!existingKeys.has(defaultField.key)) {
-      // Field doesn't exist, add it with sensible defaults
-      let newField: CustomField = {
-        ...defaultField,
-        // For non-Customer categories, default customer_id to true
-        // For Customer category, we don't set any defaults so user must choose
-        useAsAssociation: 
-          category !== "Customer" ? defaultField.key === "customer_id" : false
-      };
-      fieldsToAdd.push(newField);
-    } else {
-      // Field exists, preserve its current state
-      const existingField = existingFieldMap[defaultField.key];
-      
-      // If the field exists but doesn't have useAsAssociation set (undefined),
-      // set a default value based on category and field key
-      if (existingField.useAsAssociation === undefined) {
-        existingField.useAsAssociation = 
-          category !== "Customer" ? defaultField.key === "customer_id" : false;
-      }
+// Validate association fields for the category
+export const validateAssociationFields = (fields: CustomField[], category: string): boolean => {
+  if (category === "Customer") {
+    // For Customer category, we need at least one association field marked for use
+    const associationFields = fields.filter(field => field.isAssociationField);
+    const hasAssociationForUse = associationFields.some(field => field.useAsAssociation);
+    
+    if (!hasAssociationForUse) {
+      toast.error("At least one association field (ID or Email) must be marked for use");
+      return false;
     }
-  });
-  
-  // For existing association fields, respect their current configuration
-  if (fieldsToAdd.length > 0) {
-    console.log(`Adding association fields for ${category}:`, fieldsToAdd);
-    return [...fieldsToAdd, ...fields];
   }
   
-  return fields;
+  return true;
 };
 
-// Prepare fields for saving (filter out fields that shouldn't be saved)
-export const prepareFieldsForSaving = (
-  fields: CustomField[]
-): CustomField[] => {
-  // Return all fields including all association fields
-  // This ensures we don't lose any association field configuration
-  return fields.map(field => {
-    // Ensure association fields have the correct properties
-    if (field.isAssociationField) {
-      return {
-        ...field,
-        useAsAssociation: field.useAsAssociation === true
-      };
+// Ensure that a category has all the required association fields
+export const ensureAssociationFields = (fields: CustomField[], category: string): CustomField[] => {
+  // Make a copy of the fields
+  const updatedFields = [...fields];
+  
+  // Only non-Customer categories need association fields
+  if (category !== "Customer") {
+    // Check if we have ID field
+    const hasIdField = updatedFields.some(field => 
+      field.key === ASSOCIATION_FIELD_KEYS.ID && field.isAssociationField);
+    
+    // Check if we have Email field
+    const hasEmailField = updatedFields.some(field => 
+      field.key === ASSOCIATION_FIELD_KEYS.EMAIL && field.isAssociationField);
+    
+    // Add ID field if missing
+    if (!hasIdField) {
+      updatedFields.unshift({
+        ...DEFAULT_ASSOCIATION_FIELDS[0],
+        label: 'Customer ID'  // Set appropriate label
+      });
     }
-    return field;
-  });
+    
+    // Add Email field if missing
+    if (!hasEmailField) {
+      updatedFields.unshift({
+        ...DEFAULT_ASSOCIATION_FIELDS[1],
+        label: 'Email'  // Set appropriate label
+      });
+    }
+  }
+  
+  return updatedFields;
+};
+
+// Prepare fields for saving to API (adjust as needed)
+export const prepareFieldsForSaving = (fields: CustomField[]): CustomField[] => {
+  return fields.map(field => ({
+    key: field.key,
+    label: field.label,
+    type: field.type,
+    required: field.required || false,
+    options: field.type === 'select' ? field.options : undefined,
+    isAssociationField: field.isAssociationField,
+    useAsAssociation: field.useAsAssociation,
+    uiConfig: field.uiConfig
+  }));
 };

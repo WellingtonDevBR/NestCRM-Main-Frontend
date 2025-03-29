@@ -32,8 +32,8 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
   if (apiCustomer.associations) {
     console.log("API provided associations:", apiCustomer.associations);
     
-    if (apiCustomer.associations.customer_id && !customer.customFields.customer_id) {
-      customer.customFields.customer_id = apiCustomer.associations.customer_id;
+    if (apiCustomer.associations.id && !customer.customFields.id) {
+      customer.customFields.id = apiCustomer.associations.id;
     }
     
     if (apiCustomer.associations.email && !customer.customFields.email) {
@@ -41,9 +41,9 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     }
   }
   
-  // If CustomerID is not in customFields, add it with the key "customer_id"
-  if (apiCustomer.CustomerID && !customer.customFields.customer_id) {
-    customer.customFields.customer_id = apiCustomer.CustomerID;
+  // If CustomerID is not in customFields, add it with the key "id"
+  if (apiCustomer.CustomerID && !customer.customFields.id) {
+    customer.customFields.id = apiCustomer.CustomerID;
   }
   
   // Add standard fields to customFields for consistent display in the table
@@ -68,11 +68,11 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
   const associations: CustomerAssociations = {};
   
   // Check for appropriate fields in customFields and add to associations
-  if (customerData.customFields["customer_id"]) {
-    associations.customer_id = String(customerData.customFields["customer_id"]);
+  if (customerData.customFields["id"]) {
+    associations.id = String(customerData.customFields["id"]);
   } else if (customerId) {
     // Fallback to passed customerId parameter if available
-    associations.customer_id = customerId;
+    associations.id = customerId;
   }
   
   // Check for "email" in customFields and add to associations

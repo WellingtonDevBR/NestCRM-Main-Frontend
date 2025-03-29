@@ -15,7 +15,7 @@ export const orderService = {
 
   // Get orders by customer ID
   getOrdersByCustomerId: async (customerId: string): Promise<Order[]> => {
-    return await api.get<Order[]>(`/order?customerId=${customerId}`);
+    return await api.get<Order[]>(`/order?id=${customerId}`);
   },
 
   // Create a new order
