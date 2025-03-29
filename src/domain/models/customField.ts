@@ -1,4 +1,3 @@
-
 // Custom field domain models
 export interface CustomField {
   key: string;
@@ -8,7 +7,8 @@ export interface CustomField {
   options?: string[]; // For select type fields
   uiConfig?: UIConfig; // Property for UI rendering configuration
   isIdentifier?: boolean; // Property to mark a field as an identifier
-  isAssociationField?: boolean; // New property to mark fields that link to customers
+  isAssociationField?: boolean; // Marks fields that link to customers
+  useAsAssociation?: boolean; // New property to mark if field should be used for association
 }
 
 // UI Configuration for custom field rendering
@@ -68,14 +68,16 @@ export const DEFAULT_ASSOCIATION_FIELDS: CustomField[] = [
     key: "customer_id",
     label: "Customer ID",
     type: "text",
-    required: true,
-    isAssociationField: true
+    required: false,
+    isAssociationField: true,
+    useAsAssociation: true
   },
   {
     key: "email",
     label: "Email",
     type: "text",
     required: false,
-    isAssociationField: true
+    isAssociationField: true,
+    useAsAssociation: false
   }
 ];

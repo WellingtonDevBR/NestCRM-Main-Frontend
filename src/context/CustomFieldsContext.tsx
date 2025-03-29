@@ -63,13 +63,13 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     );
     
     if (missingAssociationFields.length > 0) {
-      // Add association fields with default required state
+      // Add association fields with default association state
       const updatedFields = [
         ...missingAssociationFields.map(field => ({
           ...field,
-          // For non-Customer categories, make customer_id required by default
-          // For Customer category, make fields optional by default
-          required: activeCategory !== "Customer" ? field.key === "customer_id" : false
+          // For non-Customer categories, make customer_id used for association by default
+          // For Customer category, don't use either by default
+          useAsAssociation: activeCategory !== "Customer" ? field.key === "customer_id" : false
         })),
         ...categoryFields
       ];
@@ -130,15 +130,15 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Validation for association fields
     const associationFields = categoryFields.filter(field => field.isAssociationField);
     
-    // For ALL categories (including Customer), ensure at least one association field is required
-    const hasRequiredAssociationField = associationFields.some(field => field.required);
+    // For ALL categories (including Customer), ensure at least one association field is marked for use
+    const hasAssociationFieldForUse = associationFields.some(field => field.useAsAssociation);
     
-    if (!hasRequiredAssociationField) {
+    if (!hasAssociationFieldForUse) {
       // Different error messages for Customer vs other categories
       if (activeCategory === "Customer") {
-        toast.error("At least one association field (Customer ID or Email) must be marked as required for better data integrity");
+        toast.error("At least one association field (Customer ID or Email) must be marked to use as association for better data integrity");
       } else {
-        toast.error("At least one customer association field (Customer ID or Email) must be marked as required to link data to customers");
+        toast.error("At least one customer association field (Customer ID or Email) must be marked to use as association to link data to customers");
       }
       return;
     }

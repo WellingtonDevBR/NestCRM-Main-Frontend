@@ -90,17 +90,26 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
       
       <div className="col-span-3">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Switch
-              id={`required-${index}`}
-              checked={field.required}
-              onCheckedChange={checked => onUpdateField(index, { required: checked })}
-            />
-            <Label htmlFor={`required-${index}`} className="cursor-pointer">Required field</Label>
-            {isSpecialAssociationField && (
+          {isSpecialAssociationField ? (
+            <div className="flex items-center gap-2">
+              <Switch
+                id={`use-association-${index}`}
+                checked={field.useAsAssociation}
+                onCheckedChange={checked => onUpdateField(index, { useAsAssociation: checked })}
+              />
+              <Label htmlFor={`use-association-${index}`} className="cursor-pointer">Use as association</Label>
               <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Association Field</Badge>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Switch
+                id={`required-${index}`}
+                checked={field.required}
+                onCheckedChange={checked => onUpdateField(index, { required: checked })}
+              />
+              <Label htmlFor={`required-${index}`} className="cursor-pointer">Required field</Label>
+            </div>
+          )}
           
           {isSpecialAssociationField && (
             <div className="flex items-center gap-2 mt-1">
