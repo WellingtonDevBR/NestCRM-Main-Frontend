@@ -13,13 +13,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
+import InteractionActions from "./InteractionActions";
 
 interface InteractionsTableProps {
   interactions: Interaction[];
   isLoading: boolean;
+  onView?: (interaction: Interaction) => void;
+  onEdit?: (interaction: Interaction) => void;
+  onFollow?: (interaction: Interaction) => void;
+  onMarkAsResolved?: (interactionId: string) => void;
+  onDelete?: (interactionId: string) => void;
 }
 
-const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isLoading }) => {
+const InteractionsTable: React.FC<InteractionsTableProps> = ({ 
+  interactions, 
+  isLoading,
+  onView,
+  onEdit,
+  onFollow,
+  onMarkAsResolved,
+  onDelete
+}) => {
   // Using the targeted query to only fetch Interaction specific fields
   const { data: interactionFieldsData, isLoading: isLoadingInteractionFields } = 
     useCustomFields().useCategoryFields("Interaction");
@@ -88,11 +102,12 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
             {visibleInteractionFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
+            <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {interactions.map((interaction) => (
-            <TableRow key={interaction.id} className="cursor-pointer hover:bg-gray-50">
+            <TableRow key={interaction.id} className="hover:bg-gray-50">
               {/* Render custom field values if present */}
               {visibleInteractionFields.map(field => (
                 columnVisibility[field.key] && (
@@ -104,6 +119,16 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
                   </TableCell>
                 )
               ))}
+              <TableCell className="text-right">
+                <InteractionActions 
+                  interaction={interaction}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onFollow={onFollow}
+                  onMarkAsResolved={onMarkAsResolved}
+                  onDelete={onDelete}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

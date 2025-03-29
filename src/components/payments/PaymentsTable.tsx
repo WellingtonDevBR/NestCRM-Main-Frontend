@@ -13,45 +13,59 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
+import PaymentActions from "./PaymentActions";
 
 interface PaymentsTableProps {
   payments: Payment[];
   isLoading: boolean;
+  onView?: (payment: Payment) => void;
+  onEdit?: (payment: Payment) => void;
+  onDownloadReceipt?: (paymentId: string) => void;
+  onRefund?: (payment: Payment) => void;
+  onDelete?: (paymentId: string) => void;
 }
 
-const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments, isLoading }) => {
+const PaymentsTable: React.FC<PaymentsTableProps> = ({ 
+  payments, 
+  isLoading,
+  onView,
+  onEdit,
+  onDownloadReceipt,
+  onRefund,
+  onDelete
+}) => {
   // Using the targeted query to only fetch Payment specific fields
   const { data: paymentFieldsData, isLoading: isLoadingPaymentFields } = 
     useCustomFields().useCategoryFields("Payment");
   
   // Get the payment custom fields
   const paymentCustomFields = paymentFieldsData?.fields || [];
+  
+  // Filter out association fields that are not marked for use
+  const visiblePaymentFields = paymentCustomFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
 
   // Column visibility state - start with all custom fields visible
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize column visibility for custom fields
   useEffect(() => {
-    if (paymentCustomFields.length > 0) {
+    if (visiblePaymentFields.length > 0) {
       const customFieldVisibility: Record<string, boolean> = {};
-      paymentCustomFields.forEach(field => {
+      visiblePaymentFields.forEach(field => {
         customFieldVisibility[field.key] = true;
       });
       
       setColumnVisibility(customFieldVisibility);
     }
-  }, [paymentCustomFields]);
+  }, [visiblePaymentFields]);
 
   const toggleColumnVisibility = (column: string) => {
     setColumnVisibility(prev => ({
       ...prev,
       [column]: !prev[column]
     }));
-  };
-
-  // Function to get the custom field definition by key
-  const getFieldByKey = (key: string) => {
-    return paymentCustomFields.find(field => field.key === key);
   };
 
   if (isLoading || isLoadingPaymentFields) {
@@ -78,7 +92,7 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments, isLoading }) =>
       <div className="flex justify-end">
         <ColumnVisibilityDropdown
           columnVisibility={columnVisibility}
-          customFields={paymentCustomFields}
+          customFields={visiblePaymentFields}
           onToggleColumn={toggleColumnVisibility}
         />
       </div>
@@ -86,16 +100,17 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments, isLoading }) =>
         <TableHeader>
           <TableRow>
             {/* Render custom field headers dynamically */}
-            {paymentCustomFields.map(field => (
+            {visiblePaymentFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
+            <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {payments.map((payment) => (
-            <TableRow key={payment.id} className="cursor-pointer hover:bg-gray-50">
+            <TableRow key={payment.id} className="hover:bg-gray-50">
               {/* Render custom field values if present */}
-              {paymentCustomFields.map(field => (
+              {visiblePaymentFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
                     <DynamicFieldRenderer 
@@ -105,6 +120,16 @@ const PaymentsTable: React.FC<PaymentsTableProps> = ({ payments, isLoading }) =>
                   </TableCell>
                 )
               ))}
+              <TableCell className="text-right">
+                <PaymentActions 
+                  payment={payment}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onDownloadReceipt={onDownloadReceipt}
+                  onRefund={onRefund}
+                  onDelete={onDelete}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

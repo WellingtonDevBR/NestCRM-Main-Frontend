@@ -13,13 +13,29 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
+import SupportTicketActions from "./SupportTicketActions";
 
 interface SupportTicketsTableProps {
   tickets: SupportTicket[];
   isLoading: boolean;
+  onView?: (ticket: SupportTicket) => void;
+  onEdit?: (ticket: SupportTicket) => void;
+  onReply?: (ticket: SupportTicket) => void;
+  onEscalate?: (ticketId: string) => void;
+  onResolve?: (ticketId: string) => void;
+  onDelete?: (ticketId: string) => void;
 }
 
-const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLoading }) => {
+const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ 
+  tickets, 
+  isLoading,
+  onView,
+  onEdit,
+  onReply,
+  onEscalate,
+  onResolve,
+  onDelete
+}) => {
   // Using the targeted query to only fetch Support specific fields
   const { data: supportFieldsData, isLoading: isLoadingSupportFields } = 
     useCustomFields().useCategoryFields("Support");
@@ -89,11 +105,12 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
             {visibleSupportFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
+            <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {tickets.map((ticket) => (
-            <TableRow key={ticket.id} className="cursor-pointer hover:bg-gray-50">
+            <TableRow key={ticket.id} className="hover:bg-gray-50">
               {/* Render custom field values if present */}
               {visibleSupportFields.map(field => (
                 columnVisibility[field.key] && (
@@ -105,6 +122,17 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
                   </TableCell>
                 )
               ))}
+              <TableCell className="text-right">
+                <SupportTicketActions 
+                  ticket={ticket}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onReply={onReply}
+                  onEscalate={onEscalate}
+                  onResolve={onResolve}
+                  onDelete={onDelete}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

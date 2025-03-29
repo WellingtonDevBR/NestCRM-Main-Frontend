@@ -13,13 +13,23 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
 import DynamicFieldRenderer from '@/components/shared/DynamicFieldRenderer';
+import OrderActions from "./OrderActions";
 
 interface OrdersTableProps {
   orders: Order[];
   isLoading: boolean;
+  onView?: (order: Order) => void;
+  onEdit?: (order: Order) => void;
+  onDelete?: (orderId: string) => void;
 }
 
-const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
+const OrdersTable: React.FC<OrdersTableProps> = ({ 
+  orders, 
+  isLoading,
+  onView,
+  onEdit,
+  onDelete
+}) => {
   // Using the targeted query to only fetch Order specific fields
   const { data: orderFieldsData, isLoading: isLoadingOrderFields } = 
     useCustomFields().useCategoryFields("Order");
@@ -89,11 +99,12 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
             {visibleOrderFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
+            <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orders.map((order) => (
-            <TableRow key={order.id} className="cursor-pointer hover:bg-gray-50">
+            <TableRow key={order.id} className="hover:bg-gray-50">
               {/* Render custom field values if present */}
               {visibleOrderFields.map(field => (
                 columnVisibility[field.key] && (
@@ -105,6 +116,14 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
                   </TableCell>
                 )
               ))}
+              <TableCell className="text-right">
+                <OrderActions 
+                  order={order}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
