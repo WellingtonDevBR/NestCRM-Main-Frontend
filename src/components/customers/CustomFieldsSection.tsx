@@ -28,12 +28,18 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
     return null;
   }
 
-  // Group fields by whether they're required or not
-  const requiredFields = customFields.filter(f => f.required);
-  const optionalFields = customFields.filter(f => !f.required);
+  // Group fields by whether they're required, association or regular fields
+  const requiredFields = customFields.filter(f => f.required && !f.isAssociationField);
+  const associationFields = customFields.filter(f => f.isAssociationField);
+  const optionalFields = customFields.filter(f => !f.required && !f.isAssociationField);
   
   const renderField = (field: CustomField) => {
     const value = formData.customFields[field.label] ?? "";
+    const isAssociationField = field.isAssociationField === true;
+    
+    const inputClassName = isAssociationField 
+      ? "border-l-4 border-l-purple-500 pl-3" 
+      : "";
     
     if (field.type === "select" && field.options?.length) {
       return (
@@ -41,7 +47,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
           value={value.toString()}
           onValueChange={newValue => onFieldChange(field, newValue)}
         >
-          <SelectTrigger>
+          <SelectTrigger className={inputClassName}>
             <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
           </SelectTrigger>
           <SelectContent>
@@ -55,33 +61,62 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
       );
     }
     
+    const fieldProps = getFieldProps(field, value, onFieldChange);
+    
     return (
       <Input 
-        {...getFieldProps(field, value, onFieldChange)} 
+        {...fieldProps}
+        className={`${fieldProps.className || ''} ${inputClassName}`.trim()}
       />
     );
   };
   
   return (
     <div className="space-y-4">
-      {/* Required custom fields */}
-      {requiredFields.map(field => (
-        <div key={field.key} className="space-y-2">
-          <Label htmlFor={field.key} className="flex items-center">
-            {field.label}
-            <span className="text-destructive ml-1">*</span>
-          </Label>
-          {renderField(field)}
+      {/* Association fields first with purple styling */}
+      {associationFields.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground">ASSOCIATION FIELDS</h3>
+          {associationFields.map(field => (
+            <div key={field.key} className="space-y-2">
+              <Label htmlFor={field.key} className="flex items-center">
+                {field.label}
+                {field.required && <span className="text-destructive ml-1">*</span>}
+              </Label>
+              {renderField(field)}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+      
+      {/* Required custom fields */}
+      {requiredFields.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground">REQUIRED FIELDS</h3>
+          {requiredFields.map(field => (
+            <div key={field.key} className="space-y-2">
+              <Label htmlFor={field.key} className="flex items-center">
+                {field.label}
+                <span className="text-destructive ml-1">*</span>
+              </Label>
+              {renderField(field)}
+            </div>
+          ))}
+        </div>
+      )}
       
       {/* Optional custom fields */}
-      {optionalFields.map(field => (
-        <div key={field.key} className="space-y-2">
-          <Label htmlFor={field.key}>{field.label}</Label>
-          {renderField(field)}
+      {optionalFields.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground">OPTIONAL FIELDS</h3>
+          {optionalFields.map(field => (
+            <div key={field.key} className="space-y-2">
+              <Label htmlFor={field.key}>{field.label}</Label>
+              {renderField(field)}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 };

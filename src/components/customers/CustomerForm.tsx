@@ -124,15 +124,31 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       return;
     }
 
+    // Filter out any fields that aren't in the customer fields configuration
+    // This ensures we only send data for fields defined in settings/custom-fields
+    const validCustomFields = { ...formData.customFields };
+    const validFieldLabels = customerFields.map(field => field.label);
+    
+    Object.keys(validCustomFields).forEach(key => {
+      if (!validFieldLabels.includes(key) && !['Name', 'Email', 'Phone'].includes(key)) {
+        delete validCustomFields[key];
+      }
+    });
+
     try {
+      const validatedFormData = {
+        ...formData,
+        customFields: validCustomFields
+      };
+
       if (isEditMode && customer) {
         await updateCustomer({
           id: customer.id,
-          ...formData
+          ...validatedFormData
         });
         toast.success("Customer updated successfully");
       } else {
-        await addCustomer(formData);
+        await addCustomer(validatedFormData);
         toast.success("Customer added successfully");
       }
       onSuccess();
