@@ -9,6 +9,7 @@ export interface FieldMapping {
   tenantField: string;
   modelType?: string;
   description?: string;
+  category?: string; // Added category field
 }
 
 export interface PredictionMapping {

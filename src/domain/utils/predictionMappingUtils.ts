@@ -20,9 +20,10 @@ export const getMappingForField = (
 export const updateMappingForField = (
   currentMappings: PredictionMapping | undefined, 
   modelField: string, 
-  tenantField: string
+  tenantField: string,
+  category?: string
 ): PredictionMapping => {
-  console.log(`updateMappingForField - modelField: ${modelField}, tenantField: ${tenantField}`);
+  console.log(`updateMappingForField - modelField: ${modelField}, tenantField: ${tenantField}, category: ${category}`);
   
   // Ensure we have a valid mappings array
   const validCurrentMappings = (currentMappings && currentMappings.mappings && Array.isArray(currentMappings.mappings))
@@ -41,13 +42,15 @@ export const updateMappingForField = (
     // Update existing mapping
     updatedMappings.mappings[existingIndex] = {
       ...updatedMappings.mappings[existingIndex],
-      tenantField
+      tenantField,
+      category // Include category in the updated mapping
     };
   } else {
     // Add new mapping
     updatedMappings.mappings.push({
       modelField,
-      tenantField
+      tenantField,
+      category // Include category in the new mapping
     });
   }
   

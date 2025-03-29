@@ -50,8 +50,9 @@ export function usePredictionMapping() {
   });
 
   // Update a specific mapping
-  const updateMapping = (modelField: string, tenantField: string, currentMappings: PredictionMapping = mappingData || { mappings: [] }): PredictionMapping => {
-    return updateMappingForField(currentMappings, modelField, tenantField);
+  const updateMapping = (modelField: string, tenantField: string, category: string, currentMappings: PredictionMapping = mappingData || { mappings: [] }): PredictionMapping => {
+    // Get the updated mappings from the utility function
+    return updateMappingForField(currentMappings, modelField, tenantField, category);
   };
 
   return {

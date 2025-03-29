@@ -18,7 +18,7 @@ interface FieldMappingTableProps {
   features: ModelFeature[];
   customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
-  onFieldChange: (modelField: string, tenantField: string) => void;
+  onFieldChange: (modelField: string, tenantField: string, category: string) => void;
 }
 
 const FieldMappingTable: React.FC<FieldMappingTableProps> = ({

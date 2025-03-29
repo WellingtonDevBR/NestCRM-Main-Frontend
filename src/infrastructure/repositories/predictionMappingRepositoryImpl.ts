@@ -56,11 +56,17 @@ export class PredictionMappingRepositoryImpl implements PredictionMappingReposit
         mappings: Array.isArray(data.mappings) ? data.mappings : []
       };
       
-      // If the API expects a flattened array, convert our domain model to match
-      const apiData = Array.isArray(safeData.mappings) ? safeData.mappings : [];
+      // Filter out "not_mapped" entries and ensure each mapping has all required fields
+      const cleanedMappings = safeData.mappings
+        .filter(m => m.tenantField && m.tenantField !== "not_mapped")
+        .map(mapping => ({
+          modelField: mapping.modelField,
+          tenantField: mapping.tenantField,
+          category: mapping.category || "" // Ensure category is included
+        }));
       
-      console.log("Saving prediction mappings:", apiData);
-      const response = await api.post<any>(PREDICTION_MAPPING_ENDPOINT, apiData);
+      console.log("Saving prediction mappings:", cleanedMappings);
+      const response = await api.post<any>(PREDICTION_MAPPING_ENDPOINT, cleanedMappings);
       
       // Format the response to match our domain model
       if (Array.isArray(response)) {

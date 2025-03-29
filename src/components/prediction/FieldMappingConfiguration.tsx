@@ -29,7 +29,7 @@ interface FieldMappingConfigurationProps {
   advancedFeatures: ModelFeature[];
   customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
-  onFieldChange: (modelField: string, tenantField: string) => void;
+  onFieldChange: (modelField: string, tenantField: string, category: string) => void;
   onSave: () => void;
   mappedCount: number;
   totalCount: number;

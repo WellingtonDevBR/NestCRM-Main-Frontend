@@ -13,7 +13,7 @@ interface FieldMappingRowProps {
   modelFeature: ModelFeature;
   customFieldCategories: CustomFieldCategory[];
   selectedField?: string;
-  onFieldChange: (modelField: string, tenantField: string) => void;
+  onFieldChange: (modelField: string, tenantField: string, category: string) => void;
 }
 
 const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
@@ -34,12 +34,12 @@ const FieldMappingRow: React.FC<FieldMappingRowProps> = ({
     setSelectedCategory(category);
     // Only reset field selection if we actually had a category change
     if (category !== selectedCategory) {
-      onFieldChange(modelFeature.modelField, "not_mapped");
+      onFieldChange(modelFeature.modelField, "not_mapped", category);
     }
   };
 
   const handleFieldChange = (value: string) => {
-    onFieldChange(modelFeature.modelField, value);
+    onFieldChange(modelFeature.modelField, value, selectedCategory || "");
   };
 
   // Field selector should be disabled only when no category is selected

@@ -90,12 +90,12 @@ const PredictionMapping: React.FC = () => {
     }
   };
   
-  const handleFieldChange = (modelField: string, tenantField: string) => {
-    console.log(`handleFieldChange - modelField: ${modelField}, tenantField: ${tenantField}`);
+  const handleFieldChange = (modelField: string, tenantField: string, category: string) => {
+    console.log(`handleFieldChange - modelField: ${modelField}, tenantField: ${tenantField}, category: ${category}`);
     console.log('Current localMappings before update:', JSON.stringify(localMappings));
     
     // Use the updateMapping function from the hook but pass the local mappings
-    const updated = updateMapping(modelField, tenantField, localMappings);
+    const updated = updateMapping(modelField, tenantField, category, localMappings);
     console.log('Updated localMappings:', JSON.stringify(updated));
     
     setLocalMappings(updated);
