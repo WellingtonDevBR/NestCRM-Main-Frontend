@@ -34,7 +34,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
             <div className="text-sm text-amber-800 dark:text-amber-200">
               <p><strong>Important:</strong> Customer ID and Email fields are critical fields that link customer data across all modules in the CRM.</p>
               <p className="mt-1">These core fields serve as association fields that other modules (Orders, Payments, etc.) will use to connect their data back to customers.</p>
-              <p className="mt-1">You can mark one or both of these fields as required to ensure proper data entry for your customers.</p>
+              <p className="mt-1"><strong>At least one of these fields must be marked as required</strong> to ensure proper data integrity across the system.</p>
             </div>
           </div>
         </div>
@@ -65,19 +65,19 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
       
       {/* For Customer category, show confirmation if association fields exist and any are required */}
       {activeCategory === "Customer" && associationFields.length > 0 && (
-        <Alert className={hasRequiredAssociationField ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"}>
-          <AlertTitle className={hasRequiredAssociationField ? "text-green-800 dark:text-green-200" : "text-blue-800 dark:text-blue-200"}>
+        <Alert className={hasRequiredAssociationField ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800" : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"}>
+          <AlertTitle className={hasRequiredAssociationField ? "text-green-800 dark:text-green-200" : "text-red-800 dark:text-red-200"}>
             <Key className="inline h-4 w-4 mr-2" />
-            {hasRequiredAssociationField ? "Association fields configured" : "Association fields available"}
+            {hasRequiredAssociationField ? "Association fields configured" : "Association fields need configuration"}
           </AlertTitle>
-          <AlertDescription className={hasRequiredAssociationField ? "text-green-700 dark:text-green-300" : "text-blue-700 dark:text-blue-300"}>
+          <AlertDescription className={hasRequiredAssociationField ? "text-green-700 dark:text-green-300" : "text-red-700 dark:text-red-300"}>
             {hasRequiredAssociationField ? (
               <>
                 {associationFields.filter(field => field.required).map(field => field.label).join(" and ")} {associationFields.filter(field => field.required).length === 1 ? "is" : "are"} marked as required for customer data
               </>
             ) : (
               <>
-                Customer ID and Email fields are available. Consider marking at least one as required for better data integrity.
+                Please mark at least one association field (Customer ID or Email) as required to save your configuration
               </>
             )}
           </AlertDescription>

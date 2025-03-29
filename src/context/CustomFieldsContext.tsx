@@ -63,11 +63,13 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     );
     
     if (missingAssociationFields.length > 0) {
-      // For all categories, add association fields but don't force them to be required by default
+      // Add association fields with default required state
       const updatedFields = [
         ...missingAssociationFields.map(field => ({
           ...field,
-          required: false // Make fields optional by default in all categories
+          // For non-Customer categories, make customer_id required by default
+          // For Customer category, make fields optional by default
+          required: activeCategory !== "Customer" ? field.key === "customer_id" : false
         })),
         ...categoryFields
       ];
@@ -128,14 +130,17 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Validation for association fields
     const associationFields = categoryFields.filter(field => field.isAssociationField);
     
-    if (activeCategory !== "Customer") {
-      // For non-Customer categories, ensure at least one association field is required
-      const hasRequiredAssociationField = associationFields.some(field => field.required);
-      
-      if (!hasRequiredAssociationField) {
+    // For ALL categories (including Customer), ensure at least one association field is required
+    const hasRequiredAssociationField = associationFields.some(field => field.required);
+    
+    if (!hasRequiredAssociationField) {
+      // Different error messages for Customer vs other categories
+      if (activeCategory === "Customer") {
+        toast.error("At least one association field (Customer ID or Email) must be marked as required for better data integrity");
+      } else {
         toast.error("At least one customer association field (Customer ID or Email) must be marked as required to link data to customers");
-        return;
       }
+      return;
     }
     
     try {
