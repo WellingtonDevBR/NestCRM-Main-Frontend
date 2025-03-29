@@ -8,7 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import { useCustomFields } from "@/hooks/useCustomFields";
-import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
+import { 
+  CustomField, 
+  CustomFieldCategory, 
+  FIELD_CATEGORIES, 
+  DEFAULT_ASSOCIATION_FIELDS 
+} from "@/domain/models/customField";
 
 // Import the refactored components
 import CustomFieldsHeader from "@/components/custom-fields/CustomFieldsHeader";
@@ -62,6 +67,13 @@ const CustomFields = () => {
   };
 
   const removeField = (index: number) => {
+    // Don't allow removing association fields
+    const field = categoryFields[index];
+    if (field.isAssociationField) {
+      toast.error("Association fields cannot be removed as they're required for linking modules");
+      return;
+    }
+    
     setCategoryFields(categoryFields.filter((_, i) => i !== index));
   };
 
@@ -96,14 +108,25 @@ const CustomFields = () => {
       return;
     }
     
-    // For non-Customer categories, check if there are identifier fields
-    if (activeCategory !== "Customer") {
-      // Customer identifiers available?
-      const customerCategory = customFieldCategories?.find(c => c.category === "Customer");
-      const hasCustomerIdentifiers = customerCategory?.fields.some(f => f.isIdentifier);
+    // For Customer category, check if there are identifier fields
+    if (activeCategory === "Customer") {
+      const hasIdentifierField = categoryFields.some(f => f.isIdentifier);
       
-      if (!hasCustomerIdentifiers) {
-        toast.error("Please configure at least one identifier field in the Customer category first");
+      if (!hasIdentifierField) {
+        toast.error("Please mark at least one field as an identifier to link customers across modules");
+        return;
+      }
+    }
+    
+    // For non-Customer categories, ensure association fields are present
+    if (activeCategory !== "Customer") {
+      // Make sure at least one of the association fields exists
+      const hasAssociationField = categoryFields.some(field => 
+        field.isAssociationField && (field.key === "customer_id" || field.key === "email")
+      );
+      
+      if (!hasAssociationField) {
+        toast.error("At least one customer association field is required to link data to customers");
         return;
       }
     }
@@ -128,6 +151,28 @@ const CustomFields = () => {
     }
   };
 
+  // Ensure association fields are present in each category
+  useEffect(() => {
+    if (activeCategory !== "Customer") {
+      // For non-Customer categories, ensure association fields exist
+      const missingAssociationFields = DEFAULT_ASSOCIATION_FIELDS.filter(defaultField => 
+        !categoryFields.some(field => field.key === defaultField.key)
+      );
+      
+      if (missingAssociationFields.length > 0) {
+        const updatedFields = [
+          ...missingAssociationFields.map(field => ({
+            ...field,
+            required: field.key === "customer_id" // Only customer_id is required
+          })),
+          ...categoryFields
+        ];
+        
+        setCategoryFields(updatedFields);
+      }
+    }
+  }, [activeCategory, categoryFields]);
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex">
@@ -151,7 +196,8 @@ const CustomFields = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Important</AlertTitle>
               <AlertDescription>
-                Configure the custom fields for each module in the system. For Customer category, mark at least one field as an identifier to link with other modules.
+                Configure the custom fields for each module in the system. For Customer category, mark at least one field as an identifier.
+                For other modules, a Customer ID or Email field will be automatically included to link data to customers.
               </AlertDescription>
             </Alert>
             

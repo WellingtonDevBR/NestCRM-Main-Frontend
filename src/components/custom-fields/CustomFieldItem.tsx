@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { Trash2, Plus, X, Settings2, Link2 } from "lucide-react";
+import { Trash2, Plus, X, Settings2, Link2, Key } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,7 @@ interface CustomFieldItemProps {
   onUpdateField: (index: number, updates: Partial<CustomField>) => void;
   onRemoveField: (index: number) => void;
   category?: string;
+  isAssociationField?: boolean;
 }
 
 const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
@@ -35,7 +35,8 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   index,
   onUpdateField,
   onRemoveField,
-  category = "Customer"
+  category = "Customer",
+  isAssociationField = false
 }) => {
   const [newOption, setNewOption] = useState("");
   const [colorKey, setColorKey] = useState("");
@@ -182,16 +183,30 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
     }
   }, [field.type]);
   
+  // Determine if this is a special association field
+  const isSpecialAssociationField = isAssociationField && (field.key === "customer_id" || field.key === "email");
+  
   return (
-    <div className="grid grid-cols-12 gap-4 items-center p-4 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-700 transition-colors">
+    <div className={`grid grid-cols-12 gap-4 items-center p-4 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-700 transition-colors ${
+      isSpecialAssociationField ? "border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/10" : ""
+    }`}>
       <div className="col-span-3">
         <Input
           value={field.key}
           onChange={e => onUpdateField(index, { key: e.target.value })}
           placeholder="e.g., loyaltyPoints"
           className="font-mono text-sm dark:bg-gray-800 dark:border-gray-700"
+          disabled={isSpecialAssociationField}
         />
-        <p className="text-xs text-muted-foreground mt-1">API identifier</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          {isSpecialAssociationField ? (
+            <span className="flex items-center gap-1">
+              <Key className="h-3 w-3" /> Association field
+            </span>
+          ) : (
+            "API identifier"
+          )}
+        </p>
       </div>
       <div className="col-span-3">
         <Input
@@ -199,6 +214,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
           onChange={e => onUpdateField(index, { label: e.target.value })}
           placeholder="e.g., Loyalty Points"
           className="dark:bg-gray-800 dark:border-gray-700"
+          disabled={isSpecialAssociationField}
         />
         <p className="text-xs text-muted-foreground mt-1">Shown to users</p>
       </div>
@@ -206,19 +222,20 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
         <Select
           value={field.type}
           onValueChange={value => {
+            if (isSpecialAssociationField) return;
+            
             const updates: Partial<CustomField> = { 
               type: value as "text" | "date" | "number" | "select",
-              // Initialize options array if selecting "select" type
               ...(value === "select" && !field.options ? { options: [] } : {})
             };
             
-            // Unset isIdentifier if new type can't be an identifier
             if (field.isIdentifier && !IDENTIFIER_FIELD_TYPES.includes(value)) {
               updates.isIdentifier = false;
             }
             
             onUpdateField(index, updates);
           }}
+          disabled={isSpecialAssociationField}
         >
           <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
             <SelectValue placeholder="Select type" />
@@ -238,11 +255,15 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
               id={`required-${index}`}
               checked={field.required}
               onCheckedChange={checked => onUpdateField(index, { required: checked })}
+              disabled={isSpecialAssociationField && field.key === "customer_id"}
             />
             <Label htmlFor={`required-${index}`} className="cursor-pointer">Required field</Label>
+            {isSpecialAssociationField && field.key === "customer_id" && (
+              <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Always Required</Badge>
+            )}
           </div>
           
-          {canBeIdentifier && (
+          {canBeIdentifier && !isSpecialAssociationField && (
             <div className="flex items-center gap-2">
               <Switch
                 id={`identifier-${index}`}
@@ -258,9 +279,18 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
               )}
             </div>
           )}
+          
+          {isSpecialAssociationField && (
+            <div className="flex items-center gap-2 mt-1">
+              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1">
+                <Key className="h-3 w-3" />
+                <span>Links to Customer</span>
+              </Badge>
+            </div>
+          )}
         </div>
         
-        {field.type === "select" && (
+        {!isSpecialAssociationField && field.type === "select" && (
           <div className="mt-2">
             <div className="flex items-center mb-2">
               <Input
@@ -304,127 +334,129 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
         )}
       </div>
       <div className="col-span-1 flex justify-end space-x-2">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="text-primary hover:bg-primary/10 dark:hover:bg-gray-700"
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 dark:bg-gray-800 dark:border-gray-700">
-            <div className="space-y-4">
-              <h4 className="font-medium">UI Display Settings</h4>
-              <div className="space-y-2">
-                <Label>Display Type</Label>
-                <Select
-                  value={field.uiConfig?.type || "default"}
-                  onValueChange={validateAndUpdateUiType}
-                >
-                  <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
-                    <SelectValue placeholder="Default" />
-                  </SelectTrigger>
-                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                    {availableUiTypes.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {(field.uiConfig?.type === "badge" || field.uiConfig?.type === "pill" || field.uiConfig?.type === "chip") && field.type === "select" && (
+        {!isSpecialAssociationField && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="text-primary hover:bg-primary/10 dark:hover:bg-gray-700"
+              >
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 dark:bg-gray-800 dark:border-gray-700">
+              <div className="space-y-4">
+                <h4 className="font-medium">UI Display Settings</h4>
                 <div className="space-y-2">
-                  <Label>Color Mappings</Label>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Input
-                      value={colorKey}
-                      onChange={(e) => setColorKey(e.target.value)}
-                      placeholder="Value"
-                      className="text-sm flex-1 dark:bg-gray-800 dark:border-gray-700"
-                    />
-                    <Select value={colorValue} onValueChange={setColorValue}>
-                      <SelectTrigger className="w-24 dark:bg-gray-800 dark:border-gray-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                        {availableColors.map(color => (
-                          <SelectItem key={color.value} value={color.value}>
-                            {color.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={addColorMapping}
-                      className="dark:bg-gray-800 dark:border-gray-700"
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-1 mt-1">
-                    {field.uiConfig?.colorMap && Object.entries(field.uiConfig.colorMap).length > 0 ? (
-                      Object.entries(field.uiConfig.colorMap).map(([key, color]) => (
-                        <div key={key} className="flex items-center justify-between">
-                          <span className="text-sm">{key}</span>
-                          <div className="flex items-center space-x-2">
-                            <Badge 
-                              className={`${getBadgeColorClass(color)}`}
-                            >
-                              {color}
-                            </Badge>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeColorMapping(key)}
-                              className="h-6 w-6 p-0"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-xs text-muted-foreground">No color mappings added</p>
-                    )}
-                  </div>
+                  <Label>Display Type</Label>
+                  <Select
+                    value={field.uiConfig?.type || "default"}
+                    onValueChange={validateAndUpdateUiType}
+                  >
+                    <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
+                      <SelectValue placeholder="Default" />
+                    </SelectTrigger>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                      {availableUiTypes.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
-              
-              {(field.uiConfig?.type === "currency" || field.uiConfig?.type === "percent") && field.type === "number" && (
+                
+                {(field.uiConfig?.type === "badge" || field.uiConfig?.type === "pill" || field.uiConfig?.type === "chip") && field.type === "select" && (
+                  <div className="space-y-2">
+                    <Label>Color Mappings</Label>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Input
+                        value={colorKey}
+                        onChange={(e) => setColorKey(e.target.value)}
+                        placeholder="Value"
+                        className="text-sm flex-1 dark:bg-gray-800 dark:border-gray-700"
+                      />
+                      <Select value={colorValue} onValueChange={setColorValue}>
+                        <SelectTrigger className="w-24 dark:bg-gray-800 dark:border-gray-700">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                          {availableColors.map(color => (
+                            <SelectItem key={color.value} value={color.value}>
+                              {color.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        onClick={addColorMapping}
+                        className="dark:bg-gray-800 dark:border-gray-700"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-1 mt-1">
+                      {field.uiConfig?.colorMap && Object.entries(field.uiConfig.colorMap).length > 0 ? (
+                        Object.entries(field.uiConfig.colorMap).map(([key, color]) => (
+                          <div key={key} className="flex items-center justify-between">
+                            <span className="text-sm">{key}</span>
+                            <div className="flex items-center space-x-2">
+                              <Badge 
+                                className={`${getBadgeColorClass(color)}`}
+                              >
+                                {color}
+                              </Badge>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeColorMapping(key)}
+                                className="h-6 w-6 p-0"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-xs text-muted-foreground">No color mappings added</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {(field.uiConfig?.type === "currency" || field.uiConfig?.type === "percent") && field.type === "number" && (
+                  <div className="space-y-2">
+                    <Label>Format</Label>
+                    <Input
+                      value={field.uiConfig?.format || ""}
+                      onChange={(e) => updateUIConfig({ format: e.target.value })}
+                      placeholder="e.g., USD or EUR for currency"
+                      className="dark:bg-gray-800 dark:border-gray-700"
+                    />
+                  </div>
+                )}
+                
                 <div className="space-y-2">
-                  <Label>Format</Label>
-                  <Input
-                    value={field.uiConfig?.format || ""}
-                    onChange={(e) => updateUIConfig({ format: e.target.value })}
-                    placeholder="e.g., USD or EUR for currency"
+                  <Label>Tooltip</Label>
+                  <Textarea
+                    value={field.uiConfig?.tooltip || ""}
+                    onChange={(e) => updateUIConfig({ tooltip: e.target.value })}
+                    placeholder="Helpful information about this field"
+                    rows={2}
                     className="dark:bg-gray-800 dark:border-gray-700"
                   />
                 </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label>Tooltip</Label>
-                <Textarea
-                  value={field.uiConfig?.tooltip || ""}
-                  onChange={(e) => updateUIConfig({ tooltip: e.target.value })}
-                  placeholder="Helpful information about this field"
-                  rows={2}
-                  className="dark:bg-gray-800 dark:border-gray-700"
-                />
               </div>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverContent>
+          </Popover>
+        )}
       
         <Button
           type="button"
@@ -432,6 +464,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
           size="icon"
           onClick={() => onRemoveField(index)}
           className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+          disabled={isSpecialAssociationField}
         >
           <Trash2 className="h-4 w-4" />
         </Button>
@@ -440,7 +473,6 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   );
 };
 
-// Helper function to get badge color class (same as in DynamicFieldRenderer)
 const getBadgeColorClass = (color: string): string => {
   switch (color.toLowerCase()) {
     case "green":

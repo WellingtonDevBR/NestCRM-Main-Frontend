@@ -7,7 +7,8 @@ export interface CustomField {
   required: boolean;
   options?: string[]; // For select type fields
   uiConfig?: UIConfig; // Property for UI rendering configuration
-  isIdentifier?: boolean; // New property to mark a field as an identifier
+  isIdentifier?: boolean; // Property to mark a field as an identifier
+  isAssociationField?: boolean; // New property to mark fields that link to customers
 }
 
 // UI Configuration for custom field rendering
@@ -57,3 +58,24 @@ export const FIELD_CATEGORIES: FieldCategory[] = [
 
 // Identifier field types
 export const IDENTIFIER_FIELD_TYPES = ["text", "number"];
+
+// Association field keys - these fields link back to the customer
+export const ASSOCIATION_FIELD_KEYS = ["customer_id", "email"];
+
+// Default association fields that should be available in all modules
+export const DEFAULT_ASSOCIATION_FIELDS: CustomField[] = [
+  {
+    key: "customer_id",
+    label: "Customer ID",
+    type: "text",
+    required: true,
+    isAssociationField: true
+  },
+  {
+    key: "email",
+    label: "Email",
+    type: "text",
+    required: false,
+    isAssociationField: true
+  }
+];
