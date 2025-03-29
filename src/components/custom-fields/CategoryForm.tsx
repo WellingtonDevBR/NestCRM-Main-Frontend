@@ -34,8 +34,9 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
         <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
           <div className="flex gap-2">
             <div className="text-sm text-amber-800 dark:text-amber-200">
-              <p>Customer ID, Name, Email, and Phone are built-in fields. These core fields are used throughout the CRM to identify and link customer data.</p>
-              <p className="mt-1">Customer ID and Email fields are especially important as they serve as association fields that link customer data to other modules in the CRM.</p>
+              <p><strong>Important:</strong> Customer ID and Email fields are critical fields that link customer data across all modules in the CRM.</p>
+              <p className="mt-1">These core fields serve as association fields that other modules (Orders, Payments, etc.) will use to connect their data back to customers.</p>
+              <p className="mt-1">At least one of these fields must be used in other modules to establish customer relationships throughout the system.</p>
             </div>
           </div>
         </div>
