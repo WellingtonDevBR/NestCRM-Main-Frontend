@@ -36,7 +36,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
       duration: interaction?.duration || 0,
       assignedTo: interaction?.assignedTo || "",
       agentName: interaction?.agentName || "",
-      customFields: interaction?.customFields || {}
+      customFields: interaction?.customFields as Record<string, string | number> || {}
     }
   });
 
@@ -48,12 +48,12 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
         f.useAsAssociation === true
       );
       
-      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      const initialCustomFields: Record<string, string | number> = { ...form.getValues("customFields") };
       
       associationFields.forEach(field => {
         if (!initialCustomFields[field.key]) {
           if (field.type === 'number') {
-            initialCustomFields[field.key] = null;
+            initialCustomFields[field.key] = 0;
           } else {
             initialCustomFields[field.key] = "";
           }
@@ -76,7 +76,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
         duration: interaction.duration || 0,
         assignedTo: interaction.assignedTo || "",
         agentName: interaction.agentName || "",
-        customFields: interaction.customFields || {}
+        customFields: interaction.customFields as Record<string, string | number> || {}
       });
     }
   }, [isEditMode, interaction, form]);
@@ -104,7 +104,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
       });
       
       const interactionData: InteractionApiRequest = {
-        customFields: data.customFields,
+        customFields: data.customFields as Record<string, string | number | boolean | Date>,
         associations: associations,
         type: data.type as Interaction['type'],
         subject: data.subject,

@@ -32,7 +32,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       status: (order?.status as string) || "pending",
       total: order?.total || 0,
       items: order?.items || [{ id: "1", productName: "", quantity: 1, unitPrice: 0, total: 0 }],
-      customFields: order?.customFields || {}
+      customFields: order?.customFields as Record<string, string | number> || {}
     }
   });
 
@@ -44,12 +44,12 @@ const OrderForm: React.FC<OrderFormProps> = ({
         f.useAsAssociation === true
       );
       
-      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      const initialCustomFields: Record<string, string | number> = { ...form.getValues("customFields") };
       
       associationFields.forEach(field => {
         if (!initialCustomFields[field.key]) {
           if (field.type === 'number') {
-            initialCustomFields[field.key] = null;
+            initialCustomFields[field.key] = 0;
           } else {
             initialCustomFields[field.key] = "";
           }
@@ -68,7 +68,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
         status: order.status,
         total: order.total,
         items: order.items,
-        customFields: order.customFields || {}
+        customFields: order.customFields as Record<string, string | number> || {}
       });
     }
   }, [isEditMode, order, form]);
@@ -96,7 +96,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       });
       
       const orderData: OrderApiRequest = {
-        customFields: data.customFields,
+        customFields: data.customFields as Record<string, string | number | boolean | Date>,
         associations: associations,
         items: data.items,
         status: data.status as Order['status'],

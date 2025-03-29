@@ -34,7 +34,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
       status: (ticket?.status as string) || "open",
       priority: (ticket?.priority as string) || "medium",
       assignedTo: ticket?.assignedTo || "",
-      customFields: ticket?.customFields || {}
+      customFields: ticket?.customFields || {} as Record<string, string | number>
     }
   });
 
@@ -46,12 +46,12 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
         f.useAsAssociation === true
       );
       
-      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      const initialCustomFields: Record<string, string | number> = { ...form.getValues("customFields") };
       
       associationFields.forEach(field => {
         if (!initialCustomFields[field.key]) {
           if (field.type === 'number') {
-            initialCustomFields[field.key] = null;
+            initialCustomFields[field.key] = 0;
           } else {
             initialCustomFields[field.key] = "";
           }
@@ -72,7 +72,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
         status: ticket.status,
         priority: ticket.priority,
         assignedTo: ticket.assignedTo || "",
-        customFields: ticket.customFields || {}
+        customFields: ticket.customFields as Record<string, string | number> || {}
       });
     }
   }, [isEditMode, ticket, form]);
@@ -100,7 +100,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
       });
       
       const ticketData: SupportTicketApiRequest = {
-        customFields: data.customFields,
+        customFields: data.customFields as Record<string, string | number | boolean | Date>,
         associations: associations,
         subject: data.subject,
         description: data.description,

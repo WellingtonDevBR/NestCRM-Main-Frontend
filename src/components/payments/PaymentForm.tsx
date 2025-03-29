@@ -33,7 +33,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       status: (payment?.status as string) || "pending",
       amount: payment?.amount || 0,
       reference: payment?.reference || "",
-      customFields: payment?.customFields || {}
+      customFields: payment?.customFields as Record<string, string | number> || {}
     }
   });
 
@@ -45,12 +45,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         f.useAsAssociation === true
       );
       
-      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      const initialCustomFields: Record<string, string | number> = { ...form.getValues("customFields") };
       
       associationFields.forEach(field => {
         if (!initialCustomFields[field.key]) {
           if (field.type === 'number') {
-            initialCustomFields[field.key] = null;
+            initialCustomFields[field.key] = 0;
           } else {
             initialCustomFields[field.key] = "";
           }
@@ -70,7 +70,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         status: payment.status,
         amount: payment.amount,
         reference: payment.reference || "",
-        customFields: payment.customFields || {}
+        customFields: payment.customFields as Record<string, string | number> || {}
       });
     }
   }, [isEditMode, payment, form]);
@@ -103,7 +103,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       }
       
       const paymentData: PaymentApiRequest = {
-        customFields: data.customFields,
+        customFields: data.customFields as Record<string, string | number | boolean | Date>,
         associations: associations,
         method: data.method as Payment['method'],
         status: data.status as Payment['status'],
