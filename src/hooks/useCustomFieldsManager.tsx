@@ -3,7 +3,8 @@ import { useState, useEffect, useReducer } from "react";
 import { toast } from "sonner";
 import { 
   CustomField, 
-  CustomFieldCategory
+  CustomFieldCategory,
+  DEFAULT_ASSOCIATION_FIELDS
 } from "@/domain/models/customField";
 import { useCustomFields } from "@/hooks/useCustomFields";
 import { customFieldsReducer } from "@/domain/reducers/customFieldsReducer";
@@ -46,7 +47,7 @@ export function useCustomFieldsManager() {
     }
   }, [customFieldCategories, activeCategory]);
 
-  // Ensure association fields are present in each category
+  // Ensure BOTH association fields are present in each category
   useEffect(() => {
     const updatedFields = ensureAssociationFields(categoryFields, activeCategory);
     

@@ -52,29 +52,23 @@ export const validateAssociationFields = (
   return true;
 };
 
-// Ensure association fields exist for a category
+// Ensure BOTH association fields exist for all categories
 export const ensureAssociationFields = (
   fields: CustomField[],
   category: string
 ): CustomField[] => {
+  // Check existing association fields
   const existingAssociationFields = fields.filter(field => field.isAssociationField);
-  
-  // If we already have all the association fields, return the original fields
-  if (existingAssociationFields.length >= DEFAULT_ASSOCIATION_FIELDS.length) {
-    return fields;
-  }
-  
-  // Otherwise, add any missing association fields
   const existingKeys = new Set(existingAssociationFields.map(field => field.key));
   
+  // Always make sure BOTH customer_id and email association fields exist
   const fieldsToAdd = DEFAULT_ASSOCIATION_FIELDS
     .filter(defaultField => !existingKeys.has(defaultField.key))
     .map(defaultField => ({
       ...defaultField,
-      // Initialize useAsAssociation based on category
-      useAsAssociation: category !== "Customer" ? 
-        defaultField.key === "customer_id" : 
-        defaultField.key === "email" || defaultField.key === "customer_id"
+      // Initialize useAsAssociation based on category and field
+      useAsAssociation: defaultField.key === "customer_id" || 
+                        (category === "Customer" && defaultField.key === "email")
     }));
   
   if (fieldsToAdd.length > 0) {
@@ -88,19 +82,16 @@ export const ensureAssociationFields = (
 export const prepareFieldsForSaving = (
   fields: CustomField[]
 ): CustomField[] => {
-  // Only include fields that are explicitly defined by the user
-  // For association fields, only include them if they have been explicitly set with useAsAssociation
-  return fields.filter(field => {
-    // Always include regular custom fields that have both key and label
-    if (!field.isAssociationField && field.key && field.label) {
-      return true;
-    }
-    
-    // For association fields, only include if they have been explicitly set with useAsAssociation
+  // Return all fields including all association fields
+  // This ensures we don't lose any association field configuration
+  return fields.map(field => {
+    // Ensure association fields have the correct properties
     if (field.isAssociationField) {
-      return field.useAsAssociation === true;
+      return {
+        ...field,
+        useAsAssociation: field.useAsAssociation === true
+      };
     }
-    
-    return false;
+    return field;
   });
 };

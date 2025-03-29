@@ -35,7 +35,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
-  // Get association fields for all categories
+  // Get ALL association fields for all categories - ensure both customer_id and email are available
   const associationFields = fields.filter(field => field.isAssociationField);
   
   // Regular custom fields (not association fields)

@@ -7,6 +7,8 @@ export interface UIConfig {
   iconMap?: Record<string, string>;
   format?: string;
   tooltip?: string;
+  isAssociationField?: boolean; // Added for association fields
+  useAsAssociation?: boolean;   // Added for association control
 }
 
 export interface DynamicFieldRendererProps {
