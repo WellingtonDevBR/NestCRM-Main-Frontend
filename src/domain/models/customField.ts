@@ -37,7 +37,7 @@ export const FIELD_CATEGORIES = [
 // Field category type
 export type FieldCategory = typeof FIELD_CATEGORIES[number];
 
-// Default association fields that should be included in each category
+// Association field keys
 export const ASSOCIATION_FIELD_KEYS = {
   ID: 'id',
   EMAIL: 'email'

@@ -48,11 +48,40 @@ export const validateAssociationFields = (fields: CustomField[], category: strin
 
 // Ensure that a category has all the required association fields
 export const ensureAssociationFields = (fields: CustomField[], category: string): CustomField[] => {
+  console.log(`Ensuring association fields for ${category}`, fields);
+  
   // Make a copy of the fields
   const updatedFields = [...fields];
   
-  // Only non-Customer categories need association fields
-  if (category !== "Customer") {
+  if (category === "Customer") {
+    // Check if we have ID field
+    const hasIdField = updatedFields.some(field => 
+      field.key === ASSOCIATION_FIELD_KEYS.ID && field.isAssociationField);
+    
+    // Check if we have Email field
+    const hasEmailField = updatedFields.some(field => 
+      field.key === ASSOCIATION_FIELD_KEYS.EMAIL && field.isAssociationField);
+    
+    // Add ID field if missing for Customer
+    if (!hasIdField) {
+      console.log(`Adding ID association field for ${category}`);
+      updatedFields.unshift({
+        ...DEFAULT_ASSOCIATION_FIELDS[0],
+        label: 'Customer ID'
+      });
+    }
+    
+    // Add Email field if missing for Customer
+    if (!hasEmailField) {
+      console.log(`Adding Email association field for ${category}`);
+      updatedFields.unshift({
+        ...DEFAULT_ASSOCIATION_FIELDS[1],
+        label: 'Email'
+      });
+    }
+  } else {
+    // For non-Customer categories, add customer references
+    
     // Check if we have ID field
     const hasIdField = updatedFields.some(field => 
       field.key === ASSOCIATION_FIELD_KEYS.ID && field.isAssociationField);
@@ -63,21 +92,24 @@ export const ensureAssociationFields = (fields: CustomField[], category: string)
     
     // Add ID field if missing
     if (!hasIdField) {
+      console.log(`Adding Customer ID association field for ${category}`);
       updatedFields.unshift({
         ...DEFAULT_ASSOCIATION_FIELDS[0],
-        label: 'Customer ID'  // Set appropriate label
+        label: 'Customer ID'
       });
     }
     
     // Add Email field if missing
     if (!hasEmailField) {
+      console.log(`Adding Email association field for ${category}`);
       updatedFields.unshift({
         ...DEFAULT_ASSOCIATION_FIELDS[1],
-        label: 'Email'  // Set appropriate label
+        label: 'Email'
       });
     }
   }
   
+  console.log(`Updated fields with associations for ${category}:`, updatedFields);
   return updatedFields;
 };
 

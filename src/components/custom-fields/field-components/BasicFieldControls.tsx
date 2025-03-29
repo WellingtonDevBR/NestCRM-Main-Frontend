@@ -41,10 +41,10 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
           onChange={e => onUpdateField(index, { key: e.target.value })}
           placeholder="e.g., loyaltyPoints"
           className="font-mono text-sm dark:bg-gray-800 dark:border-gray-700"
-          disabled={isSpecialAssociationField}
+          disabled={isAssociationField}
         />
         <p className="text-xs text-muted-foreground mt-1">
-          {isSpecialAssociationField ? (
+          {isAssociationField ? (
             <span className="flex items-center gap-1">
               <Key className="h-3 w-3" /> Association field
             </span>
@@ -60,7 +60,6 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
           onChange={e => onUpdateField(index, { label: e.target.value })}
           placeholder="e.g., Loyalty Points"
           className="dark:bg-gray-800 dark:border-gray-700"
-          disabled={isSpecialAssociationField ? false : false}
         />
         <p className="text-xs text-muted-foreground mt-1">Shown to users</p>
       </div>
@@ -69,7 +68,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
         <Select
           value={field.type}
           onValueChange={value => {
-            if (isSpecialAssociationField && value !== "text" && value !== "number") return;
+            if (isAssociationField && value !== "text" && value !== "number") return;
             
             const updates: Partial<CustomField> = { 
               type: value as "text" | "date" | "number" | "select",
@@ -78,7 +77,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
             
             onUpdateField(index, updates);
           }}
-          disabled={isSpecialAssociationField ? false : false}
+          disabled={isAssociationField && category !== "Customer"}
         >
           <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
             <SelectValue placeholder="Select type" />
@@ -94,7 +93,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
       
       <div className="col-span-3">
         <div className="flex flex-col gap-2">
-          {isSpecialAssociationField ? (
+          {isAssociationField ? (
             <div className="flex items-center gap-2">
               <Switch
                 id={`use-association-${index}`}
@@ -115,7 +114,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
             </div>
           )}
           
-          {isSpecialAssociationField && (
+          {isAssociationField && category !== "Customer" && (
             <div className="flex items-center gap-2 mt-1">
               <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1">
                 <Key className="h-3 w-3" />

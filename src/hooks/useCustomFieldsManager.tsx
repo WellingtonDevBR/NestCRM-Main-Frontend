@@ -41,37 +41,42 @@ export function useCustomFieldsManager() {
         // Ensure association fields are properly set up for this category before setting fields
         const fieldsWithAssociations = category.fields ? 
           ensureAssociationFields(category.fields, activeCategory) : [];
+        console.log("useCustomFieldsManager > Fields with associations:", fieldsWithAssociations);
         
         dispatch({ type: 'SET_FIELDS', payload: fieldsWithAssociations });
         setInitialized(true);
       } else {
         // Initialize with default association fields if it's a Customer category
         if (activeCategory === "Customer") {
+          console.log("Initializing Customer with default association fields:", DEFAULT_ASSOCIATION_FIELDS);
           dispatch({ type: 'SET_FIELDS', payload: [...DEFAULT_ASSOCIATION_FIELDS] });
         } else {
           dispatch({ type: 'SET_FIELDS', payload: [] });
         }
+        setInitialized(true);
       }
     } else {
       console.log("useCustomFieldsManager > No categories data available");
       // Initialize with default association fields if it's a Customer category
       if (activeCategory === "Customer") {
+        console.log("Initializing Customer with default association fields (no categories):", DEFAULT_ASSOCIATION_FIELDS);
         dispatch({ type: 'SET_FIELDS', payload: [...DEFAULT_ASSOCIATION_FIELDS] });
       } else {
         dispatch({ type: 'SET_FIELDS', payload: [] });
       }
+      setInitialized(true);
     }
   }, [customFieldCategories, activeCategory]);
 
   // Update association fields when switching categories
   useEffect(() => {
     if (initialized && categoryFields.length > 0) {
-      console.log(`Checking association fields for ${activeCategory}`);
+      console.log(`Checking association fields for ${activeCategory}`, categoryFields);
       const updatedFields = ensureAssociationFields(categoryFields, activeCategory);
       
       // Only update if we actually need to change something
       if (JSON.stringify(updatedFields) !== JSON.stringify(categoryFields)) {
-        console.log(`Updating association fields for ${activeCategory}`);
+        console.log(`Updating association fields for ${activeCategory}`, updatedFields);
         dispatch({ type: 'SET_FIELDS', payload: updatedFields });
       }
     }
@@ -93,6 +98,7 @@ export function useCustomFieldsManager() {
   };
 
   const updateField = (index: number, updates: Partial<CustomField>) => {
+    console.log("Updating field", index, updates);
     dispatch({ 
       type: 'UPDATE_FIELD', 
       payload: { index, updates } 

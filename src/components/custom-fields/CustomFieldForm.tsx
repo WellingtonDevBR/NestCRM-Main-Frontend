@@ -35,8 +35,11 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
+  console.log("CustomFieldForm > All fields:", fields);
+  
   // Get association fields (id and email)
   const associationFields = fields.filter(field => field.isAssociationField === true);
+  console.log("CustomFieldForm > Association fields:", associationFields);
   
   // Regular custom fields (not association fields)
   const customFields = fields.filter(field => field.isAssociationField !== true);
@@ -56,17 +59,20 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
           </div>
           
           {/* Association fields first for all categories */}
-          {associationFields.length > 0 && associationFields.map((field, index) => (
-            <CustomFieldItem
-              key={`assoc-${field.key}`}
-              field={field}
-              index={fields.findIndex(f => f.key === field.key)}
-              onUpdateField={updateField}
-              onRemoveField={removeField}
-              category={activeCategory}
-              isAssociationField={true}
-            />
-          ))}
+          {associationFields.length > 0 && associationFields.map((field, index) => {
+            console.log("Rendering association field:", field);
+            return (
+              <CustomFieldItem
+                key={`assoc-${field.key}`}
+                field={field}
+                index={fields.findIndex(f => f.key === field.key)}
+                onUpdateField={updateField}
+                onRemoveField={removeField}
+                category={activeCategory}
+                isAssociationField={true}
+              />
+            );
+          })}
           
           {/* Separator between association fields and custom fields */}
           {associationFields.length > 0 && customFields.length > 0 && (

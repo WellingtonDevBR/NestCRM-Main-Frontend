@@ -22,6 +22,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
 
   // Get association fields for all categories
   const associationFields = categoryFields.filter(field => field.isAssociationField === true);
+  console.log("CategoryForm > associationFields:", associationFields);
 
   // Check if any association field is marked for use as association
   const hasAssociationFieldForUse = associationFields.some(field => field.useAsAssociation === true);
