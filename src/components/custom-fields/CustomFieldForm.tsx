@@ -1,34 +1,30 @@
 
 import React from "react";
-import { Plus, Trash2, Link2, Key } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomField, ASSOCIATION_FIELD_KEYS } from "@/domain/models/customField";
 import CustomFieldItem from "./CustomFieldItem";
 import NoCustomFields from "./NoCustomFields";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useCustomFieldsContext } from "@/context/CustomFieldsContext";
 
 interface CustomFieldFormProps {
-  fields: CustomField[];
-  isLoading: boolean;
-  isUpdating: boolean;
-  onAddField: () => void;
-  onRemoveField: (index: number) => void;
-  onUpdateField: (index: number, updates: Partial<CustomField>) => void;
-  onSubmit: (e: React.FormEvent) => Promise<void>;
   activeCategory?: string;
 }
 
 const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
-  fields,
-  isLoading,
-  isUpdating,
-  onAddField,
-  onRemoveField,
-  onUpdateField,
-  onSubmit,
   activeCategory = "Customer"
 }) => {
+  const {
+    categoryFields: fields,
+    isLoading,
+    isUpdating,
+    addField,
+    removeField,
+    updateField,
+    handleSubmit
+  } = useCustomFieldsContext();
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -48,42 +44,9 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   const customFields = fields.filter(field => !field.isAssociationField);
   
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      {activeCategory === "Customer" && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
-          <div className="flex gap-2">
-            <div className="text-sm text-amber-800 dark:text-amber-200">
-              Customer ID, Name, Email, and Phone are built-in fields. These core fields are used throughout the CRM to identify and link customer data.
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {activeCategory !== "Customer" && (
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 mb-4">
-          <div className="flex gap-2">
-            <div className="text-sm text-blue-800 dark:text-blue-200">
-              <p><strong>Association Fields:</strong> Customer ID and Email fields are automatically included to link {activeCategory} data back to customers.</p>
-              <p className="mt-1">At least one of these fields (Customer ID or Email) must be present and filled when creating {activeCategory} records to maintain consistent data relationships across the CRM.</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {activeCategory !== "Customer" && associationFields.length > 0 && (
-        <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-          <AlertTitle className="text-green-800 dark:text-green-200">
-            <Key className="inline h-4 w-4 mr-2" />
-            Association fields configured
-          </AlertTitle>
-          <AlertDescription className="text-green-700 dark:text-green-300">
-            {associationFields.map(field => field.label).join(" and ")} {associationFields.length === 1 ? "is" : "are"} being used to link {activeCategory} records to customers
-          </AlertDescription>
-        </Alert>
-      )}
-      
+    <form onSubmit={handleSubmit} className="space-y-6">
       {fields.length === 0 ? (
-        <NoCustomFields onAddField={onAddField} />
+        <NoCustomFields onAddField={addField} />
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-12 gap-4 px-4 pb-2 text-sm font-medium text-muted-foreground">
@@ -100,8 +63,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
               key={`assoc-${field.key}`}
               field={field}
               index={fields.findIndex(f => f.key === field.key)}
-              onUpdateField={onUpdateField}
-              onRemoveField={onRemoveField}
+              onUpdateField={updateField}
+              onRemoveField={removeField}
               category={activeCategory}
               isAssociationField={true}
             />
@@ -127,8 +90,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
               key={index}
               field={field}
               index={fields.findIndex(f => f === field)}
-              onUpdateField={onUpdateField}
-              onRemoveField={onRemoveField}
+              onUpdateField={updateField}
+              onRemoveField={removeField}
               category={activeCategory}
             />
           ))}
@@ -137,7 +100,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
 
       {fields.length > 0 && (
         <div className="flex items-center justify-between pt-4 border-t dark:border-gray-700">
-          <Button type="button" variant="outline" onClick={onAddField} className="gap-1 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+          <Button type="button" variant="outline" onClick={addField} className="gap-1 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
             <Plus className="h-4 w-4" />
             Add Another Field
           </Button>
