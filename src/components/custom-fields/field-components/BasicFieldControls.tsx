@@ -95,11 +95,10 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
               id={`required-${index}`}
               checked={field.required}
               onCheckedChange={checked => onUpdateField(index, { required: checked })}
-              disabled={isSpecialAssociationField && field.key === "customer_id"}
             />
             <Label htmlFor={`required-${index}`} className="cursor-pointer">Required field</Label>
-            {isSpecialAssociationField && field.key === "customer_id" && (
-              <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Always Required</Badge>
+            {isSpecialAssociationField && (
+              <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Association Field</Badge>
             )}
           </div>
           
