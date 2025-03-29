@@ -20,10 +20,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
     handleSubmit 
   } = useCustomFieldsContext();
 
-  // Get association fields if we're not in the Customer category
-  const associationFields = activeCategory !== "Customer" 
-    ? categoryFields.filter(field => field.isAssociationField)
-    : [];
+  // Get association fields for all categories
+  const associationFields = categoryFields.filter(field => field.isAssociationField);
 
   // Check if any association field is required
   const hasRequiredAssociationField = associationFields.some(field => field.required);
@@ -61,6 +59,19 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
           </AlertTitle>
           <AlertDescription className="text-green-700 dark:text-green-300">
             {associationFields.filter(field => field.required).map(field => field.label).join(" and ")} {associationFields.filter(field => field.required).length === 1 ? "is" : "are"} being used to link {activeCategory} records to customers
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {/* For Customer category, show confirmation if association fields exist */}
+      {activeCategory === "Customer" && associationFields.length > 0 && (
+        <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+          <AlertTitle className="text-green-800 dark:text-green-200">
+            <Key className="inline h-4 w-4 mr-2" />
+            Association fields available
+          </AlertTitle>
+          <AlertDescription className="text-green-700 dark:text-green-300">
+            Customer ID and Email fields are available as association fields for other modules to link back to customers
           </AlertDescription>
         </Alert>
       )}

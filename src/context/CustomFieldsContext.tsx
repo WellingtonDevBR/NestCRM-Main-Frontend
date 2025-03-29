@@ -55,25 +55,25 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [customFieldCategories, activeCategory]);
 
-  // Ensure association fields are present in each category
+  // Ensure association fields are present in each category, including Customer
   useEffect(() => {
-    if (activeCategory !== "Customer") {
-      // For non-Customer categories, ensure association fields exist
-      const missingAssociationFields = DEFAULT_ASSOCIATION_FIELDS.filter(defaultField => 
-        !categoryFields.some(field => field.key === defaultField.key)
-      );
+    // For all categories, ensure association fields exist
+    const missingAssociationFields = DEFAULT_ASSOCIATION_FIELDS.filter(defaultField => 
+      !categoryFields.some(field => field.key === defaultField.key)
+    );
+    
+    if (missingAssociationFields.length > 0) {
+      // For Customer category, add association fields but don't require them by default
+      // For other categories, require at least one
+      const updatedFields = [
+        ...missingAssociationFields.map(field => ({
+          ...field,
+          required: activeCategory !== "Customer" ? field.key === "customer_id" : false
+        })),
+        ...categoryFields
+      ];
       
-      if (missingAssociationFields.length > 0) {
-        const updatedFields = [
-          ...missingAssociationFields.map(field => ({
-            ...field,
-            required: false // Make both fields optional, but at least one must be used
-          })),
-          ...categoryFields
-        ];
-        
-        setCategoryFields(updatedFields);
-      }
+      setCategoryFields(updatedFields);
     }
   }, [activeCategory, categoryFields]);
 

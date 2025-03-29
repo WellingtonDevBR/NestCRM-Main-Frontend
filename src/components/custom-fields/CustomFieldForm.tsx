@@ -35,10 +35,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
-  // Get association fields if we're not in the Customer category
-  const associationFields = activeCategory !== "Customer" 
-    ? fields.filter(field => field.isAssociationField)
-    : [];
+  // Get association fields for all categories
+  const associationFields = fields.filter(field => field.isAssociationField);
   
   // Regular custom fields (not association fields)
   const customFields = fields.filter(field => !field.isAssociationField);
@@ -57,8 +55,8 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
             <div className="col-span-1"></div>
           </div>
           
-          {/* Association fields first if this is not the Customer category */}
-          {activeCategory !== "Customer" && associationFields.map((field, index) => (
+          {/* Association fields first for all categories */}
+          {associationFields.map((field, index) => (
             <CustomFieldItem
               key={`assoc-${field.key}`}
               field={field}
@@ -71,7 +69,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
           ))}
           
           {/* Separator between association fields and custom fields */}
-          {activeCategory !== "Customer" && associationFields.length > 0 && customFields.length > 0 && (
+          {associationFields.length > 0 && customFields.length > 0 && (
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t dark:border-gray-700"></span>
