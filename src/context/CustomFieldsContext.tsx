@@ -55,7 +55,7 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
   }, [customFieldCategories, activeCategory]);
 
-  // Ensure association fields are present in each category, including Customer
+  // Ensure association fields are present in each category
   useEffect(() => {
     // For all categories, ensure association fields exist
     const missingAssociationFields = DEFAULT_ASSOCIATION_FIELDS.filter(defaultField => 
@@ -147,11 +147,38 @@ export const CustomFieldsProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setIsUpdating(true);
       console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
       
-      // Send the complete payload with category and all fields
-      const validFields = categoryFields.filter(field => field.key && field.label);
+      // Only include fields that are explicitly defined by the user
+      // For association fields, only include them if they have been explicitly viewed/configured
+      const fieldsToSave = categoryFields.filter(field => {
+        // Always include regular custom fields that have both key and label
+        if (!field.isAssociationField && field.key && field.label) {
+          return true;
+        }
+        
+        // For association fields, only include if they have been explicitly set with useAsAssociation
+        if (field.isAssociationField) {
+          return field.useAsAssociation === true;
+        }
+        
+        return false;
+      });
+      
+      // Ensure we're including at least one association field
+      const includesAssociationField = fieldsToSave.some(field => field.isAssociationField && field.useAsAssociation);
+      
+      if (!includesAssociationField) {
+        // Add the first association field that's marked for use
+        const defaultAssociationField = categoryFields.find(field => field.isAssociationField && field.useAsAssociation);
+        if (defaultAssociationField) {
+          fieldsToSave.push(defaultAssociationField);
+        }
+      }
+      
+      console.log(`Fields to save for ${activeCategory}:`, fieldsToSave);
+      
       await updateCategoryFields({
         category: activeCategory,
-        fields: validFields
+        fields: fieldsToSave
       });
       
       toast.success(`${activeCategory} fields updated successfully`);
