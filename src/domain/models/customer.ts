@@ -35,7 +35,10 @@ export interface CustomerApiResponse {
   Email?: string;
   Phone?: string;
   CreatedAt: string;
-  CustomFields: {
+  CustomFields?: {
+    [key: string]: string | number | null;
+  };
+  customFields?: {
     [key: string]: string | number | null;
   };
   associations?: CustomerAssociations;

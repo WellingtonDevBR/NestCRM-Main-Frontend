@@ -50,14 +50,14 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
     if (customers) {
       console.log("CustomersTable - All customers:", customers);
       
-      // Ensure customers have all necessary custom fields
-      const processedCustomers = customers.map(customer => {
-        console.log(`Processing customer ${customer.id}:`, customer);
-        return customer;
+      // Log the full structure of each customer for debugging
+      customers.forEach((customer, index) => {
+        console.log(`Customer ${index + 1} (${customer.id}):`, customer);
+        console.log(`Customer ${index + 1} customFields:`, customer.customFields);
       });
       
       setFilteredCustomers(
-        processedCustomers.filter((customer) => {
+        customers.filter((customer) => {
           const searchTermLower = searchTerm.toLowerCase();
           // Safely check name and email properties
           const nameMatch = customer.name ? customer.name.toLowerCase().includes(searchTermLower) : false;
@@ -81,6 +81,11 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   useEffect(() => {
     if (visibleCustomFields?.length) {
       console.log("CustomersTable - Setting up column visibility for fields:", visibleCustomFields);
+      
+      // Log each field's key and label for debugging
+      visibleCustomFields.forEach(field => {
+        console.log(`Field configuration - key: "${field.key}", label: "${field.label}"`);
+      });
       
       const customFieldVisibility: Record<string, boolean> = {};
       visibleCustomFields.forEach(field => {

@@ -39,18 +39,18 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
   console.log("CustomerTableRow - customer.customFields:", customer.customFields);
   console.log("CustomerTableRow - visible columns:", visibleColumns);
   console.log("CustomerTableRow - custom fields:", customFields);
-  console.log("CustomerTableRow - visible fields:", visibleFields);
-
+  
   return (
     <TableRow key={customer.id}>
       {/* Custom fields from settings */}
       {visibleFields.map(field => {
         const isVisible = visibleColumns[field.key];
-        // Use the field.key to access data from customer.customFields
+        
+        // Important: We use field.key to access the data from customer.customFields
         const fieldValue = customer.customFields ? customer.customFields[field.key] : null;
         
-        console.log(`Field ${field.key} (${field.label}) visibility:`, isVisible);
-        console.log(`Field ${field.key} (${field.label}) value:`, fieldValue);
+        console.log(`Row rendering - Field ${field.key} (display label: "${field.label}") visibility:`, isVisible);
+        console.log(`Row rendering - Field ${field.key} value:`, fieldValue);
         
         return isVisible ? (
           <TableCell key={field.key}>

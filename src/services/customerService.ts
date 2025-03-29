@@ -13,12 +13,25 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     email: apiCustomer.Email || "",
     phone: apiCustomer.Phone || "",
     createdAt: apiCustomer.CreatedAt,
-    customFields: {...(apiCustomer.CustomFields || {})}
+    customFields: {}
   };
   
-  // Ensure customFields is properly populated with all values from the API response
+  // First, copy all custom fields directly from the API response
+  if (apiCustomer.customFields) {
+    console.log("API provided customFields:", apiCustomer.customFields);
+    Object.assign(customer.customFields, apiCustomer.customFields);
+  }
+  
+  // For backward compatibility, check for the old structure with uppercase "CustomFields"
+  if (apiCustomer.CustomFields) {
+    console.log("API provided CustomFields (uppercase):", apiCustomer.CustomFields);
+    Object.assign(customer.customFields, apiCustomer.CustomFields);
+  }
+  
+  // Make sure association fields are included in customFields
   if (apiCustomer.associations) {
-    // Make sure association fields are included in customFields
+    console.log("API provided associations:", apiCustomer.associations);
+    
     if (apiCustomer.associations.customer_id && !customer.customFields.customer_id) {
       customer.customFields.customer_id = apiCustomer.associations.customer_id;
     }
@@ -33,17 +46,17 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     customer.customFields.customer_id = apiCustomer.CustomerID;
   }
   
-  // Add any regular fields to customFields for display consistency
-  if (apiCustomer.Name && !customer.customFields.Name) {
-    customer.customFields.Name = apiCustomer.Name;
+  // Add standard fields to customFields for consistent display in the table
+  if (apiCustomer.Name && !customer.customFields.name) {
+    customer.customFields.name = apiCustomer.Name;
   }
   
-  if (apiCustomer.Email && !customer.customFields.Email) {
-    customer.customFields.Email = apiCustomer.Email;
+  if (apiCustomer.Email && !customer.customFields.email) {
+    customer.customFields.email = apiCustomer.Email;
   }
   
-  if (apiCustomer.Phone && !customer.customFields.Phone) {
-    customer.customFields.Phone = apiCustomer.Phone;
+  if (apiCustomer.Phone && !customer.customFields.phone) {
+    customer.customFields.phone = apiCustomer.Phone;
   }
   
   console.log("Mapped to domain customer:", customer);
@@ -85,15 +98,15 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
   
   // Add standard fields only if they have values
   if (customerData.name) {
-    customFields.Name = customerData.name;
+    customFields.name = customerData.name;
   }
   
   if (customerData.email) {
-    customFields.Email = customerData.email;
+    customFields.email = customerData.email;
   }
   
   if (customerData.phone) {
-    customFields.Phone = customerData.phone;
+    customFields.phone = customerData.phone;
   }
   
   return {
