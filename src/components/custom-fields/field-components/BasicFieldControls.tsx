@@ -29,6 +29,10 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
   category = "Customer",
   isSpecialAssociationField = false
 }) => {
+  // Make sure we're using the correct value from the field
+  const isAssociationField = field.isAssociationField === true;
+  const useAsAssociation = field.useAsAssociation === true;
+
   return (
     <>
       <div className="col-span-3">
@@ -94,7 +98,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
             <div className="flex items-center gap-2">
               <Switch
                 id={`use-association-${index}`}
-                checked={field.useAsAssociation}
+                checked={useAsAssociation}
                 onCheckedChange={checked => onUpdateField(index, { useAsAssociation: checked })}
               />
               <Label htmlFor={`use-association-${index}`} className="cursor-pointer">Use as association</Label>

@@ -1,3 +1,4 @@
+
 import { CustomField, DEFAULT_ASSOCIATION_FIELDS } from "@/domain/models/customField";
 import { toast } from "sonner";
 
@@ -61,15 +62,27 @@ export const ensureAssociationFields = (
   const existingAssociationFields = fields.filter(field => field.isAssociationField);
   const existingKeys = new Set(existingAssociationFields.map(field => field.key));
   
+  // Create a map of existing association fields by key for easy lookup
+  const existingFieldMap = existingAssociationFields.reduce((map, field) => {
+    map[field.key] = field;
+    return map;
+  }, {} as Record<string, CustomField>);
+  
   // Always make sure BOTH customer_id and email association fields exist
   const fieldsToAdd = DEFAULT_ASSOCIATION_FIELDS
     .filter(defaultField => !existingKeys.has(defaultField.key))
-    .map(defaultField => ({
-      ...defaultField,
-      // Initialize useAsAssociation based on category and field
-      useAsAssociation: defaultField.key === "customer_id" || 
-                        (category === "Customer" && defaultField.key === "email")
-    }));
+    .map(defaultField => {
+      // For new fields we're adding, use the default initialization
+      return {
+        ...defaultField,
+        // Default: customer_id is always true for non-Customer categories
+        // For Customer category, follow the default setup based on what makes sense for the app
+        useAsAssociation: defaultField.key === "customer_id" && category !== "Customer"
+      };
+    });
+  
+  // For existing association fields, respect their current configuration
+  // and don't override their useAsAssociation value
   
   if (fieldsToAdd.length > 0) {
     return [...fieldsToAdd, ...fields];
