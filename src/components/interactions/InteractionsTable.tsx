@@ -26,32 +26,32 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
   
   // Get the interaction custom fields
   const interactionCustomFields = interactionFieldsData?.fields || [];
+  
+  // Filter out association fields that are not marked for use
+  const visibleInteractionFields = interactionCustomFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
 
   // Column visibility state - start with all custom fields visible
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize column visibility for custom fields
   useEffect(() => {
-    if (interactionCustomFields.length > 0) {
+    if (visibleInteractionFields.length > 0) {
       const customFieldVisibility: Record<string, boolean> = {};
-      interactionCustomFields.forEach(field => {
+      visibleInteractionFields.forEach(field => {
         customFieldVisibility[field.key] = true;
       });
       
       setColumnVisibility(customFieldVisibility);
     }
-  }, [interactionCustomFields]);
+  }, [visibleInteractionFields]);
 
   const toggleColumnVisibility = (column: string) => {
     setColumnVisibility(prev => ({
       ...prev,
       [column]: !prev[column]
     }));
-  };
-
-  // Function to get the custom field definition by key
-  const getFieldByKey = (key: string) => {
-    return interactionCustomFields.find(field => field.key === key);
   };
 
   if (isLoading || isLoadingInteractionFields) {
@@ -77,7 +77,7 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
       <div className="flex justify-end">
         <ColumnVisibilityDropdown
           columnVisibility={columnVisibility}
-          customFields={interactionCustomFields}
+          customFields={visibleInteractionFields}
           onToggleColumn={toggleColumnVisibility}
         />
       </div>
@@ -85,7 +85,7 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
         <TableHeader>
           <TableRow>
             {/* Render custom field headers dynamically */}
-            {interactionCustomFields.map(field => (
+            {visibleInteractionFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
           </TableRow>
@@ -94,7 +94,7 @@ const InteractionsTable: React.FC<InteractionsTableProps> = ({ interactions, isL
           {interactions.map((interaction) => (
             <TableRow key={interaction.id} className="cursor-pointer hover:bg-gray-50">
               {/* Render custom field values if present */}
-              {interactionCustomFields.map(field => (
+              {visibleInteractionFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
                     <DynamicFieldRenderer 

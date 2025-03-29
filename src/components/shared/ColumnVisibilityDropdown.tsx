@@ -31,6 +31,11 @@ const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
   onToggleColumn,
   basicColumns = [],
 }) => {
+  // Filter out association fields that are not marked for use
+  const visibleFields = customFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -55,13 +60,13 @@ const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
           ))}
           
           {/* Custom fields from settings */}
-          {customFields.length > 0 && basicColumns.length > 0 && <DropdownMenuSeparator />}
-          {customFields.length > 0 && (
+          {visibleFields.length > 0 && basicColumns.length > 0 && <DropdownMenuSeparator />}
+          {visibleFields.length > 0 && (
             <DropdownMenuLabel className="text-xs text-muted-foreground pt-2">
               Custom Fields
             </DropdownMenuLabel>
           )}
-          {customFields.map(field => (
+          {visibleFields.map(field => (
             <DropdownMenuCheckboxItem
               key={field.key}
               checked={columnVisibility[field.key]}

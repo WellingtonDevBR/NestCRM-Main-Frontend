@@ -15,6 +15,11 @@ const CustomerList: React.FC = () => {
   // Get the customer custom fields
   const customFields = customerFieldsData?.fields || [];
   
+  // Filter out association fields that are not marked for use
+  const visibleCustomFields = customFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
+  
   const {
     searchTerm,
     filterStatus,
@@ -28,15 +33,15 @@ const CustomerList: React.FC = () => {
 
   // Update column visibility when custom fields change
   useEffect(() => {
-    if (customFields?.length) {
+    if (visibleCustomFields?.length) {
       const customFieldsVisibility: Record<string, boolean> = {};
-      customFields.forEach(field => {
+      visibleCustomFields.forEach(field => {
         customFieldsVisibility[field.key] = true;
       });
       
       setColumnVisibility(customFieldsVisibility);
     }
-  }, [customFields]);
+  }, [visibleCustomFields]);
 
   const toggleColumnVisibility = (column: string) => {
     setColumnVisibility(prev => ({
@@ -71,7 +76,7 @@ const CustomerList: React.FC = () => {
           onFilterChange={handleStatusFilter}
           columnVisibility={columnVisibility}
           onToggleColumn={toggleColumnVisibility}
-          customFields={customFields || []}
+          customFields={visibleCustomFields || []}
         />
       </CardHeader>
       <CardContent>
@@ -80,7 +85,7 @@ const CustomerList: React.FC = () => {
             <thead>
               <tr className="border-b">
                 {/* Display custom field columns - only display if column visibility is enabled */}
-                {customFields?.map(field => 
+                {visibleCustomFields?.map(field => 
                   columnVisibility[field.key] && (
                     <th key={field.key} className="py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       {field.label}

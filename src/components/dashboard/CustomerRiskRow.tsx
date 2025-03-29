@@ -17,15 +17,15 @@ const CustomerRiskRow: React.FC<CustomerRiskRowProps> = ({
   columnVisibility,
   customFields 
 }) => {
-  // Function to get the custom field definition by key
-  const getFieldByKey = (key: string): CustomField | undefined => {
-    return customFields.find(field => field.key === key);
-  };
+  // Filter out association fields that are not marked for use
+  const visibleFields = customFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
 
   return (
     <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
       {/* Display custom field values based on visibility settings */}
-      {customFields.map(field => 
+      {visibleFields.map(field => 
         columnVisibility[field.key] && (
           <td key={field.key} className="py-4 text-sm">
             <DynamicFieldRenderer 

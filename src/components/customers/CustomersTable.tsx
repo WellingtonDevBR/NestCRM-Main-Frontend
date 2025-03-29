@@ -32,6 +32,11 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   // Get the customer custom fields
   const customFields = customerFieldsData?.fields || [];
   
+  // Filter out association fields that are not marked for use
+  const visibleCustomFields = customFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -65,15 +70,15 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
 
   // Initialize column visibility for custom fields from settings
   useEffect(() => {
-    if (customFields?.length) {
+    if (visibleCustomFields?.length) {
       const customFieldVisibility: Record<string, boolean> = {};
-      customFields.forEach(field => {
+      visibleCustomFields.forEach(field => {
         customFieldVisibility[field.key] = true;
       });
       
       setColumnVisibility(customFieldVisibility);
     }
-  }, [customFields]);
+  }, [visibleCustomFields]);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -132,7 +137,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
         <SearchInput searchTerm={searchTerm} onSearch={handleSearch} />
         <ColumnVisibilityDropdown 
           columnVisibility={columnVisibility}
-          customFields={customFields || []}
+          customFields={visibleCustomFields || []}
           onToggleColumn={toggleColumnVisibility}
         />
       </div>
@@ -142,7 +147,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
           <TableHeader>
             <TableRow>
               {/* Render custom field headers dynamically */}
-              {customFields?.map(field => 
+              {visibleCustomFields?.map(field => 
                 columnVisibility[field.key] && (
                   <TableHead key={field.key}>{field.label}</TableHead>
                 )

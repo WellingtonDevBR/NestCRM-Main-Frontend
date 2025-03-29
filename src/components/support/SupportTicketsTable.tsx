@@ -26,21 +26,26 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
   
   // Get the support custom fields
   const supportCustomFields = supportFieldsData?.fields || [];
+  
+  // Filter out association fields that are not marked for use
+  const visibleSupportFields = supportCustomFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
 
   // Column visibility state - start with all custom fields visible
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize column visibility for custom fields
   useEffect(() => {
-    if (supportCustomFields.length > 0) {
+    if (visibleSupportFields.length > 0) {
       const customFieldVisibility: Record<string, boolean> = {};
-      supportCustomFields.forEach(field => {
+      visibleSupportFields.forEach(field => {
         customFieldVisibility[field.key] = true;
       });
       
       setColumnVisibility(customFieldVisibility);
     }
-  }, [supportCustomFields]);
+  }, [visibleSupportFields]);
 
   const toggleColumnVisibility = (column: string) => {
     setColumnVisibility(prev => ({
@@ -73,7 +78,7 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
       <div className="flex justify-end">
         <ColumnVisibilityDropdown
           columnVisibility={columnVisibility}
-          customFields={supportCustomFields}
+          customFields={visibleSupportFields}
           onToggleColumn={toggleColumnVisibility}
         />
       </div>
@@ -81,7 +86,7 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
         <TableHeader>
           <TableRow>
             {/* Render custom field headers dynamically */}
-            {supportCustomFields.map(field => (
+            {visibleSupportFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
           </TableRow>
@@ -90,7 +95,7 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
           {tickets.map((ticket) => (
             <TableRow key={ticket.id} className="cursor-pointer hover:bg-gray-50">
               {/* Render custom field values if present */}
-              {supportCustomFields.map(field => (
+              {visibleSupportFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
                     <DynamicFieldRenderer 

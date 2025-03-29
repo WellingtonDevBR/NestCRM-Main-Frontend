@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Order } from "@/domain/models/order";
 import { useCustomFields } from "@/hooks/useCustomFields";
@@ -25,32 +26,32 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
   
   // Get the order custom fields
   const orderCustomFields = orderFieldsData?.fields || [];
+  
+  // Filter out association fields that are not marked for use
+  const visibleOrderFields = orderCustomFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
 
   // Column visibility state - start with all custom fields visible
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
   // Initialize column visibility for custom fields
   useEffect(() => {
-    if (orderCustomFields.length > 0) {
+    if (visibleOrderFields.length > 0) {
       const customFieldVisibility: Record<string, boolean> = {};
-      orderCustomFields.forEach(field => {
+      visibleOrderFields.forEach(field => {
         customFieldVisibility[field.key] = true;
       });
       
       setColumnVisibility(customFieldVisibility);
     }
-  }, [orderCustomFields]);
+  }, [visibleOrderFields]);
 
   const toggleColumnVisibility = (column: string) => {
     setColumnVisibility(prev => ({
       ...prev,
       [column]: !prev[column]
     }));
-  };
-
-  // Function to get the custom field definition by key
-  const getFieldByKey = (key: string) => {
-    return orderCustomFields.find(field => field.key === key);
   };
 
   if (isLoading || isLoadingOrderFields) {
@@ -77,7 +78,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
       <div className="flex justify-end">
         <ColumnVisibilityDropdown
           columnVisibility={columnVisibility}
-          customFields={orderCustomFields}
+          customFields={visibleOrderFields}
           onToggleColumn={toggleColumnVisibility}
         />
       </div>
@@ -85,7 +86,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
         <TableHeader>
           <TableRow>
             {/* Render custom field headers dynamically */}
-            {orderCustomFields.map(field => (
+            {visibleOrderFields.map(field => (
               columnVisibility[field.key] && <TableHead key={field.key}>{field.label}</TableHead>
             ))}
           </TableRow>
@@ -94,7 +95,7 @@ const OrdersTable: React.FC<OrdersTableProps> = ({ orders, isLoading }) => {
           {orders.map((order) => (
             <TableRow key={order.id} className="cursor-pointer hover:bg-gray-50">
               {/* Render custom field values if present */}
-              {orderCustomFields.map(field => (
+              {visibleOrderFields.map(field => (
                 columnVisibility[field.key] && (
                   <TableCell key={field.key}>
                     <DynamicFieldRenderer 

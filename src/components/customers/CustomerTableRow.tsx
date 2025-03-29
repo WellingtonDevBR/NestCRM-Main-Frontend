@@ -1,3 +1,4 @@
+
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -34,10 +35,15 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
     return customFields.find(field => field.key === key);
   };
 
+  // Filter out association fields that are not marked for use
+  const visibleFields = customFields.filter(field => 
+    !field.isAssociationField || field.useAsAssociation
+  );
+
   return (
     <TableRow key={customer.id}>
       {/* Custom fields from settings */}
-      {customFields.map(field => 
+      {visibleFields.map(field => 
         visibleColumns[field.key] && (
           <TableCell key={field.key}>
             <DynamicFieldRenderer 
