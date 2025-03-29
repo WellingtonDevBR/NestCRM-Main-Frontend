@@ -1,16 +1,21 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
 import SupportTicketsTable from "@/components/support/SupportTicketsTable";
+import SupportTicketDialog from "@/components/support/SupportTicketDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LifeBuoy, Filter, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { SupportTicket } from "@/domain/models/support";
 
 const Support: React.FC = () => {
   const { tickets, isLoading, refetch } = useSupportTickets();
+  const [open, setOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentTicket, setCurrentTicket] = useState<SupportTicket | null>(null);
 
   // Calculate metrics
   const openTickets = tickets.filter(ticket => ticket.status === 'open').length;
@@ -25,11 +30,23 @@ const Support: React.FC = () => {
     ? Math.round(((resolvedTickets + closedTickets) / tickets.length) * 100)
     : 0;
 
+  const handleAddNewTicket = () => {
+    setCurrentTicket(null);
+    setIsEditMode(false);
+    setOpen(true);
+  };
+
+  const handleEditTicket = (ticket: SupportTicket) => {
+    setCurrentTicket(ticket);
+    setIsEditMode(true);
+    setOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Support</h1>
-        <Button>
+        <Button onClick={handleAddNewTicket}>
           <LifeBuoy className="mr-2 h-4 w-4" />
           New Ticket
         </Button>
@@ -138,9 +155,20 @@ const Support: React.FC = () => {
           </Tabs>
         </CardHeader>
         <CardContent>
-          <SupportTicketsTable tickets={tickets} isLoading={isLoading} />
+          <SupportTicketsTable 
+            tickets={tickets} 
+            isLoading={isLoading} 
+            onEdit={handleEditTicket}
+          />
         </CardContent>
       </Card>
+
+      <SupportTicketDialog
+        open={open}
+        onOpenChange={setOpen}
+        isEditMode={isEditMode}
+        ticket={currentTicket}
+      />
     </div>
   );
 };

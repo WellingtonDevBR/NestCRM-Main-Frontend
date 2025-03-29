@@ -18,5 +18,45 @@ export const supportService = {
   getSupportTicketsByCustomerId: async (customerId: string): Promise<SupportTicket[]> => {
     // This would be replaced with an actual API call
     return [];
+  },
+
+  // Create a new support ticket
+  createSupportTicket: async (ticketData: any): Promise<SupportTicket> => {
+    // This would be replaced with an actual API call
+    console.log("Creating support ticket with data:", ticketData);
+    return {
+      id: "new-ticket-id",
+      customerId: ticketData.customerId,
+      customerName: ticketData.customerName,
+      ticketNumber: "T-" + Math.floor(Math.random() * 10000),
+      subject: ticketData.subject,
+      description: ticketData.description,
+      status: ticketData.status,
+      priority: ticketData.priority,
+      assignedTo: ticketData.assignedTo,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      customFields: ticketData.customFields
+    };
+  },
+
+  // Update an existing support ticket
+  updateSupportTicket: async (id: string, ticketData: any): Promise<SupportTicket> => {
+    // This would be replaced with an actual API call
+    console.log("Updating support ticket with ID:", id, "and data:", ticketData);
+    return {
+      id,
+      customerId: ticketData.customerId,
+      customerName: ticketData.customerName,
+      ticketNumber: ticketData.ticketNumber || "T-" + Math.floor(Math.random() * 10000),
+      subject: ticketData.subject,
+      description: ticketData.description,
+      status: ticketData.status,
+      priority: ticketData.priority,
+      assignedTo: ticketData.assignedTo,
+      createdAt: ticketData.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      customFields: ticketData.customFields
+    };
   }
 };

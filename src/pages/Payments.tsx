@@ -1,14 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { usePayments } from "@/hooks/usePayments";
 import PaymentsTable from "@/components/payments/PaymentsTable";
+import PaymentDialog from "@/components/payments/PaymentDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Filter, RefreshCw, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Payment } from "@/domain/models/payment";
 
 const Payments: React.FC = () => {
   const { payments, isLoading, refetch } = usePayments();
+  const [open, setOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentPayment, setCurrentPayment] = useState<Payment | null>(null);
 
   // Calculate total amount from completed payments
   const totalCompletedAmount = payments
@@ -23,11 +28,23 @@ const Payments: React.FC = () => {
     }).format(amount);
   };
 
+  const handleAddNewPayment = () => {
+    setCurrentPayment(null);
+    setIsEditMode(false);
+    setOpen(true);
+  };
+
+  const handleEditPayment = (payment: Payment) => {
+    setCurrentPayment(payment);
+    setIsEditMode(true);
+    setOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Payments</h1>
-        <Button>
+        <Button onClick={handleAddNewPayment}>
           <CreditCard className="mr-2 h-4 w-4" />
           Record Payment
         </Button>
@@ -104,9 +121,20 @@ const Payments: React.FC = () => {
           <CardTitle>Recent Payments</CardTitle>
         </CardHeader>
         <CardContent>
-          <PaymentsTable payments={payments} isLoading={isLoading} />
+          <PaymentsTable 
+            payments={payments} 
+            isLoading={isLoading} 
+            onEdit={handleEditPayment}
+          />
         </CardContent>
       </Card>
+
+      <PaymentDialog
+        open={open}
+        onOpenChange={setOpen}
+        isEditMode={isEditMode}
+        payment={currentPayment}
+      />
     </div>
   );
 };

@@ -1,9 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { SupportTicket } from "@/domain/models/support";
 import { supportService } from "@/services/supportService";
 
 export const useSupportTickets = () => {
+  const queryClient = useQueryClient();
+  
   const {
     data: tickets = [],
     isLoading,
@@ -14,11 +16,29 @@ export const useSupportTickets = () => {
     queryFn: supportService.getSupportTickets,
   });
 
+  const { mutateAsync: createTicket } = useMutation({
+    mutationFn: (ticketData: any) => 
+      supportService.createSupportTicket(ticketData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
+    }
+  });
+
+  const { mutateAsync: updateTicket } = useMutation({
+    mutationFn: ({ id, ...updateData }: { id: string } & any) => 
+      supportService.updateSupportTicket(id, updateData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
+    }
+  });
+
   return {
     tickets,
     isLoading,
     error,
     refetch,
+    createTicket,
+    updateTicket
   };
 };
 

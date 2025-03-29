@@ -1,20 +1,37 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useOrders } from "@/hooks/useOrders";
 import OrdersTable from "@/components/orders/OrdersTable";
+import OrderDialog from "@/components/orders/OrderDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, Filter, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Order } from "@/domain/models/order";
 
 const Orders: React.FC = () => {
   const { orders, isLoading, refetch } = useOrders();
+  const [open, setOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+
+  const handleAddNewOrder = () => {
+    setCurrentOrder(null);
+    setIsEditMode(false);
+    setOpen(true);
+  };
+
+  const handleEditOrder = (order: Order) => {
+    setCurrentOrder(order);
+    setIsEditMode(true);
+    setOpen(true);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Orders</h1>
-        <Button>
+        <Button onClick={handleAddNewOrder}>
           <ShoppingCart className="mr-2 h-4 w-4" />
           New Order
         </Button>
@@ -91,9 +108,20 @@ const Orders: React.FC = () => {
           <CardTitle>Recent Orders</CardTitle>
         </CardHeader>
         <CardContent>
-          <OrdersTable orders={orders} isLoading={isLoading} />
+          <OrdersTable 
+            orders={orders} 
+            isLoading={isLoading} 
+            onEdit={handleEditOrder}
+          />
         </CardContent>
       </Card>
+
+      <OrderDialog
+        open={open}
+        onOpenChange={setOpen}
+        isEditMode={isEditMode}
+        order={currentOrder}
+      />
     </div>
   );
 };

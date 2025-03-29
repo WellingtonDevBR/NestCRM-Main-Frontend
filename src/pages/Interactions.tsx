@@ -1,21 +1,38 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useInteractions } from "@/hooks/useInteractions";
 import InteractionsTable from "@/components/interactions/InteractionsTable";
+import InteractionDialog from "@/components/interactions/InteractionDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, Filter, RefreshCw, Mail, Phone, Users, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Interaction } from "@/domain/models/interaction";
 
 const Interactions: React.FC = () => {
   const { interactions, isLoading, refetch } = useInteractions();
+  const [open, setOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentInteraction, setCurrentInteraction] = useState<Interaction | null>(null);
+
+  const handleAddNewInteraction = () => {
+    setCurrentInteraction(null);
+    setIsEditMode(false);
+    setOpen(true);
+  };
+
+  const handleEditInteraction = (interaction: Interaction) => {
+    setCurrentInteraction(interaction);
+    setIsEditMode(true);
+    setOpen(true);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Interactions</h1>
-        <Button>
+        <Button onClick={handleAddNewInteraction}>
           <MessageSquare className="mr-2 h-4 w-4" />
           Log Interaction
         </Button>
@@ -104,9 +121,20 @@ const Interactions: React.FC = () => {
           </Tabs>
         </CardHeader>
         <CardContent>
-          <InteractionsTable interactions={interactions} isLoading={isLoading} />
+          <InteractionsTable 
+            interactions={interactions} 
+            isLoading={isLoading} 
+            onEdit={handleEditInteraction}
+          />
         </CardContent>
       </Card>
+
+      <InteractionDialog
+        open={open}
+        onOpenChange={setOpen}
+        isEditMode={isEditMode}
+        interaction={currentInteraction}
+      />
     </div>
   );
 };
