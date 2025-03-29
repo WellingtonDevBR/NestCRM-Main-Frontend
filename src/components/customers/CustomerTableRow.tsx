@@ -39,20 +39,29 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
   const visibleFields = customFields.filter(field => 
     !field.isAssociationField || field.useAsAssociation
   );
+  
+  console.log("CustomerTableRow - customer data:", customer);
+  console.log("CustomerTableRow - visible columns:", visibleColumns);
+  console.log("CustomerTableRow - custom fields:", customFields);
+  console.log("CustomerTableRow - visible fields:", visibleFields);
 
   return (
     <TableRow key={customer.id}>
       {/* Custom fields from settings */}
-      {visibleFields.map(field => 
-        visibleColumns[field.key] && (
+      {visibleFields.map(field => {
+        const isVisible = visibleColumns[field.key];
+        console.log(`Field ${field.key} visibility:`, isVisible);
+        console.log(`Field ${field.key} value:`, customer.customFields?.[field.key]);
+        
+        return isVisible ? (
           <TableCell key={field.key}>
             <DynamicFieldRenderer 
               value={customer.customFields?.[field.key]} 
               uiConfig={field.uiConfig}
             />
           </TableCell>
-        )
-      )}
+        ) : null;
+      })}
       
       <TableCell className="text-right">
         <DropdownMenu>

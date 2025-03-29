@@ -14,6 +14,23 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     customFields: apiCustomer.CustomFields || {}
   };
   
+  // Ensure customFields is properly populated with all values from the API response
+  if (apiCustomer.associations) {
+    // Make sure association fields are included in customFields
+    if (apiCustomer.associations.customer_id && !customer.customFields.customer_id) {
+      customer.customFields.customer_id = apiCustomer.associations.customer_id;
+    }
+    
+    if (apiCustomer.associations.email && !customer.customFields.email) {
+      customer.customFields.email = apiCustomer.associations.email;
+    }
+  }
+  
+  // If CustomerID is not in customFields, add it with the key "customer_id"
+  if (apiCustomer.CustomerID && !customer.customFields.customer_id) {
+    customer.customFields.customer_id = apiCustomer.CustomerID;
+  }
+  
   return customer;
 };
 
@@ -74,6 +91,7 @@ export const customerService = {
   getCustomers: async (): Promise<Customer[]> => {
     try {
       const response = await api.get<CustomerApiResponse[]>("/customer");
+      console.log("API response from GET /customer:", response);
       return response.map(mapFromApiResponse);
     } catch (err) {
       console.error("Error fetching customers:", err);

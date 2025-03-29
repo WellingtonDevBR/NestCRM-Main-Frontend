@@ -23,7 +23,7 @@ export interface Customer {
   email: string;
   phone: string;
   createdAt: string;
-  customFields?: {
+  customFields: {
     [key: string]: string | number | null;
   };
 }
@@ -31,13 +31,14 @@ export interface Customer {
 // API interfaces to match the server response format
 export interface CustomerApiResponse {
   CustomerID: string;
-  Name: string;
-  Email: string;
-  Phone: string;
+  Name?: string;
+  Email?: string;
+  Phone?: string;
   CreatedAt: string;
   CustomFields: {
     [key: string]: string | number | null;
   };
+  associations?: CustomerAssociations;
 }
 
 export interface CustomerAssociations {

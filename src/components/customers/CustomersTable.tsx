@@ -45,8 +45,11 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   // Column visibility state - start with all custom fields visible
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
 
+  // Process customers data when it's loaded
   useEffect(() => {
     if (customers) {
+      console.log("CustomersTable - All customers:", customers);
+      
       setFilteredCustomers(
         customers.filter((customer) => {
           const searchTermLower = searchTerm.toLowerCase();
@@ -71,6 +74,8 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   // Initialize column visibility for custom fields from settings
   useEffect(() => {
     if (visibleCustomFields?.length) {
+      console.log("CustomersTable - Setting up column visibility for fields:", visibleCustomFields);
+      
       const customFieldVisibility: Record<string, boolean> = {};
       visibleCustomFields.forEach(field => {
         customFieldVisibility[field.key] = true;
@@ -130,6 +135,10 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
       </div>
     );
   }
+
+  console.log("CustomersTable - Filtered customers:", filteredCustomers);
+  console.log("CustomersTable - Column visibility:", columnVisibility);
+  console.log("CustomersTable - Visible custom fields:", visibleCustomFields);
 
   return (
     <div className="space-y-4">
