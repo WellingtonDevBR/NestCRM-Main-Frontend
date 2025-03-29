@@ -18,17 +18,18 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
 const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, customerEmail?: string): CustomerApiRequest => {
   const associations: CustomerAssociations = {};
   
-  // Check for "Customer ID" in customFields and add to associations
-  if (customerData.customFields["Customer ID"]) {
-    associations.customer_id = String(customerData.customFields["Customer ID"]);
+  // Check for appropriate fields in customFields and add to associations
+  // Look for the key "customer_id" and its value in customFields
+  if (customerData.customFields["customer_id"]) {
+    associations.customer_id = String(customerData.customFields["customer_id"]);
   } else if (customerId) {
     // Fallback to passed customerId parameter if available
     associations.customer_id = customerId;
   }
   
-  // Check for "Email" in customFields and add to associations
-  if (customerData.customFields["Email"]) {
-    associations.email = String(customerData.customFields["Email"]);
+  // Check for "email" in customFields and add to associations
+  if (customerData.customFields["email"]) {
+    associations.email = String(customerData.customFields["email"]);
   } else if (customerData.email) {
     // Fallback to direct email field if available
     associations.email = customerData.email;

@@ -55,9 +55,9 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       
       associationFields.forEach(field => {
         if (field.type === 'number') {
-          initialCustomFields[field.label] = null;
+          initialCustomFields[field.key] = null;
         } else {
-          initialCustomFields[field.label] = "";
+          initialCustomFields[field.key] = "";
         }
       });
       
@@ -77,7 +77,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       ...prev,
       customFields: {
         ...prev.customFields,
-        [field.label]: processedValue
+        [field.key]: processedValue
       }
     }));
   };
@@ -92,7 +92,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     );
     
     const missingAssociations = associationFields.filter(field => {
-      const value = formData.customFields[field.label];
+      const value = formData.customFields[field.key];
       return value === undefined || value === null || value === "";
     });
     
@@ -105,10 +105,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
     try {
       // Use only the fields that are defined in the custom fields configuration
       const validCustomFields = { ...formData.customFields };
-      const validFieldLabels = customerFields.map(field => field.label);
+      const validFieldKeys = customerFields.map(field => field.key);
       
       Object.keys(validCustomFields).forEach(key => {
-        if (!validFieldLabels.includes(key)) {
+        if (!validFieldKeys.includes(key)) {
           delete validCustomFields[key];
         }
       });

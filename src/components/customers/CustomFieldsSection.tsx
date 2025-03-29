@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -43,7 +42,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
   }
   
   const renderField = (field: CustomField) => {
-    const value = formData.customFields[field.label] ?? "";
+    const value = formData.customFields[field.key] ?? "";
     const isAssociationField = field.isAssociationField === true;
     
     const inputClassName = isAssociationField 
@@ -72,7 +71,6 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
     
     const fieldProps = getFieldProps(field, value, onFieldChange);
     
-    // Fixed: Safely handle className
     return (
       <Input 
         {...fieldProps}
