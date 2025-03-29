@@ -18,16 +18,23 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
 const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, customerEmail?: string): CustomerApiRequest => {
   const associations: CustomerAssociations = {};
   
-  // Add customer_id to associations if available
-  if (customerId) {
+  // Check for "Customer ID" in customFields and add to associations
+  if (customerData.customFields["Customer ID"]) {
+    associations.customer_id = String(customerData.customFields["Customer ID"]);
+  } else if (customerId) {
+    // Fallback to passed customerId parameter if available
     associations.customer_id = customerId;
   }
   
-  // Add email to associations - Either from direct email field or from customFields
-  if (customerEmail) {
-    associations.email = customerEmail;
+  // Check for "Email" in customFields and add to associations
+  if (customerData.customFields["Email"]) {
+    associations.email = String(customerData.customFields["Email"]);
   } else if (customerData.email) {
+    // Fallback to direct email field if available
     associations.email = customerData.email;
+  } else if (customerEmail) {
+    // Fallback to passed customerEmail parameter if available
+    associations.email = customerEmail;
   }
   
   // Extract basic information into customFields
@@ -60,6 +67,7 @@ export const customerService = {
   createCustomer: async (newCustomer: CustomerFormData): Promise<Customer> => {
     try {
       const apiRequest = mapToApiRequest(newCustomer);
+      console.log("Customer create request payload:", apiRequest);
       const response = await api.post<CustomerApiResponse>("/customer", apiRequest);
       return mapFromApiResponse(response);
     } catch (err) {
@@ -72,6 +80,7 @@ export const customerService = {
   updateCustomer: async (id: string, updateData: CustomerFormData): Promise<Customer> => {
     try {
       const apiRequest = mapToApiRequest(updateData, id);
+      console.log("Customer update request payload:", apiRequest);
       const response = await api.put<CustomerApiResponse>(`/customer/${id}`, apiRequest);
       return mapFromApiResponse(response);
     } catch (err) {
