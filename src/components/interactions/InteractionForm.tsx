@@ -1,27 +1,13 @@
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useInteractions } from "@/hooks/useInteractions";
 import { Interaction, InteractionApiRequest } from "@/domain/models/interaction";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import FormActions from "../shared/FormActions";
+import { useEntityCustomFields } from "@/hooks/useEntityCustomFields";
+import EntityCustomFieldsSection from "@/components/shared/EntityCustomFieldsSection";
 
 interface InteractionFormProps {
   isEditMode: boolean;
@@ -36,49 +22,113 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
   onCancel,
   onSuccess,
 }) => {
-  const { createInteraction } = useInteractions();
+  const { createInteraction, updateInteraction } = useInteractions();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fields: interactionFields, isLoading: isLoadingFields } = useEntityCustomFields("Interaction");
 
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      customerId: interaction?.customerId || "",
-      customerName: interaction?.customerName || "",
       type: (interaction?.type as string) || "email",
       subject: interaction?.subject || "",
       content: interaction?.content || "",
       status: (interaction?.status as string) || "open",
-      assignedTo: interaction?.assignedTo || "",
       duration: interaction?.duration || 0,
+      assignedTo: interaction?.assignedTo || "",
       agentName: interaction?.agentName || "",
       customFields: interaction?.customFields || {}
     }
   });
 
+  // Initialize association fields with default values if creating a new interaction
+  useEffect(() => {
+    if (!isEditMode) {
+      const associationFields = interactionFields.filter(f => 
+        f.isAssociationField === true && 
+        f.useAsAssociation === true
+      );
+      
+      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      
+      associationFields.forEach(field => {
+        if (!initialCustomFields[field.key]) {
+          if (field.type === 'number') {
+            initialCustomFields[field.key] = null;
+          } else {
+            initialCustomFields[field.key] = "";
+          }
+        }
+      });
+      
+      form.setValue("customFields", initialCustomFields);
+    }
+  }, [interactionFields, isEditMode, form]);
+
+  // Set form values from interaction if in edit mode
+  useEffect(() => {
+    if (isEditMode && interaction) {
+      // Reset form with interaction values
+      form.reset({
+        type: interaction.type,
+        subject: interaction.subject,
+        content: interaction.content,
+        status: interaction.status,
+        duration: interaction.duration || 0,
+        assignedTo: interaction.assignedTo || "",
+        agentName: interaction.agentName || "",
+        customFields: interaction.customFields || {}
+      });
+    }
+  }, [isEditMode, interaction, form]);
+
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      // Create associations object from custom fields
+      const associations: Record<string, string> = {};
+      
+      // Get association fields
+      const associationFields = interactionFields.filter(f => 
+        f.isAssociationField === true && 
+        f.useAsAssociation === true
+      );
+      
+      associationFields.forEach(field => {
+        if (data.customFields[field.key]) {
+          if (field.key === 'id') {
+            associations.id = String(data.customFields[field.key]);
+          } else if (field.key === 'email') {
+            associations.email = String(data.customFields[field.key]);
+          }
+        }
+      });
+      
       const interactionData: InteractionApiRequest = {
         customFields: data.customFields,
-        associations: {
-          id: data.customerId,
-          email: data.email
-        },
+        associations: associations,
         type: data.type as Interaction['type'],
         subject: data.subject,
         content: data.content,
         status: data.status as Interaction['status'],
-        assignedTo: data.assignedTo,
         duration: data.duration,
+        assignedTo: data.assignedTo,
         agentName: data.agentName
       };
 
-      await createInteraction(interactionData);
-      toast.success(isEditMode ? "Interaction updated successfully" : "Interaction logged successfully");
+      console.log("Submitting interaction data:", interactionData);
+
+      if (isEditMode && interaction) {
+        await updateInteraction({ id: interaction.id, ...interactionData });
+        toast.success("Interaction updated successfully");
+      } else {
+        await createInteraction(interactionData);
+        toast.success("Interaction created successfully");
+      }
+      
       onSuccess();
     } catch (error) {
       console.error("Error submitting interaction:", error);
-      toast.error(isEditMode ? "Failed to update interaction" : "Failed to log interaction");
+      toast.error(isEditMode ? "Failed to update interaction" : "Failed to create interaction");
     } finally {
       setIsSubmitting(false);
     }
@@ -88,153 +138,18 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
-          <FormField
-            control={form.control}
-            name="customerName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Customer name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="customerId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Customer ID</FormLabel>
-                <FormControl>
-                  <Input placeholder="Customer ID" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Interaction Type</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select interaction type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="email">Email</SelectItem>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="meeting">Meeting</SelectItem>
-                    <SelectItem value="note">Note</SelectItem>
-                    <SelectItem value="chat">Chat</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Subject</FormLabel>
-                <FormControl>
-                  <Input placeholder="Interaction subject" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Content</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    placeholder="Interaction details" 
-                    className="min-h-[100px]"
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="open">Open</SelectItem>
-                    <SelectItem value="closed">Closed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="assignedTo"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Assigned To</FormLabel>
-                <FormControl>
-                  <Input placeholder="Assigned agent/user" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <EntityCustomFieldsSection 
+            customFields={interactionFields}
+            form={form}
+            entityType="Interaction"
           />
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="bg-purple-600 hover:bg-purple-700"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : isEditMode ? "Update Interaction" : "Log Interaction"}
-          </Button>
-        </div>
+        <FormActions 
+          onCancel={onCancel} 
+          isSubmitting={isSubmitting} 
+          isEditMode={isEditMode} 
+        />
       </form>
     </Form>
   );

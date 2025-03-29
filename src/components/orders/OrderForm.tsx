@@ -1,13 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useOrders } from "@/hooks/useOrders";
 import { Order, OrderApiRequest } from "@/domain/models/order";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import CustomerInfoFields from "./form/CustomerInfoFields";
-import OrderStatusField from "./form/OrderStatusField";
-import OrderDetailsFields from "./form/OrderDetailsFields";
 import FormActions from "./form/FormActions";
+import { useEntityCustomFields } from "@/hooks/useEntityCustomFields";
+import EntityCustomFieldsSection from "@/components/shared/EntityCustomFieldsSection";
 
 interface OrderFormProps {
   isEditMode: boolean;
@@ -24,12 +24,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
 }) => {
   const { createOrder, updateOrder } = useOrders();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fields: orderFields, isLoading: isLoadingFields } = useEntityCustomFields("Order");
 
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      customerId: order?.customerId || "",
-      customerName: order?.customerName || "",
       status: (order?.status as string) || "pending",
       total: order?.total || 0,
       items: order?.items || [{ id: "1", productName: "", quantity: 1, unitPrice: 0, total: 0 }],
@@ -37,29 +36,87 @@ const OrderForm: React.FC<OrderFormProps> = ({
     }
   });
 
+  // Initialize association fields with default values if creating a new order
+  useEffect(() => {
+    if (!isEditMode) {
+      const associationFields = orderFields.filter(f => 
+        f.isAssociationField === true && 
+        f.useAsAssociation === true
+      );
+      
+      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      
+      associationFields.forEach(field => {
+        if (!initialCustomFields[field.key]) {
+          if (field.type === 'number') {
+            initialCustomFields[field.key] = null;
+          } else {
+            initialCustomFields[field.key] = "";
+          }
+        }
+      });
+      
+      form.setValue("customFields", initialCustomFields);
+    }
+  }, [orderFields, isEditMode, form]);
+
+  // Set form values from order if in edit mode
+  useEffect(() => {
+    if (isEditMode && order) {
+      // Reset form with order values
+      form.reset({
+        status: order.status,
+        total: order.total,
+        items: order.items,
+        customFields: order.customFields || {}
+      });
+    }
+  }, [isEditMode, order, form]);
+
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      // Create associations object from custom fields
+      const associations: Record<string, string> = {};
+      
+      // Get association fields
+      const associationFields = orderFields.filter(f => 
+        f.isAssociationField === true && 
+        f.useAsAssociation === true
+      );
+      
+      associationFields.forEach(field => {
+        if (data.customFields[field.key]) {
+          if (field.key === 'id') {
+            associations.id = String(data.customFields[field.key]);
+          } else if (field.key === 'email') {
+            associations.email = String(data.customFields[field.key]);
+          }
+        }
+      });
+      
       const orderData: OrderApiRequest = {
         customFields: data.customFields,
-        associations: {
-          id: data.customerId,
-          email: data.email
-        },
+        associations: associations,
         items: data.items,
         status: data.status as Order['status'],
         total: data.total
       };
 
+      console.log("Submitting order data:", orderData);
+
       if (isEditMode && order) {
         await updateOrder({ id: order.id, ...orderData });
+        toast.success("Order updated successfully");
       } else {
         await createOrder(orderData);
+        toast.success("Order created successfully");
       }
       
       onSuccess();
     } catch (error) {
       console.error("Error submitting order:", error);
+      toast.error(isEditMode ? "Failed to update order" : "Failed to create order");
     } finally {
       setIsSubmitting(false);
     }
@@ -69,10 +126,11 @@ const OrderForm: React.FC<OrderFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
-          <CustomerInfoFields form={form} />
-          <OrderStatusField form={form} />
-          <OrderDetailsFields form={form} />
-          {/* Additional fields can be added here */}
+          <EntityCustomFieldsSection 
+            customFields={orderFields}
+            form={form}
+            entityType="Order"
+          />
         </div>
 
         <FormActions 

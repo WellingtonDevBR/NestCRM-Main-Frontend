@@ -1,17 +1,13 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { usePayments } from "@/hooks/usePayments";
 import { Payment, PaymentApiRequest } from "@/domain/models/payment";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-
-// Import form section components
-import CustomerInfoFields from "./form/CustomerInfoFields";
-import OrderInfoFields from "./form/OrderInfoFields";
-import PaymentMethodFields from "./form/PaymentMethodFields";
-import PaymentDetailsFields from "./form/PaymentDetailsFields";
 import FormActions from "./form/FormActions";
+import { useEntityCustomFields } from "@/hooks/useEntityCustomFields";
+import EntityCustomFieldsSection from "@/components/shared/EntityCustomFieldsSection";
 
 interface PaymentFormProps {
   isEditMode: boolean;
@@ -28,14 +24,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 }) => {
   const { createPayment, updatePayment } = usePayments();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { fields: paymentFields, isLoading: isLoadingFields } = useEntityCustomFields("Payment");
 
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      customerId: payment?.customerId || "",
-      customerName: payment?.customerName || "",
-      orderId: payment?.orderId || "",
-      orderNumber: payment?.orderNumber || "",
       method: (payment?.method as string) || "credit_card",
       status: (payment?.status as string) || "pending",
       amount: payment?.amount || 0,
@@ -44,31 +37,94 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     }
   });
 
+  // Initialize association fields with default values if creating a new payment
+  useEffect(() => {
+    if (!isEditMode) {
+      const associationFields = paymentFields.filter(f => 
+        f.isAssociationField === true && 
+        f.useAsAssociation === true
+      );
+      
+      const initialCustomFields: Record<string, string | number | null> = { ...form.getValues("customFields") };
+      
+      associationFields.forEach(field => {
+        if (!initialCustomFields[field.key]) {
+          if (field.type === 'number') {
+            initialCustomFields[field.key] = null;
+          } else {
+            initialCustomFields[field.key] = "";
+          }
+        }
+      });
+      
+      form.setValue("customFields", initialCustomFields);
+    }
+  }, [paymentFields, isEditMode, form]);
+
+  // Set form values from payment if in edit mode
+  useEffect(() => {
+    if (isEditMode && payment) {
+      // Reset form with payment values
+      form.reset({
+        method: payment.method,
+        status: payment.status,
+        amount: payment.amount,
+        reference: payment.reference || "",
+        customFields: payment.customFields || {}
+      });
+    }
+  }, [isEditMode, payment, form]);
+
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      // Create associations object from custom fields
+      const associations: Record<string, string> = {};
+      
+      // Get association fields
+      const associationFields = paymentFields.filter(f => 
+        f.isAssociationField === true && 
+        f.useAsAssociation === true
+      );
+      
+      associationFields.forEach(field => {
+        if (data.customFields[field.key]) {
+          if (field.key === 'id') {
+            associations.id = String(data.customFields[field.key]);
+          } else if (field.key === 'email') {
+            associations.email = String(data.customFields[field.key]);
+          }
+        }
+      });
+      
+      // Add order_id if it exists in custom fields
+      if (data.customFields.order_id) {
+        associations.order_id = String(data.customFields.order_id);
+      }
+      
       const paymentData: PaymentApiRequest = {
         customFields: data.customFields,
-        associations: {
-          id: data.customerId,
-          email: data.email,
-          order_id: data.orderId
-        },
+        associations: associations,
         method: data.method as Payment['method'],
         status: data.status as Payment['status'],
         amount: data.amount,
         reference: data.reference
       };
 
+      console.log("Submitting payment data:", paymentData);
+
       if (isEditMode && payment) {
         await updatePayment({ id: payment.id, ...paymentData });
+        toast.success("Payment updated successfully");
       } else {
         await createPayment(paymentData);
+        toast.success("Payment created successfully");
       }
       
       onSuccess();
     } catch (error) {
       console.error("Error submitting payment:", error);
+      toast.error(isEditMode ? "Failed to update payment" : "Failed to create payment");
     } finally {
       setIsSubmitting(false);
     }
@@ -78,10 +134,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-5 py-4 max-h-[calc(80vh-180px)] overflow-y-auto pr-2">
-          <CustomerInfoFields form={form} />
-          <OrderInfoFields form={form} />
-          <PaymentMethodFields form={form} />
-          <PaymentDetailsFields form={form} />
+          <EntityCustomFieldsSection 
+            customFields={paymentFields}
+            form={form}
+            entityType="Payment"
+          />
         </div>
 
         <FormActions 

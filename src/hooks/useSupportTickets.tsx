@@ -1,107 +1,81 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { SupportTicket } from "@/domain/models/support";
-import { supportService } from "@/services/supportService";
 import { toast } from "sonner";
+import { supportService } from "@/services/supportService";
+import { SupportTicket, SupportTicketApiRequest } from "@/domain/models/support";
 
-export const useSupportTickets = () => {
+export function useSupportTickets() {
   const queryClient = useQueryClient();
   
-  const {
-    data: tickets = [],
-    isLoading,
-    error,
-    refetch,
+  // Fetch all support tickets
+  const { 
+    data: supportTickets = [], 
+    isLoading, 
+    error, 
+    refetch 
   } = useQuery({
-    queryKey: ["support-tickets"],
-    queryFn: supportService.getSupportTickets,
+    queryKey: ["supportTickets"],
+    queryFn: async () => {
+      try {
+        const tickets = await supportService.getSupportTickets();
+        console.log("Fetched support tickets:", tickets);
+        return tickets;
+      } catch (error) {
+        console.error("Error fetching support tickets:", error);
+        throw error;
+      }
+    }
   });
-
-  const { mutateAsync: createTicket, isPending: isCreating } = useMutation({
-    mutationFn: (ticketData: any) => 
-      supportService.createSupportTicket(ticketData),
+  
+  // Create a new support ticket
+  const { mutateAsync: createSupportTicket } = useMutation({
+    mutationFn: async (ticketData: SupportTicketApiRequest) => {
+      return await supportService.createSupportTicket(ticketData);
+    },
     onSuccess: () => {
-      toast.success("Support ticket created successfully");
-      queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["supportTickets"] });
     },
     onError: (error) => {
       console.error("Error creating support ticket:", error);
       toast.error("Failed to create support ticket");
     }
   });
-
-  const { mutateAsync: updateTicket, isPending: isUpdating } = useMutation({
-    mutationFn: ({ id, ...updateData }: { id: string } & any) => 
-      supportService.updateSupportTicket(id, updateData),
+  
+  // Update a support ticket
+  const { mutateAsync: updateSupportTicket } = useMutation({
+    mutationFn: async ({ id, ...ticketData }: SupportTicketApiRequest & { id: string }) => {
+      return await supportService.updateSupportTicket(id, ticketData);
+    },
     onSuccess: () => {
-      toast.success("Support ticket updated successfully");
-      queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["supportTickets"] });
     },
     onError: (error) => {
       console.error("Error updating support ticket:", error);
       toast.error("Failed to update support ticket");
     }
   });
-
-  const { mutateAsync: deleteTicket, isPending: isDeleting } = useMutation({
-    mutationFn: (id: string) => 
-      supportService.deleteSupportTicket(id),
+  
+  // Delete a support ticket
+  const { mutateAsync: deleteSupportTicket } = useMutation({
+    mutationFn: async (id: string) => {
+      return await supportService.deleteSupportTicket(id);
+    },
     onSuccess: () => {
-      toast.success("Support ticket deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ["support-tickets"] });
+      queryClient.invalidateQueries({ queryKey: ["supportTickets"] });
     },
     onError: (error) => {
       console.error("Error deleting support ticket:", error);
       toast.error("Failed to delete support ticket");
     }
   });
-
+  
   return {
-    tickets,
+    supportTickets,
     isLoading,
     error,
     refetch,
-    createTicket,
-    updateTicket,
-    deleteTicket,
-    isCreating,
-    isUpdating,
-    isDeleting
+    createSupportTicket,
+    updateSupportTicket,
+    deleteSupportTicket
   };
-};
-
-export const useSupportTicketById = (id: string) => {
-  const {
-    data: ticket,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["support-ticket", id],
-    queryFn: () => supportService.getSupportTicketById(id),
-    enabled: !!id,
-  });
-
-  return {
-    ticket,
-    isLoading,
-    error,
-  };
-};
-
-export const useSupportTicketsByCustomerId = (customerId: string) => {
-  const {
-    data: tickets = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["support-tickets", "customer", customerId],
-    queryFn: () => supportService.getSupportTicketsByCustomerId(customerId),
-    enabled: !!customerId,
-  });
-
-  return {
-    tickets,
-    isLoading,
-    error,
-  };
-};
+}

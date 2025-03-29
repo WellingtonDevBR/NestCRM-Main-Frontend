@@ -4,31 +4,17 @@ import { useSupportTickets } from "@/hooks/useSupportTickets";
 import SupportTicketsTable from "@/components/support/SupportTicketsTable";
 import SupportTicketDialog from "@/components/support/SupportTicketDialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LifeBuoy, Filter, RefreshCw, AlertCircle } from "lucide-react";
+import { TicketIcon, Filter, RefreshCw, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { SupportTicket } from "@/domain/models/support";
 
 const Support: React.FC = () => {
-  const { tickets, isLoading, refetch } = useSupportTickets();
+  const { supportTickets, isLoading, refetch } = useSupportTickets();
   const [open, setOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentTicket, setCurrentTicket] = useState<SupportTicket | null>(null);
-
-  // Calculate metrics
-  const openTickets = tickets.filter(ticket => ticket.status === 'open').length;
-  const inProgressTickets = tickets.filter(ticket => ticket.status === 'in_progress').length;
-  const resolvedTickets = tickets.filter(ticket => ticket.status === 'resolved').length;
-  const closedTickets = tickets.filter(ticket => ticket.status === 'closed').length;
-
-  const criticalTickets = tickets.filter(ticket => ticket.priority === 'critical').length;
-  const highPriorityTickets = tickets.filter(ticket => ticket.priority === 'high').length;
-
-  const resolvedPercentage = tickets.length > 0
-    ? Math.round(((resolvedTickets + closedTickets) / tickets.length) * 100)
-    : 0;
 
   const handleAddNewTicket = () => {
     setCurrentTicket(null);
@@ -45,10 +31,10 @@ const Support: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Support</h1>
+        <h1 className="text-3xl font-bold">Support Tickets</h1>
         <Button onClick={handleAddNewTicket}>
-          <LifeBuoy className="mr-2 h-4 w-4" />
-          New Ticket
+          <TicketIcon className="mr-2 h-4 w-4" />
+          New Support Ticket
         </Button>
       </div>
 
@@ -66,22 +52,28 @@ const Support: React.FC = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Resolution Rate
+              Total Tickets
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-2xl font-bold">{resolvedPercentage}%</span>
-                <span className="text-xs text-muted-foreground">
-                  {resolvedTickets + closedTickets} of {tickets.length} tickets
-                </span>
-              </div>
-              <Progress value={resolvedPercentage} className="h-2" />
+            <div className="text-2xl font-bold">{supportTickets.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Open
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center">
+            <AlertCircle className="mr-2 h-5 w-5 text-yellow-500" />
+            <div className="text-2xl font-bold">
+              {supportTickets.filter(ticket => ticket.status === 'open').length}
             </div>
           </CardContent>
         </Card>
@@ -89,53 +81,27 @@ const Support: React.FC = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Ticket Status
+              In Progress
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Open</span>
-                <span className="text-xl font-bold">{openTickets}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">In Progress</span>
-                <span className="text-xl font-bold">{inProgressTickets}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Resolved</span>
-                <span className="text-xl font-bold">{resolvedTickets}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs text-muted-foreground">Closed</span>
-                <span className="text-xl font-bold">{closedTickets}</span>
-              </div>
+          <CardContent className="flex items-center">
+            <RefreshCw className="mr-2 h-5 w-5 text-blue-500" />
+            <div className="text-2xl font-bold">
+              {supportTickets.filter(ticket => ticket.status === 'in_progress').length}
             </div>
           </CardContent>
         </Card>
 
-        <Card className={criticalTickets > 0 ? "border-red-200 bg-red-50" : ""}>
+        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className={`text-sm font-medium ${criticalTickets > 0 ? "text-red-800" : "text-muted-foreground"}`}>
-              High Priority Issues
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Resolved
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center">
-              {criticalTickets > 0 && (
-                <AlertCircle className="mr-2 h-5 w-5 text-red-500" />
-              )}
-              <div>
-                <div className="flex gap-1">
-                  <span className="text-2xl font-bold">{criticalTickets + highPriorityTickets}</span>
-                  <span className="text-sm self-end mb-1 text-muted-foreground">active</span>
-                </div>
-                {criticalTickets > 0 && (
-                  <p className="text-xs text-red-700">
-                    {criticalTickets} critical issues require immediate attention
-                  </p>
-                )}
-              </div>
+          <CardContent className="flex items-center">
+            <CheckCircle2 className="mr-2 h-5 w-5 text-green-500" />
+            <div className="text-2xl font-bold">
+              {supportTickets.filter(ticket => ticket.status === 'resolved').length}
             </div>
           </CardContent>
         </Card>
@@ -149,6 +115,7 @@ const Support: React.FC = () => {
               <TabsList>
                 <TabsTrigger value="all">All</TabsTrigger>
                 <TabsTrigger value="open">Open</TabsTrigger>
+                <TabsTrigger value="progress">In Progress</TabsTrigger>
                 <TabsTrigger value="resolved">Resolved</TabsTrigger>
               </TabsList>
             </div>
@@ -156,7 +123,7 @@ const Support: React.FC = () => {
         </CardHeader>
         <CardContent>
           <SupportTicketsTable 
-            tickets={tickets} 
+            tickets={supportTickets} 
             isLoading={isLoading} 
             onEdit={handleEditTicket}
           />

@@ -1,12 +1,6 @@
 
 import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Interaction } from "@/domain/models/interaction";
 import InteractionForm from "./InteractionForm";
 
@@ -17,31 +11,31 @@ interface InteractionDialogProps {
   interaction: Interaction | null;
 }
 
-const InteractionDialog: React.FC<InteractionDialogProps> = ({
-  open,
-  onOpenChange,
+const InteractionDialog: React.FC<InteractionDialogProps> = ({ 
+  open, 
+  onOpenChange, 
   isEditMode,
-  interaction,
+  interaction 
 }) => {
+  const handleSuccess = () => {
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edit Interaction" : "Log New Interaction"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditMode
-              ? "Update interaction details"
-              : "Log a new customer interaction in your database"}
-          </DialogDescription>
+          <DialogTitle>{isEditMode ? "Edit Interaction" : "Log New Interaction"}</DialogTitle>
         </DialogHeader>
-
         <InteractionForm
           isEditMode={isEditMode}
           interaction={interaction}
-          onCancel={() => onOpenChange(false)}
-          onSuccess={() => onOpenChange(false)}
+          onCancel={handleCancel}
+          onSuccess={handleSuccess}
         />
       </DialogContent>
     </Dialog>

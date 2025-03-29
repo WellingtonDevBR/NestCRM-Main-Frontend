@@ -1,40 +1,52 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Interaction, InteractionApiRequest } from "@/domain/models/interaction";
-import { interactionService } from "@/services/interactionService";
 import { toast } from "sonner";
+import { interactionService } from "@/services/interactionService";
+import { Interaction, InteractionApiRequest } from "@/domain/models/interaction";
 
-export const useInteractions = () => {
+export function useInteractions() {
   const queryClient = useQueryClient();
   
-  const {
-    data: interactions = [],
-    isLoading,
-    error,
-    refetch,
+  // Fetch all interactions
+  const { 
+    data: interactions = [], 
+    isLoading, 
+    error, 
+    refetch 
   } = useQuery({
     queryKey: ["interactions"],
-    queryFn: interactionService.getInteractions,
+    queryFn: async () => {
+      try {
+        const interactions = await interactionService.getInteractions();
+        console.log("Fetched interactions:", interactions);
+        return interactions;
+      } catch (error) {
+        console.error("Error fetching interactions:", error);
+        throw error;
+      }
+    }
   });
-
-  const { mutateAsync: createInteraction, isPending: isCreating } = useMutation({
-    mutationFn: (interactionData: InteractionApiRequest) => 
-      interactionService.createInteraction(interactionData),
+  
+  // Create a new interaction
+  const { mutateAsync: createInteraction } = useMutation({
+    mutationFn: async (interactionData: InteractionApiRequest) => {
+      return await interactionService.createInteraction(interactionData);
+    },
     onSuccess: () => {
-      toast.success("Interaction logged successfully");
       queryClient.invalidateQueries({ queryKey: ["interactions"] });
     },
     onError: (error) => {
-      console.error("Error logging interaction:", error);
-      toast.error("Failed to log interaction");
+      console.error("Error creating interaction:", error);
+      toast.error("Failed to create interaction");
     }
   });
-
-  const { mutateAsync: updateInteraction, isPending: isUpdating } = useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & InteractionApiRequest) => 
-      interactionService.updateInteraction(id, data),
+  
+  // Update an interaction
+  const { mutateAsync: updateInteraction } = useMutation({
+    mutationFn: async ({ id, ...interactionData }: InteractionApiRequest & { id: string }) => {
+      return await interactionService.updateInteraction(id, interactionData);
+    },
     onSuccess: () => {
-      toast.success("Interaction updated successfully");
       queryClient.invalidateQueries({ queryKey: ["interactions"] });
     },
     onError: (error) => {
@@ -42,12 +54,13 @@ export const useInteractions = () => {
       toast.error("Failed to update interaction");
     }
   });
-
-  const { mutateAsync: deleteInteraction, isPending: isDeleting } = useMutation({
-    mutationFn: (id: string) => 
-      interactionService.deleteInteraction(id),
+  
+  // Delete an interaction
+  const { mutateAsync: deleteInteraction } = useMutation({
+    mutationFn: async (id: string) => {
+      return await interactionService.deleteInteraction(id);
+    },
     onSuccess: () => {
-      toast.success("Interaction deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["interactions"] });
     },
     onError: (error) => {
@@ -55,7 +68,7 @@ export const useInteractions = () => {
       toast.error("Failed to delete interaction");
     }
   });
-
+  
   return {
     interactions,
     isLoading,
@@ -63,45 +76,6 @@ export const useInteractions = () => {
     refetch,
     createInteraction,
     updateInteraction,
-    deleteInteraction,
-    isCreating,
-    isUpdating,
-    isDeleting
+    deleteInteraction
   };
-};
-
-export const useInteractionById = (id: string) => {
-  const {
-    data: interaction,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["interaction", id],
-    queryFn: () => interactionService.getInteractionById(id),
-    enabled: !!id,
-  });
-
-  return {
-    interaction,
-    isLoading,
-    error,
-  };
-};
-
-export const useInteractionsByCustomerId = (customerId: string) => {
-  const {
-    data: interactions = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["interactions", "customer", customerId],
-    queryFn: () => interactionService.getInteractionsByCustomerId(customerId),
-    enabled: !!customerId,
-  });
-
-  return {
-    interactions,
-    isLoading,
-    error,
-  };
-};
+}
