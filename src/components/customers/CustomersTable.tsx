@@ -43,10 +43,22 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
   useEffect(() => {
     if (customers) {
       setFilteredCustomers(
-        customers.filter((customer) => 
-          customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        customers.filter((customer) => {
+          const searchTermLower = searchTerm.toLowerCase();
+          // Safely check name and email properties
+          const nameMatch = customer.name ? customer.name.toLowerCase().includes(searchTermLower) : false;
+          const emailMatch = customer.email ? customer.email.toLowerCase().includes(searchTermLower) : false;
+          
+          // Check custom fields too if needed
+          let customFieldMatch = false;
+          if (customer.customFields && searchTerm) {
+            customFieldMatch = Object.values(customer.customFields).some(value => 
+              value && String(value).toLowerCase().includes(searchTermLower)
+            );
+          }
+          
+          return searchTerm === "" || nameMatch || emailMatch || customFieldMatch;
+        })
       );
     }
   }, [customers, searchTerm]);

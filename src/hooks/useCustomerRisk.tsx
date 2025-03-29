@@ -63,8 +63,8 @@ export function useCustomerRisk() {
       
       // Search filter - basic search by name or email
       const searchLower = term.toLowerCase();
-      const nameMatch = customer.name.toLowerCase().includes(searchLower);
-      const emailMatch = customer.email.toLowerCase().includes(searchLower);
+      const nameMatch = customer.name?.toLowerCase().includes(searchLower) || false;
+      const emailMatch = customer.email?.toLowerCase().includes(searchLower) || false;
       
       // Also search in custom fields
       let customFieldMatch = false;
@@ -74,7 +74,7 @@ export function useCustomerRisk() {
         );
       }
       
-      return statusMatch && (nameMatch || emailMatch || customFieldMatch);
+      return statusMatch && (nameMatch || emailMatch || customFieldMatch || !term);
     });
   };
 
