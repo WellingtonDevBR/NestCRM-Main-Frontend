@@ -77,9 +77,11 @@ describe('usePredictionMapping', () => {
     
     await waitForNextUpdate();
     
-    const updatedMapping = result.current.updateMapping('Age', 'new_age_field');
+    // Add the category parameter that was missing, causing the error
+    const updatedMapping = result.current.updateMapping('Age', 'new_age_field', 'customer');
     
     expect(updatedMapping.mappings.find(m => m.modelField === 'Age')?.tenantField).toBe('new_age_field');
+    expect(updatedMapping.mappings.find(m => m.modelField === 'Age')?.category).toBe('customer');
     
     // Original state should be unchanged
     expect(result.current.mappingData.mappings.find(m => m.modelField === 'Age')?.tenantField).toBe('customer_age');
