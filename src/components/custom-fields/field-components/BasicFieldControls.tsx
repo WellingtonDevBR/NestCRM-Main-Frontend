@@ -119,7 +119,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
             <div className="flex items-center gap-2 mt-1">
               <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 flex items-center gap-1">
                 <Key className="h-3 w-3" />
-                <span>Links to Customer</span>
+                <span>Links to {category}</span>
               </Badge>
             </div>
           )}

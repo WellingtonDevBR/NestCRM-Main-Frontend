@@ -45,11 +45,21 @@ export function useCustomFieldsManager() {
         dispatch({ type: 'SET_FIELDS', payload: fieldsWithAssociations });
         setInitialized(true);
       } else {
-        dispatch({ type: 'SET_FIELDS', payload: [] });
+        // Initialize with default association fields if it's a Customer category
+        if (activeCategory === "Customer") {
+          dispatch({ type: 'SET_FIELDS', payload: [...DEFAULT_ASSOCIATION_FIELDS] });
+        } else {
+          dispatch({ type: 'SET_FIELDS', payload: [] });
+        }
       }
     } else {
       console.log("useCustomFieldsManager > No categories data available");
-      dispatch({ type: 'SET_FIELDS', payload: [] });
+      // Initialize with default association fields if it's a Customer category
+      if (activeCategory === "Customer") {
+        dispatch({ type: 'SET_FIELDS', payload: [...DEFAULT_ASSOCIATION_FIELDS] });
+      } else {
+        dispatch({ type: 'SET_FIELDS', payload: [] });
+      }
     }
   }, [customFieldCategories, activeCategory]);
 
