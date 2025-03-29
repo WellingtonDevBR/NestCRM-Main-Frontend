@@ -35,7 +35,7 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
     }
   }, [field.type]);
   
-  // Determine if this is a special association field (customer_id or email)
+  // Determine if this is a special association field (id or email)
   const isSpecialAssociationField = field.isAssociationField === true;
 
   // Debug logs for field states

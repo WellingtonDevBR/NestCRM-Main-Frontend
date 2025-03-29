@@ -35,7 +35,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
-  // Get association fields (customer_id and email)
+  // Get association fields (id and email)
   const associationFields = fields.filter(field => field.isAssociationField === true);
   
   // Regular custom fields (not association fields)

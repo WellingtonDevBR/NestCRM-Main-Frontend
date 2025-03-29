@@ -60,7 +60,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
           onChange={e => onUpdateField(index, { label: e.target.value })}
           placeholder="e.g., Loyalty Points"
           className="dark:bg-gray-800 dark:border-gray-700"
-          disabled={isSpecialAssociationField}
+          disabled={isSpecialAssociationField ? false : false}
         />
         <p className="text-xs text-muted-foreground mt-1">Shown to users</p>
       </div>
@@ -69,7 +69,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
         <Select
           value={field.type}
           onValueChange={value => {
-            if (isSpecialAssociationField) return;
+            if (isSpecialAssociationField && value !== "text" && value !== "number") return;
             
             const updates: Partial<CustomField> = { 
               type: value as "text" | "date" | "number" | "select",
@@ -78,7 +78,7 @@ const BasicFieldControls: React.FC<BasicFieldControlsProps> = ({
             
             onUpdateField(index, updates);
           }}
-          disabled={isSpecialAssociationField}
+          disabled={isSpecialAssociationField ? false : false}
         >
           <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
             <SelectValue placeholder="Select type" />
