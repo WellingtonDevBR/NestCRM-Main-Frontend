@@ -2,8 +2,8 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { SupportTicket } from "@/domain/models/support";
 import { useSupportTickets } from "@/hooks/useSupportTickets";
+import { SupportTicket } from "@/domain/models/support";
 import {
   Form,
   FormField,
@@ -56,20 +56,20 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
+      const ticketData = {
+        ...data,
+        ticketNumber: ticket?.ticketNumber
+      };
+
       if (isEditMode && ticket) {
-        await updateTicket({
-          id: ticket.id,
-          ...data
-        });
-        toast.success("Ticket updated successfully");
+        await updateTicket({ id: ticket.id, ...ticketData });
       } else {
-        await createTicket(data);
-        toast.success("Ticket created successfully");
+        await createTicket(ticketData);
       }
+      
       onSuccess();
     } catch (error) {
-      console.error("Error submitting ticket:", error);
-      toast.error(isEditMode ? "Failed to update ticket" : "Failed to create ticket");
+      console.error("Error submitting support ticket:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -129,7 +129,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea 
-                    placeholder="Ticket description" 
+                    placeholder="Detailed description" 
                     className="min-h-[100px]"
                     {...field} 
                   />
@@ -200,7 +200,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
               <FormItem>
                 <FormLabel>Assigned To</FormLabel>
                 <FormControl>
-                  <Input placeholder="Agent/support staff name" {...field} />
+                  <Input placeholder="Agent name" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

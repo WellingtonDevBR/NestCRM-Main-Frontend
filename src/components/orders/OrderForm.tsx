@@ -35,7 +35,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
   onCancel,
   onSuccess,
 }) => {
-  const { createOrder } = useOrders();
+  const { createOrder, updateOrder } = useOrders();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize form with default values
@@ -64,12 +64,15 @@ const OrderForm: React.FC<OrderFormProps> = ({
         total: data.total
       };
 
-      await createOrder(orderData);
-      toast.success(isEditMode ? "Order updated successfully" : "Order created successfully");
+      if (isEditMode && order) {
+        await updateOrder({ id: order.id, ...orderData });
+      } else {
+        await createOrder(orderData);
+      }
+      
       onSuccess();
     } catch (error) {
       console.error("Error submitting order:", error);
-      toast.error(isEditMode ? "Failed to update order" : "Failed to create order");
     } finally {
       setIsSubmitting(false);
     }

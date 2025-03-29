@@ -1,62 +1,35 @@
 
 import { SupportTicket } from "@/domain/models/support";
+import { api } from "@/utils/api";
 
 export const supportService = {
   // Fetch all support tickets
   getSupportTickets: async (): Promise<SupportTicket[]> => {
-    // This would be replaced with an actual API call
-    return [];
+    return await api.get<SupportTicket[]>("/support");
   },
 
   // Get support ticket by ID
   getSupportTicketById: async (id: string): Promise<SupportTicket | undefined> => {
-    // This would be replaced with an actual API call
-    return undefined;
+    return await api.get<SupportTicket>(`/support/${id}`);
   },
 
   // Get support tickets by customer ID
   getSupportTicketsByCustomerId: async (customerId: string): Promise<SupportTicket[]> => {
-    // This would be replaced with an actual API call
-    return [];
+    return await api.get<SupportTicket[]>(`/support?customerId=${customerId}`);
   },
 
   // Create a new support ticket
   createSupportTicket: async (ticketData: any): Promise<SupportTicket> => {
-    // This would be replaced with an actual API call
-    console.log("Creating support ticket with data:", ticketData);
-    return {
-      id: "new-ticket-id",
-      customerId: ticketData.customerId,
-      customerName: ticketData.customerName,
-      ticketNumber: "T-" + Math.floor(Math.random() * 10000),
-      subject: ticketData.subject,
-      description: ticketData.description,
-      status: ticketData.status,
-      priority: ticketData.priority,
-      assignedTo: ticketData.assignedTo,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      customFields: ticketData.customFields
-    };
+    return await api.post<SupportTicket>("/support", ticketData);
   },
 
   // Update an existing support ticket
   updateSupportTicket: async (id: string, ticketData: any): Promise<SupportTicket> => {
-    // This would be replaced with an actual API call
-    console.log("Updating support ticket with ID:", id, "and data:", ticketData);
-    return {
-      id,
-      customerId: ticketData.customerId,
-      customerName: ticketData.customerName,
-      ticketNumber: ticketData.ticketNumber || "T-" + Math.floor(Math.random() * 10000),
-      subject: ticketData.subject,
-      description: ticketData.description,
-      status: ticketData.status,
-      priority: ticketData.priority,
-      assignedTo: ticketData.assignedTo,
-      createdAt: ticketData.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      customFields: ticketData.customFields
-    };
+    return await api.put<SupportTicket>(`/support/${id}`, ticketData);
+  },
+
+  // Delete a support ticket
+  deleteSupportTicket: async (id: string): Promise<void> => {
+    return await api.delete<void>(`/support/${id}`);
   }
 };

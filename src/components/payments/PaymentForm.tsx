@@ -35,7 +35,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   onCancel,
   onSuccess,
 }) => {
-  const { createPayment } = usePayments();
+  const { createPayment, updatePayment } = usePayments();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize form with default values
@@ -48,6 +48,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       method: (payment?.method as string) || "credit_card",
       status: (payment?.status as string) || "pending",
       amount: payment?.amount || 0,
+      reference: payment?.reference || "",
       customFields: payment?.customFields || {}
     }
   });
@@ -63,16 +64,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           order_id: data.orderId
         },
         method: data.method as Payment['method'],
+        status: data.status as Payment['status'],
         amount: data.amount,
-        status: data.status as Payment['status']
+        reference: data.reference
       };
 
-      await createPayment(paymentData);
-      toast.success(isEditMode ? "Payment updated successfully" : "Payment recorded successfully");
+      if (isEditMode && payment) {
+        await updatePayment({ id: payment.id, ...paymentData });
+      } else {
+        await createPayment(paymentData);
+      }
+      
       onSuccess();
     } catch (error) {
       console.error("Error submitting payment:", error);
-      toast.error(isEditMode ? "Failed to update payment" : "Failed to record payment");
     } finally {
       setIsSubmitting(false);
     }
@@ -117,7 +122,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               <FormItem>
                 <FormLabel>Order Number</FormLabel>
                 <FormControl>
-                  <Input placeholder="Order number" {...field} />
+                  <Input placeholder="Order Number" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -192,6 +197,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="reference"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Reference</FormLabel>
+                <FormControl>
+                  <Input placeholder="Payment reference" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

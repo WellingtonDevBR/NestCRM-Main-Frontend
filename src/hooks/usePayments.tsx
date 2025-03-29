@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Payment, PaymentApiRequest } from "@/domain/models/payment";
 import { paymentService } from "@/services/paymentService";
+import { toast } from "sonner";
 
 export const usePayments = () => {
   const queryClient = useQueryClient();
@@ -16,11 +17,42 @@ export const usePayments = () => {
     queryFn: paymentService.getPayments,
   });
 
-  const { mutateAsync: createPayment } = useMutation({
+  const { mutateAsync: createPayment, isPending: isCreating } = useMutation({
     mutationFn: (paymentData: PaymentApiRequest) => 
       paymentService.createPayment(paymentData),
     onSuccess: () => {
+      toast.success("Payment recorded successfully");
       queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+    onError: (error) => {
+      console.error("Error recording payment:", error);
+      toast.error("Failed to record payment");
+    }
+  });
+
+  const { mutateAsync: updatePayment, isPending: isUpdating } = useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & PaymentApiRequest) => 
+      paymentService.updatePayment(id, data),
+    onSuccess: () => {
+      toast.success("Payment updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+    onError: (error) => {
+      console.error("Error updating payment:", error);
+      toast.error("Failed to update payment");
+    }
+  });
+
+  const { mutateAsync: deletePayment, isPending: isDeleting } = useMutation({
+    mutationFn: (id: string) => 
+      paymentService.deletePayment(id),
+    onSuccess: () => {
+      toast.success("Payment deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+    onError: (error) => {
+      console.error("Error deleting payment:", error);
+      toast.error("Failed to delete payment");
     }
   });
 
@@ -29,7 +61,12 @@ export const usePayments = () => {
     isLoading,
     error,
     refetch,
-    createPayment
+    createPayment,
+    updatePayment,
+    deletePayment,
+    isCreating,
+    isUpdating,
+    isDeleting
   };
 };
 

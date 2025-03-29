@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Interaction, InteractionApiRequest } from "@/domain/models/interaction";
 import { interactionService } from "@/services/interactionService";
+import { toast } from "sonner";
 
 export const useInteractions = () => {
   const queryClient = useQueryClient();
@@ -16,11 +17,42 @@ export const useInteractions = () => {
     queryFn: interactionService.getInteractions,
   });
 
-  const { mutateAsync: createInteraction } = useMutation({
+  const { mutateAsync: createInteraction, isPending: isCreating } = useMutation({
     mutationFn: (interactionData: InteractionApiRequest) => 
       interactionService.createInteraction(interactionData),
     onSuccess: () => {
+      toast.success("Interaction logged successfully");
       queryClient.invalidateQueries({ queryKey: ["interactions"] });
+    },
+    onError: (error) => {
+      console.error("Error logging interaction:", error);
+      toast.error("Failed to log interaction");
+    }
+  });
+
+  const { mutateAsync: updateInteraction, isPending: isUpdating } = useMutation({
+    mutationFn: ({ id, ...data }: { id: string } & InteractionApiRequest) => 
+      interactionService.updateInteraction(id, data),
+    onSuccess: () => {
+      toast.success("Interaction updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["interactions"] });
+    },
+    onError: (error) => {
+      console.error("Error updating interaction:", error);
+      toast.error("Failed to update interaction");
+    }
+  });
+
+  const { mutateAsync: deleteInteraction, isPending: isDeleting } = useMutation({
+    mutationFn: (id: string) => 
+      interactionService.deleteInteraction(id),
+    onSuccess: () => {
+      toast.success("Interaction deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["interactions"] });
+    },
+    onError: (error) => {
+      console.error("Error deleting interaction:", error);
+      toast.error("Failed to delete interaction");
     }
   });
 
@@ -29,7 +61,12 @@ export const useInteractions = () => {
     isLoading,
     error,
     refetch,
-    createInteraction
+    createInteraction,
+    updateInteraction,
+    deleteInteraction,
+    isCreating,
+    isUpdating,
+    isDeleting
   };
 };
 
