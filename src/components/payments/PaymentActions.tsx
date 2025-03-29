@@ -1,16 +1,8 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu,
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import { Edit, MoreHorizontal, Trash, Eye, FileText, RotateCcw } from "lucide-react";
 import { Payment } from "@/domain/models/payment";
+import EntityActions, { ActionItem } from "@/components/shared/EntityActions";
+import { Edit, Trash, Eye, FileText, RotateCcw } from "lucide-react";
 
 interface PaymentActionsProps {
   payment: Payment;
@@ -31,53 +23,41 @@ const PaymentActions: React.FC<PaymentActionsProps> = ({
 }) => {
   const isRefundable = payment.status === 'completed';
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {onView && (
-          <DropdownMenuItem onClick={() => onView(payment)}>
-            <Eye className="mr-2 h-4 w-4" />
-            View Details
-          </DropdownMenuItem>
-        )}
-        {onEdit && (
-          <DropdownMenuItem onClick={() => onEdit(payment)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </DropdownMenuItem>
-        )}
-        {onDownloadReceipt && (
-          <DropdownMenuItem onClick={() => onDownloadReceipt(payment.id)}>
-            <FileText className="mr-2 h-4 w-4" />
-            Download Receipt
-          </DropdownMenuItem>
-        )}
-        {onRefund && isRefundable && (
-          <DropdownMenuItem onClick={() => onRefund(payment)}>
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Process Refund
-          </DropdownMenuItem>
-        )}
-        {onDelete && (
-          <DropdownMenuItem 
-            onClick={() => onDelete(payment.id)}
-            className="text-red-600 focus:text-red-600"
-          >
-            <Trash className="mr-2 h-4 w-4" />
-            Delete
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+  const actions: ActionItem[] = [
+    {
+      icon: Eye,
+      label: "View Details",
+      onClick: () => onView && onView(payment),
+      condition: !!onView
+    },
+    {
+      icon: Edit,
+      label: "Edit",
+      onClick: () => onEdit && onEdit(payment),
+      condition: !!onEdit
+    },
+    {
+      icon: FileText,
+      label: "Download Receipt",
+      onClick: () => onDownloadReceipt && onDownloadReceipt(payment.id),
+      condition: !!onDownloadReceipt
+    },
+    {
+      icon: RotateCcw,
+      label: "Process Refund",
+      onClick: () => onRefund && onRefund(payment),
+      condition: !!onRefund && isRefundable
+    },
+    {
+      icon: Trash,
+      label: "Delete",
+      onClick: () => onDelete && onDelete(payment.id),
+      className: "text-red-600 focus:text-red-600",
+      condition: !!onDelete
+    }
+  ];
+
+  return <EntityActions actions={actions} />;
 };
 
 export default PaymentActions;
