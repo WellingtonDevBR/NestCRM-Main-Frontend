@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Order } from "@/domain/models/order";
 import { useCustomFields } from "@/hooks/useCustomFields";
@@ -12,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 import ColumnVisibilityDropdown from "@/components/shared/ColumnVisibilityDropdown";
-import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
+import DynamicFieldRenderer from '@/components/shared/DynamicFieldRenderer';
 
 interface OrdersTableProps {
   orders: Order[];

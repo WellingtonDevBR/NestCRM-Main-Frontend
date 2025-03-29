@@ -1,4 +1,3 @@
-
 import React from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import {
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { Customer } from "@/domain/models/customer";
 import { CustomField } from "@/domain/models/customField";
-import DynamicFieldRenderer from "@/components/shared/DynamicFieldRenderer";
+import DynamicFieldRenderer from '@/components/shared/DynamicFieldRenderer';
 
 interface CustomerTableRowProps {
   customer: Customer;
