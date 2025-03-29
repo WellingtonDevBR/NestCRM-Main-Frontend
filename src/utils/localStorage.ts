@@ -1,5 +1,5 @@
 
-import { CustomField, CustomFieldCategory, FieldCategory } from "@/domain/models/customField";
+import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
 
 // Keys for localStorage
 const CUSTOM_FIELDS_KEY = "nestcrm-custom-fields";

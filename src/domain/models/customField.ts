@@ -15,12 +15,27 @@ export interface UIConfig {
   type: 'text' | 'badge' | 'datetime' | 'currency' | 'percentage' | 'number' | 'status';
   options?: Record<string, string>; // For mapping values to display representations
   format?: string; // For formatting values (e.g., date format)
+  colorMap?: Record<string, string>; // For color mapping in badges, pills, etc.
+  iconMap?: Record<string, string>; // For icon mapping
+  tooltip?: string; // For tooltip information
 }
 
 export interface CustomFieldCategory {
   category: string;
   fields: CustomField[];
 }
+
+// Field categories that are available in the system
+export const FIELD_CATEGORIES = [
+  "Customer", 
+  "Order", 
+  "Payment", 
+  "Interaction", 
+  "Support"
+];
+
+// Field category type
+export type FieldCategory = typeof FIELD_CATEGORIES[number];
 
 // Default association fields that should be included in each category
 export const ASSOCIATION_FIELD_KEYS = {

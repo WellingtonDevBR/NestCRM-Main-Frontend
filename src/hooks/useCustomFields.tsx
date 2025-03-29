@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { CustomField, CustomFieldCategory, FieldCategory } from "@/domain/models/customField";
+import { CustomField, CustomFieldCategory, FIELD_CATEGORIES } from "@/domain/models/customField";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { 
@@ -52,7 +52,7 @@ export function useCustomFields() {
   });
 
   // Function to fetch a specific category
-  const useCategoryFields = (category: FieldCategory) => {
+  const useCategoryFields = (category: typeof FIELD_CATEGORIES[number]) => {
     return useQuery({
       queryKey: ["customFieldCategory", category],
       queryFn: async () => {
@@ -83,7 +83,7 @@ export function useCustomFields() {
   };
 
   // Function to get fields for a specific category from the current data
-  const getCategoryFields = (category: FieldCategory): CustomField[] => {
+  const getCategoryFields = (category: typeof FIELD_CATEGORIES[number]): CustomField[] => {
     const categoryData = customFieldCategories.find(c => c.category === category);
     return categoryData?.fields || [];
   };

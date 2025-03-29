@@ -33,7 +33,7 @@ const UIConfigPopover: React.FC<UIConfigPopoverProps> = ({
   onUpdateField
 }) => {
   const updateUIConfig = (updates: Partial<UIConfig>) => {
-    const currentUIConfig = field.uiConfig || {};
+    const currentUIConfig = field.uiConfig || { type: 'text' };
     onUpdateField(index, {
       uiConfig: {
         ...currentUIConfig,
@@ -51,14 +51,14 @@ const UIConfigPopover: React.FC<UIConfigPopoverProps> = ({
     
     if (value === "default") {
       // Remove the type property
-      const { type, ...rest } = field.uiConfig || {};
-      onUpdateField(index, { uiConfig: Object.keys(rest).length ? rest : undefined });
+      const { type, ...rest } = field.uiConfig || { type: 'text' };
+      onUpdateField(index, { uiConfig: Object.keys(rest).length ? { type: 'text', ...rest } : undefined });
     } else if (validOptions.includes(value)) {
       updateUIConfig({ type: value as UIConfig["type"] });
     } else {
       // If current UI type is not valid for the field type, reset to default
-      const { type, ...rest } = field.uiConfig || {};
-      onUpdateField(index, { uiConfig: Object.keys(rest).length ? rest : undefined });
+      const { type, ...rest } = field.uiConfig || { type: 'text' };
+      onUpdateField(index, { uiConfig: Object.keys(rest).length ? { type: 'text', ...rest } : undefined });
     }
   };
 

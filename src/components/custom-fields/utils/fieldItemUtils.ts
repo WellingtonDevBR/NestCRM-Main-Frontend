@@ -81,7 +81,7 @@ export const validateFieldUIType = (field: CustomField): Partial<CustomField> =>
     
     return { 
       ...restField,
-      uiConfig: Object.keys(restConfig).length ? restConfig : undefined
+      uiConfig: Object.keys(restConfig).length ? { type: 'text', ...restConfig } : undefined
     };
   }
   

@@ -109,7 +109,7 @@ const ColorMappingSection: React.FC<ColorMappingSectionProps> = ({
               <span className="text-sm">{key}</span>
               <div className="flex items-center space-x-2">
                 <Badge 
-                  className={`${getBadgeColorClass(color)}`}
+                  className={`${getBadgeColorClass(color as string)}`}
                 >
                   {color}
                 </Badge>
