@@ -47,7 +47,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
         name: typeof name === 'string' ? name : '',
         email: typeof email === 'string' ? email : '',
         phone: typeof phone === 'string' ? phone : '',
-        customFields: { ...customer.customFields } || {}
+        customFields: customer.customFields || {}
       });
     } else if (!isEditMode) {
       // Initialize empty form with default values for any required custom fields
