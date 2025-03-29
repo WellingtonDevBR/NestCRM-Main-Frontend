@@ -4,14 +4,17 @@ import { api } from "@/utils/api";
 
 // Convert API response to domain model
 const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
-  return {
+  // Extract standard fields
+  const customer: Customer = {
     id: apiCustomer.CustomerID,
-    name: apiCustomer.Name,
-    email: apiCustomer.Email,
-    phone: apiCustomer.Phone,
+    name: apiCustomer.Name || "",
+    email: apiCustomer.Email || "",
+    phone: apiCustomer.Phone || "",
     createdAt: apiCustomer.CreatedAt,
-    customFields: apiCustomer.CustomFields
+    customFields: apiCustomer.CustomFields || {}
   };
+  
+  return customer;
 };
 
 // Convert domain model to API request format
@@ -19,7 +22,6 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
   const associations: CustomerAssociations = {};
   
   // Check for appropriate fields in customFields and add to associations
-  // Look for the key "customer_id" and its value in customFields
   if (customerData.customFields["customer_id"]) {
     associations.customer_id = String(customerData.customFields["customer_id"]);
   } else if (customerId) {
@@ -41,7 +43,7 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
   // Only include non-empty values in customFields
   const customFields: Record<string, string | number | null> = {};
   
-  // Copy all custom fields that have values
+  // Copy all custom fields that have values, using the field keys
   Object.entries(customerData.customFields).forEach(([key, value]) => {
     if (value !== null && value !== "") {
       customFields[key] = value;

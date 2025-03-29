@@ -43,6 +43,7 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
   }
   
   const renderField = (field: CustomField) => {
+    // Use field.key (API identifier) to get the value, not the label
     const value = formData.customFields[field.key] ?? "";
     const isAssociationField = field.isAssociationField === true;
     
