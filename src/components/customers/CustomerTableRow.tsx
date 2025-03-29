@@ -30,17 +30,13 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
   onEdit,
   onDelete
 }) => {
-  // Function to get the custom field definition by key
-  const getFieldByKey = (key: string): CustomField | undefined => {
-    return customFields.find(field => field.key === key);
-  };
-
   // Filter out association fields that are not marked for use
   const visibleFields = customFields.filter(field => 
     !field.isAssociationField || field.useAsAssociation
   );
   
   console.log("CustomerTableRow - customer data:", customer);
+  console.log("CustomerTableRow - customer.customFields:", customer.customFields);
   console.log("CustomerTableRow - visible columns:", visibleColumns);
   console.log("CustomerTableRow - custom fields:", customFields);
   console.log("CustomerTableRow - visible fields:", visibleFields);
@@ -50,13 +46,15 @@ const CustomerTableRow: React.FC<CustomerTableRowProps> = ({
       {/* Custom fields from settings */}
       {visibleFields.map(field => {
         const isVisible = visibleColumns[field.key];
+        const fieldValue = customer.customFields[field.key];
+        
         console.log(`Field ${field.key} visibility:`, isVisible);
-        console.log(`Field ${field.key} value:`, customer.customFields?.[field.key]);
+        console.log(`Field ${field.key} value:`, fieldValue);
         
         return isVisible ? (
           <TableCell key={field.key}>
             <DynamicFieldRenderer 
-              value={customer.customFields?.[field.key]} 
+              value={fieldValue} 
               uiConfig={field.uiConfig}
             />
           </TableCell>

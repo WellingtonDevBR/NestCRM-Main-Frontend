@@ -50,8 +50,14 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
     if (customers) {
       console.log("CustomersTable - All customers:", customers);
       
+      // Ensure customers have all necessary custom fields
+      const processedCustomers = customers.map(customer => {
+        console.log(`Processing customer ${customer.id}:`, customer);
+        return customer;
+      });
+      
       setFilteredCustomers(
-        customers.filter((customer) => {
+        processedCustomers.filter((customer) => {
           const searchTermLower = searchTerm.toLowerCase();
           // Safely check name and email properties
           const nameMatch = customer.name ? customer.name.toLowerCase().includes(searchTermLower) : false;
@@ -82,6 +88,7 @@ const CustomersTable: React.FC<CustomersTableProps> = ({ onEdit }) => {
       });
       
       setColumnVisibility(customFieldVisibility);
+      console.log("CustomersTable - Initial column visibility:", customFieldVisibility);
     }
   }, [visibleCustomFields]);
 

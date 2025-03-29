@@ -4,6 +4,8 @@ import { api } from "@/utils/api";
 
 // Convert API response to domain model
 const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
+  console.log("Mapping API customer:", apiCustomer);
+  
   // Extract standard fields
   const customer: Customer = {
     id: apiCustomer.CustomerID,
@@ -11,7 +13,7 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     email: apiCustomer.Email || "",
     phone: apiCustomer.Phone || "",
     createdAt: apiCustomer.CreatedAt,
-    customFields: apiCustomer.CustomFields || {}
+    customFields: {...(apiCustomer.CustomFields || {})}
   };
   
   // Ensure customFields is properly populated with all values from the API response
@@ -31,6 +33,7 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
     customer.customFields.customer_id = apiCustomer.CustomerID;
   }
   
+  console.log("Mapped to domain customer:", customer);
   return customer;
 };
 
@@ -92,7 +95,9 @@ export const customerService = {
     try {
       const response = await api.get<CustomerApiResponse[]>("/customer");
       console.log("API response from GET /customer:", response);
-      return response.map(mapFromApiResponse);
+      const mappedCustomers = response.map(mapFromApiResponse);
+      console.log("Mapped customers:", mappedCustomers);
+      return mappedCustomers;
     } catch (err) {
       console.error("Error fetching customers:", err);
       throw err;
