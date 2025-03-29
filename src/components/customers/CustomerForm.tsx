@@ -47,7 +47,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       // Initialize with empty form with default values for association fields
       const initialCustomFields: {[key: string]: string | number | null} = {};
       
-      // Pre-populate fields that are needed
+      // Pre-populate fields that are needed for associations
       const associationFields = customerFields.filter(f => 
         f.isAssociationField === true && 
         f.useAsAssociation === true

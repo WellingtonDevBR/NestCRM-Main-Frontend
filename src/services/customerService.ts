@@ -37,13 +37,28 @@ const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, cu
     associations.email = customerEmail;
   }
   
-  // Extract basic information into customFields
-  const customFields = {
-    ...customerData.customFields,
-    Name: customerData.name,
-    Email: customerData.email,
-    Phone: customerData.phone
-  };
+  // Only include non-empty values in customFields
+  const customFields: Record<string, string | number | null> = { ...customerData.customFields };
+  
+  // Remove the empty Name, Email, and Phone fields if they're empty
+  // Only include these fields if they have actual values
+  if (customerData.name) {
+    customFields.Name = customerData.name;
+  } else {
+    delete customFields.Name;
+  }
+  
+  if (customerData.email) {
+    customFields.Email = customerData.email;
+  } else {
+    delete customFields.Email;
+  }
+  
+  if (customerData.phone) {
+    customFields.Phone = customerData.phone;
+  } else {
+    delete customFields.Phone;
+  }
   
   return {
     customFields,
