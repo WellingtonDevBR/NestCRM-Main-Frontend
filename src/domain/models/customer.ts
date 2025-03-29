@@ -9,9 +9,6 @@ export interface CustomField {
 }
 
 export interface CustomerFormData {
-  name: string;
-  email: string;
-  phone: string;
   customFields: {
     [key: string]: string | number | null;
   };
@@ -40,11 +37,14 @@ export interface CustomerApiResponse {
   };
 }
 
+export interface CustomerAssociations {
+  customer_id?: string;
+  email?: string;
+}
+
 export interface CustomerApiRequest {
-  name: string;
-  email: string;
-  phone: string;
   customFields: {
     [key: string]: string | number | null;
   };
+  associations: CustomerAssociations;
 }

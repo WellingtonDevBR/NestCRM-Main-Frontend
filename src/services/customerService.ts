@@ -1,5 +1,5 @@
 
-import { Customer, CustomerFormData, CustomerApiResponse, CustomerApiRequest } from "@/domain/models/customer";
+import { Customer, CustomerFormData, CustomerApiResponse, CustomerApiRequest, CustomerAssociations } from "@/domain/models/customer";
 import { api } from "@/utils/api";
 
 // Convert API response to domain model
@@ -15,12 +15,27 @@ const mapFromApiResponse = (apiCustomer: CustomerApiResponse): Customer => {
 };
 
 // Convert domain model to API request format
-const mapToApiRequest = (customerData: CustomerFormData): CustomerApiRequest => {
+const mapToApiRequest = (customerData: CustomerFormData, customerId?: string, customerEmail?: string): CustomerApiRequest => {
+  const associations: CustomerAssociations = {};
+  
+  // Add customer_id to associations if available
+  if (customerId) {
+    associations.customer_id = customerId;
+  }
+  
+  // Add email to associations if available - could be derived from customFields
+  if (customerEmail) {
+    associations.email = customerEmail;
+  } else if (customerData.customFields && customerData.customFields['Email']) {
+    const email = customerData.customFields['Email'];
+    if (typeof email === 'string') {
+      associations.email = email;
+    }
+  }
+  
   return {
-    name: customerData.name,
-    email: customerData.email,
-    phone: customerData.phone,
-    customFields: customerData.customFields || {}
+    customFields: customerData.customFields || {},
+    associations
   };
 };
 
@@ -51,7 +66,7 @@ export const customerService = {
   // Update an existing customer
   updateCustomer: async (id: string, updateData: CustomerFormData): Promise<Customer> => {
     try {
-      const apiRequest = mapToApiRequest(updateData);
+      const apiRequest = mapToApiRequest(updateData, id);
       const response = await api.put<CustomerApiResponse>(`/customer/${id}`, apiRequest);
       return mapFromApiResponse(response);
     } catch (err) {

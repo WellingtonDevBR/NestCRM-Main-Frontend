@@ -27,19 +27,14 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
   const customerFields = getCategoryFields("Customer");
   
   const [formData, setFormData] = useState<CustomerFormData>({
-    name: "",
-    email: "",
-    phone: "",
     customFields: {}
   });
 
   // Reset form when dialog opens/closes or customer changes
   useEffect(() => {
     if (isEditMode && customer) {
+      // For edit mode, use existing customer data
       setFormData({
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone || "",
         customFields: customer.customFields || {}
       });
     } else if (!isEditMode) {
@@ -58,9 +53,6 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       });
       
       setFormData({
-        name: "",
-        email: "",
-        phone: "",
         customFields: initialCustomFields
       });
     }

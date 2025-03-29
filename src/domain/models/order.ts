@@ -19,3 +19,16 @@ export interface OrderItem {
   unitPrice: number;
   total: number;
 }
+
+export interface OrderAssociations {
+  customer_id?: string;
+  email?: string;
+}
+
+export interface OrderApiRequest {
+  customFields: Record<string, string | number | boolean | Date>;
+  associations: OrderAssociations;
+  items: OrderItem[];
+  status: Order['status'];
+  total: number;
+}

@@ -1,5 +1,5 @@
 
-import { Order } from "@/domain/models/order";
+import { Order, OrderApiRequest, OrderAssociations } from "@/domain/models/order";
 
 // Mock data for orders
 const mockOrders: Order[] = [
@@ -156,6 +156,29 @@ export const orderService = {
       setTimeout(() => {
         const orders = mockOrders.filter(order => order.customerId === customerId);
         resolve(orders);
+      }, 500);
+    });
+  },
+
+  // Create a new order
+  createOrder: async (orderData: OrderApiRequest): Promise<Order> => {
+    // This is a mock implementation - in a real app, this would call the API
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newOrder: Order = {
+          id: `ord-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+          customerId: orderData.associations.customer_id || 'unknown',
+          customerName: 'Customer Name', // Would be fetched from the backend
+          orderNumber: 'ORD-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 10000),
+          date: new Date().toISOString(),
+          status: orderData.status,
+          total: orderData.total,
+          items: orderData.items,
+          customFields: orderData.customFields
+        };
+        
+        mockOrders.push(newOrder);
+        resolve(newOrder);
       }, 500);
     });
   }

@@ -1,5 +1,5 @@
 
-import { Interaction } from "@/domain/models/interaction";
+import { Interaction, InteractionApiRequest, InteractionAssociations } from "@/domain/models/interaction";
 
 // Mock data for interactions
 const mockInteractions: Interaction[] = [
@@ -110,6 +110,32 @@ export const interactionService = {
       setTimeout(() => {
         const interactions = mockInteractions.filter(interaction => interaction.customerId === customerId);
         resolve(interactions);
+      }, 500);
+    });
+  },
+
+  // Create a new interaction
+  createInteraction: async (interactionData: InteractionApiRequest): Promise<Interaction> => {
+    // This is a mock implementation - in a real app, this would call the API
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newInteraction: Interaction = {
+          id: `int-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+          customerId: interactionData.associations.customer_id || 'unknown',
+          customerName: 'Customer Name', // Would be fetched from the backend
+          date: new Date().toISOString(),
+          type: interactionData.type,
+          subject: interactionData.subject,
+          content: interactionData.content,
+          status: interactionData.status,
+          assignedTo: interactionData.assignedTo,
+          duration: interactionData.duration,
+          agentName: interactionData.agentName,
+          customFields: interactionData.customFields
+        };
+        
+        mockInteractions.push(newInteraction);
+        resolve(newInteraction);
       }, 500);
     });
   }

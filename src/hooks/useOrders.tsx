@@ -1,9 +1,11 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { Order } from "@/domain/models/order";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Order, OrderApiRequest } from "@/domain/models/order";
 import { orderService } from "@/services/orderService";
 
 export const useOrders = () => {
+  const queryClient = useQueryClient();
+  
   const {
     data: orders = [],
     isLoading,
@@ -14,11 +16,20 @@ export const useOrders = () => {
     queryFn: orderService.getOrders,
   });
 
+  const { mutateAsync: createOrder } = useMutation({
+    mutationFn: (orderData: OrderApiRequest) => 
+      orderService.createOrder(orderData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    }
+  });
+
   return {
     orders,
     isLoading,
     error,
     refetch,
+    createOrder
   };
 };
 

@@ -12,3 +12,18 @@ export interface Payment {
   amount: number;
   customFields?: Record<string, string | number | boolean | Date>;
 }
+
+export interface PaymentAssociations {
+  customer_id?: string;
+  email?: string;
+  order_id?: string;
+}
+
+export interface PaymentApiRequest {
+  customFields: Record<string, string | number | boolean | Date>;
+  associations: PaymentAssociations;
+  method: Payment['method'];
+  amount: number;
+  reference?: string;
+  status: Payment['status'];
+}

@@ -1,5 +1,5 @@
 
-import { Payment } from "@/domain/models/payment";
+import { Payment, PaymentApiRequest, PaymentAssociations } from "@/domain/models/payment";
 
 // Mock data for payments
 const mockPayments: Payment[] = [
@@ -98,6 +98,31 @@ export const paymentService = {
       setTimeout(() => {
         const payments = mockPayments.filter(payment => payment.customerId === customerId);
         resolve(payments);
+      }, 500);
+    });
+  },
+
+  // Create a new payment
+  createPayment: async (paymentData: PaymentApiRequest): Promise<Payment> => {
+    // This is a mock implementation - in a real app, this would call the API
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newPayment: Payment = {
+          id: `pay-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+          reference: paymentData.reference || `TRX-${new Date().toISOString().slice(0, 10)}-${Math.floor(Math.random() * 1000)}`,
+          customerId: paymentData.associations.customer_id || 'unknown',
+          customerName: 'Customer Name', // Would be fetched from the backend
+          orderId: paymentData.associations.order_id,
+          orderNumber: 'ORD-' + new Date().getFullYear() + '-' + Math.floor(Math.random() * 10000),
+          date: new Date().toISOString(),
+          method: paymentData.method,
+          status: paymentData.status,
+          amount: paymentData.amount,
+          customFields: paymentData.customFields
+        };
+        
+        mockPayments.push(newPayment);
+        resolve(newPayment);
       }, 500);
     });
   }
