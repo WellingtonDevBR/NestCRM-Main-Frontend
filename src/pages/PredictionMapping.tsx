@@ -24,12 +24,15 @@ const PredictionMapping: React.FC = () => {
     saveMappings,
     isSaving,
     getMapping,
+    getMappingCategory,
     updateMapping,
+    mappingModel,
     LIGHT_FEATURES,
     FULL_FEATURES
   } = usePredictionMapping();
   
   // Then define component state
+  // Initialize activeModel based on detected mapping model
   const [activeModel, setActiveModel] = useState<"lightweight" | "full">("lightweight");
   const [localMappings, setLocalMappings] = useState<PredictionMappingType>({ mappings: [] });
   const [isModified, setIsModified] = useState(false);
@@ -39,14 +42,19 @@ const PredictionMapping: React.FC = () => {
     fullFeature => !LIGHT_FEATURES.some(lightFeature => lightFeature.modelField === fullFeature.modelField)
   );
   
-  // Initialize local state from API data
+  // Initialize local state from API data and set the active model based on the detected model
   useEffect(() => {
     if (mappingData && mappingData.mappings) {
       console.log("Setting localMappings from mappingData:", mappingData);
       setLocalMappings(mappingData);
       setIsModified(false);
+      
+      // Set the active model based on the detected mapping model
+      if (mappingModel) {
+        setActiveModel(mappingModel);
+      }
     }
-  }, [mappingData]);
+  }, [mappingData, mappingModel]);
 
   // Define helper functions
   const getLocalMapping = (modelField: string): string | undefined => {
@@ -54,6 +62,12 @@ const PredictionMapping: React.FC = () => {
     const mapping = localMappings.mappings.find(m => m.modelField === modelField);
     console.log(`getLocalMapping for ${modelField}:`, mapping?.tenantField);
     return mapping?.tenantField;
+  };
+  
+  const getLocalMappingCategory = (modelField: string): string | undefined => {
+    if (!localMappings || !localMappings.mappings) return undefined;
+    const mapping = localMappings.mappings.find(m => m.modelField === modelField);
+    return mapping?.category;
   };
   
   // Count how many fields are mapped vs unmapped
@@ -146,6 +160,7 @@ const PredictionMapping: React.FC = () => {
         advancedFeatures={advancedFeatures}
         customFieldCategories={customFieldCategories || []}
         getMappedField={getLocalMapping}
+        getMappingCategory={getLocalMappingCategory}
         onFieldChange={handleFieldChange}
         onSave={handleSave}
         mappedCount={mapped}

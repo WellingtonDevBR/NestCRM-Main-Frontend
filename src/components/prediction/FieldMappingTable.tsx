@@ -18,6 +18,7 @@ interface FieldMappingTableProps {
   features: ModelFeature[];
   customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
+  getMappingCategory?: (modelField: string) => string | undefined;
   onFieldChange: (modelField: string, tenantField: string, category: string) => void;
 }
 
@@ -26,6 +27,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
   features,
   customFieldCategories,
   getMappedField,
+  getMappingCategory,
   onFieldChange
 }) => {
   // Count how many fields are not mapped
@@ -92,6 +94,7 @@ const FieldMappingTable: React.FC<FieldMappingTableProps> = ({
                 modelFeature={feature}
                 customFieldCategories={safeCustomFieldCategories}
                 selectedField={getMappedField(feature.modelField)}
+                selectedCategory={getMappingCategory ? getMappingCategory(feature.modelField) : undefined}
                 onFieldChange={onFieldChange}
               />
             ))}

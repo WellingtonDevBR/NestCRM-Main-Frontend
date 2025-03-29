@@ -5,7 +5,6 @@ import { PredictionMapping, LIGHT_FEATURES, FULL_FEATURES } from '@/domain/model
 import { PredictionMappingRepository } from '@/domain/repositories/predictionMappingRepository';
 import { PredictionMappingRepositoryImpl } from '@/infrastructure/repositories/predictionMappingRepositoryImpl';
 import { PredictionMappingService } from '@/application/services/predictionMappingService';
-import { usePredictionMappingState } from './usePredictionMappingState';
 import { getMappingForField, updateMappingForField } from '@/domain/utils/predictionMappingUtils';
 
 // Create repository and service instances
@@ -26,14 +25,44 @@ export function usePredictionMapping() {
     queryFn: () => mappingService.fetchMappings(),
   });
 
+  // Determine if we're using lightweight or full model based on field count
+  const determineMappingModel = (mappings: PredictionMapping | undefined): 'lightweight' | 'full' => {
+    if (!mappings || !mappings.mappings || mappings.mappings.length === 0) {
+      return 'lightweight'; // Default to lightweight
+    }
+    
+    // If mappings count is closer to FULL_FEATURES length, assume full model
+    if (mappings.mappings.length > LIGHT_FEATURES.length) {
+      return 'full';
+    }
+    
+    // Check if we have any advanced feature mappings
+    const advancedFeatureFields = FULL_FEATURES
+      .filter(feature => !LIGHT_FEATURES.some(lf => lf.modelField === feature.modelField))
+      .map(feature => feature.modelField);
+    
+    // If we have any advanced feature mappings, it's a full model
+    if (mappings.mappings.some(mapping => advancedFeatureFields.includes(mapping.modelField))) {
+      return 'full';
+    }
+    
+    return 'lightweight';
+  };
+
+  // Get the current model type
+  const mappingModel = determineMappingModel(mappingData);
+  
   // Get mapping for a specific model field
   const getMapping = (modelField: string): string | undefined => {
+    return getMappingForField(mappingData, modelField);
+  };
+
+  // Get category for a specific model field
+  const getMappingCategory = (modelField: string): string | undefined => {
     if (!mappingData || !mappingData.mappings) return undefined;
     
     const mapping = mappingData.mappings.find(m => m.modelField === modelField);
-    console.log(`getMapping for ${modelField}:`, mapping?.tenantField);
-    
-    return mapping?.tenantField;
+    return mapping?.category;
   };
 
   // Save mappings mutation
@@ -60,10 +89,12 @@ export function usePredictionMapping() {
     isLoading,
     error,
     getMapping,
+    getMappingCategory,
     saveMappings,
     isSaving,
     updateMapping,
     refetch,
+    mappingModel,
     LIGHT_FEATURES,
     FULL_FEATURES
   };

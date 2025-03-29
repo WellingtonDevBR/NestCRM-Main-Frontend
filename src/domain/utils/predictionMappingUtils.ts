@@ -15,6 +15,19 @@ export const getMappingForField = (
 };
 
 /**
+ * Get the category for a specific model field mapping
+ */
+export const getCategoryForField = (
+  mappings: PredictionMapping | undefined, 
+  modelField: string
+): string | undefined => {
+  if (!mappings?.mappings) return undefined;
+  
+  const mapping = mappings.mappings.find(m => m.modelField === modelField);
+  return mapping?.category;
+};
+
+/**
  * Update a specific mapping in the prediction mappings
  */
 export const updateMappingForField = (

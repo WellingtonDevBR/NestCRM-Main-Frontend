@@ -29,6 +29,7 @@ interface FieldMappingConfigurationProps {
   advancedFeatures: ModelFeature[];
   customFieldCategories: CustomFieldCategory[];
   getMappedField: (modelField: string) => string | undefined;
+  getMappingCategory?: (modelField: string) => string | undefined;
   onFieldChange: (modelField: string, tenantField: string, category: string) => void;
   onSave: () => void;
   mappedCount: number;
@@ -43,6 +44,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
   advancedFeatures,
   customFieldCategories,
   getMappedField,
+  getMappingCategory,
   onFieldChange,
   onSave,
   mappedCount,
@@ -91,6 +93,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
             features={lightFeatures}
             customFieldCategories={customFieldCategories || []}
             getMappedField={getMappedField}
+            getMappingCategory={getMappingCategory}
             onFieldChange={onFieldChange}
           />
         )}
@@ -102,6 +105,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
               features={lightFeatures}
               customFieldCategories={customFieldCategories || []}
               getMappedField={getMappedField}
+              getMappingCategory={getMappingCategory}
               onFieldChange={onFieldChange}
             />
             
@@ -110,6 +114,7 @@ const FieldMappingConfiguration: React.FC<FieldMappingConfigurationProps> = ({
               features={advancedFeatures}
               customFieldCategories={customFieldCategories || []}
               getMappedField={getMappedField}
+              getMappingCategory={getMappingCategory}
               onFieldChange={onFieldChange}
             />
           </>

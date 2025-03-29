@@ -1,3 +1,4 @@
+
 import { renderHook, act } from '@testing-library/react-hooks';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { usePredictionMapping } from '@/hooks/usePredictionMapping';
@@ -10,8 +11,8 @@ jest.mock('@/infrastructure/repositories/predictionMappingRepositoryImpl', () =>
     PredictionMappingRepositoryImpl: jest.fn().mockImplementation(() => ({
       fetchMappings: jest.fn().mockResolvedValue({ 
         mappings: [
-          { modelField: 'Age', tenantField: 'customer_age' },
-          { modelField: 'Gender', tenantField: 'customer_gender' }
+          { modelField: 'Age', tenantField: 'customer_age', category: 'Customer' },
+          { modelField: 'Gender', tenantField: 'customer_gender', category: 'Customer' }
         ] 
       }),
       saveMappings: jest.fn().mockImplementation(data => Promise.resolve(data))
@@ -61,6 +62,9 @@ describe('usePredictionMapping', () => {
     expect(result.current.getMapping).toBeInstanceOf(Function);
     expect(result.current.updateMapping).toBeInstanceOf(Function);
     expect(result.current.saveMappings).toBeInstanceOf(Function);
+    // New properties
+    expect(result.current.getMappingCategory).toBeInstanceOf(Function);
+    expect(result.current.mappingModel).toBeDefined();
   });
 
   test('getMapping returns the correct field mapping', async () => {
@@ -70,6 +74,15 @@ describe('usePredictionMapping', () => {
     
     expect(result.current.getMapping('Age')).toBe('customer_age');
     expect(result.current.getMapping('NonExistent')).toBeUndefined();
+  });
+
+  test('getMappingCategory returns the correct category', async () => {
+    const { result, waitForNextUpdate } = renderHook(() => usePredictionMapping(), { wrapper });
+    
+    await waitForNextUpdate();
+    
+    expect(result.current.getMappingCategory('Age')).toBe('Customer');
+    expect(result.current.getMappingCategory('NonExistent')).toBeUndefined();
   });
 
   test('updateMapping correctly updates mappings', async () => {
@@ -85,5 +98,14 @@ describe('usePredictionMapping', () => {
     
     // Original state should be unchanged
     expect(result.current.mappingData.mappings.find(m => m.modelField === 'Age')?.tenantField).toBe('customer_age');
+  });
+
+  test('mappingModel correctly detects the model type', async () => {
+    const { result, waitForNextUpdate } = renderHook(() => usePredictionMapping(), { wrapper });
+    
+    await waitForNextUpdate();
+    
+    // For the mock data (2 fields), should detect lightweight model
+    expect(result.current.mappingModel).toBe('lightweight');
   });
 });

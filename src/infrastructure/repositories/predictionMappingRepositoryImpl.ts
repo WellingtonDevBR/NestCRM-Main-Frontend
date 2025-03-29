@@ -19,25 +19,50 @@ export class PredictionMappingRepositoryImpl implements PredictionMappingReposit
       const response = await api.get<any>(PREDICTION_MAPPING_ENDPOINT);
       console.log("Fetched prediction mappings:", response);
       
-      // Format the API response to match our domain model
-      // The API returns an array of mappings, but our domain model expects an object with a mappings array
-      if (Array.isArray(response)) {
-        return { mappings: response };
-      }
-      
-      // Handle the case where the response is already in the expected format
+      // If the response is already in the correct format with mappings array
       if (response && typeof response === 'object' && Array.isArray(response.mappings)) {
-        return response;
+        return response as PredictionMapping;
       }
       
-      // Ensure response has the expected structure
-      if (response && typeof response === 'object') {
-        return {
-          mappings: Array.isArray(response.mappings) ? response.mappings : []
+      // If the response is an array of mappings (without the mappings wrapper)
+      if (Array.isArray(response)) {
+        return { 
+          mappings: response.map(mapping => ({
+            modelField: mapping.modelField,
+            tenantField: mapping.tenantField,
+            category: mapping.category || ""
+          }))
         };
       }
       
-      // Return empty mappings for any unexpected response format
+      // If the response has a different structure, try to extract mappings
+      if (response && typeof response === 'object') {
+        // Check if there's a mappings property
+        if (Array.isArray(response.mappings)) {
+          return {
+            mappings: response.mappings.map((mapping: any) => ({
+              modelField: mapping.modelField,
+              tenantField: mapping.tenantField,
+              category: mapping.category || ""
+            }))
+          };
+        }
+        
+        // Handle case where response itself might be a mapping array
+        const responseKeys = Object.keys(response);
+        if (responseKeys.includes('modelField') || responseKeys.includes('tenantField')) {
+          return {
+            mappings: [response].map((mapping: any) => ({
+              modelField: mapping.modelField,
+              tenantField: mapping.tenantField,
+              category: mapping.category || ""
+            }))
+          };
+        }
+      }
+      
+      // If no valid mappings found, return empty mappings
+      console.warn("No valid mappings found in response:", response);
       return { mappings: [] };
     } catch (error) {
       console.error("Failed to fetch prediction mappings:", error);
