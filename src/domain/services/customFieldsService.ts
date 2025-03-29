@@ -69,21 +69,24 @@ export const ensureAssociationFields = (
   }, {} as Record<string, CustomField>);
   
   // Always make sure BOTH customer_id and email association fields exist
-  const fieldsToAdd = DEFAULT_ASSOCIATION_FIELDS
-    .filter(defaultField => !existingKeys.has(defaultField.key))
-    .map(defaultField => {
-      // For new fields we're adding, use the default initialization
-      return {
+  let fieldsToAdd: CustomField[] = [];
+  
+  // Go through each DEFAULT_ASSOCIATION_FIELD
+  DEFAULT_ASSOCIATION_FIELDS.forEach(defaultField => {
+    if (!existingKeys.has(defaultField.key)) {
+      // Field doesn't exist, add it with sensible defaults
+      let newField: CustomField = {
         ...defaultField,
-        // Default: customer_id is always true for non-Customer categories
-        // For Customer category, follow the default setup based on what makes sense for the app
-        useAsAssociation: defaultField.key === "customer_id" && category !== "Customer"
+        // For non-Customer categories, default customer_id to true
+        // For Customer category, we don't set any defaults so user must choose
+        useAsAssociation: 
+          defaultField.key === "customer_id" && category !== "Customer"
       };
-    });
+      fieldsToAdd.push(newField);
+    }
+  });
   
   // For existing association fields, respect their current configuration
-  // and don't override their useAsAssociation value
-  
   if (fieldsToAdd.length > 0) {
     return [...fieldsToAdd, ...fields];
   }

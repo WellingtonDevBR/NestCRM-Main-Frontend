@@ -35,11 +35,11 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
-  // Get ALL association fields for all categories - ensure both customer_id and email are available
-  const associationFields = fields.filter(field => field.isAssociationField);
+  // Get association fields (customer_id and email)
+  const associationFields = fields.filter(field => field.isAssociationField === true);
   
   // Regular custom fields (not association fields)
-  const customFields = fields.filter(field => !field.isAssociationField);
+  const customFields = fields.filter(field => field.isAssociationField !== true);
   
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -56,7 +56,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
           </div>
           
           {/* Association fields first for all categories */}
-          {associationFields.map((field, index) => (
+          {associationFields.length > 0 && associationFields.map((field, index) => (
             <CustomFieldItem
               key={`assoc-${field.key}`}
               field={field}
@@ -83,11 +83,11 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
           )}
 
           {/* Regular custom fields */}
-          {customFields.map((field, index) => (
+          {customFields.length > 0 && customFields.map((field, index) => (
             <CustomFieldItem
               key={index}
               field={field}
-              index={fields.findIndex(f => f === field)}
+              index={fields.findIndex(f => f.key === field.key)}
               onUpdateField={updateField}
               onRemoveField={removeField}
               category={activeCategory}

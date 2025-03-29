@@ -21,10 +21,15 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
   } = useCustomFieldsContext();
 
   // Get association fields for all categories
-  const associationFields = categoryFields.filter(field => field.isAssociationField);
+  const associationFields = categoryFields.filter(field => field.isAssociationField === true);
 
   // Check if any association field is marked for use as association
-  const hasAssociationFieldForUse = associationFields.some(field => field.useAsAssociation);
+  const hasAssociationFieldForUse = associationFields.some(field => field.useAsAssociation === true);
+  
+  // Get the names of association fields that are marked for use
+  const usedAssociationFields = associationFields
+    .filter(field => field.useAsAssociation === true)
+    .map(field => field.label);
 
   return (
     <>
@@ -58,7 +63,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
             Association fields configured
           </AlertTitle>
           <AlertDescription className="text-green-700 dark:text-green-300">
-            {associationFields.filter(field => field.useAsAssociation).map(field => field.label).join(" and ")} {associationFields.filter(field => field.useAsAssociation).length === 1 ? "is" : "are"} being used to link {activeCategory} records to customers
+            {usedAssociationFields.join(" and ")} {usedAssociationFields.length === 1 ? "is" : "are"} being used to link {activeCategory} records to customers
           </AlertDescription>
         </Alert>
       )}
@@ -73,7 +78,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ activeCategory }) => {
           <AlertDescription className={hasAssociationFieldForUse ? "text-green-700 dark:text-green-300" : "text-red-700 dark:text-red-300"}>
             {hasAssociationFieldForUse ? (
               <>
-                {associationFields.filter(field => field.useAsAssociation).map(field => field.label).join(" and ")} {associationFields.filter(field => field.useAsAssociation).length === 1 ? "is" : "are"} marked to use as association for customer data
+                {usedAssociationFields.join(" and ")} {usedAssociationFields.length === 1 ? "is" : "are"} marked to use as association for customer data
               </>
             ) : (
               <>
