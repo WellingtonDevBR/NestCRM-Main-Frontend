@@ -23,10 +23,10 @@ export interface InteractionAssociations {
 export interface InteractionApiRequest {
   customFields: Record<string, string | number | boolean | Date>;
   associations: InteractionAssociations;
-  type: Interaction['type'];
-  subject: string;
-  content: string;
-  status: Interaction['status'];
+  type?: Interaction['type'];
+  subject?: string;
+  content?: string;
+  status?: Interaction['status'];
   duration?: number;
   assignedTo?: string;
   agentName?: string;

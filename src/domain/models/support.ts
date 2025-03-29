@@ -22,9 +22,9 @@ export interface SupportTicketAssociations {
 export interface SupportTicketApiRequest {
   customFields: Record<string, string | number | boolean | Date>;
   associations: SupportTicketAssociations;
-  subject: string;
-  description: string;
-  status: SupportTicket['status'];
-  priority: SupportTicket['priority'];
+  subject?: string;
+  description?: string;
+  status?: SupportTicket['status'];
+  priority?: SupportTicket['priority'];
   assignedTo?: string;
 }

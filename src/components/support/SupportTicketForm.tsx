@@ -29,12 +29,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      subject: ticket?.subject || "",
-      description: ticket?.description || "",
-      status: (ticket?.status as string) || "open",
-      priority: (ticket?.priority as string) || "medium",
-      assignedTo: ticket?.assignedTo || "",
-      customFields: ticket?.customFields || {} as Record<string, string | number>
+      customFields: (ticket?.customFields || {}) as Record<string, string | number>
     }
   });
 
@@ -67,12 +62,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
     if (isEditMode && ticket) {
       // Reset form with ticket values
       form.reset({
-        subject: ticket.subject,
-        description: ticket.description,
-        status: ticket.status,
-        priority: ticket.priority,
-        assignedTo: ticket.assignedTo || "",
-        customFields: ticket.customFields as Record<string, string | number> || {}
+        customFields: (ticket.customFields || {}) as Record<string, string | number>
       });
     }
   }, [isEditMode, ticket, form]);
@@ -101,12 +91,7 @@ const SupportTicketForm: React.FC<SupportTicketFormProps> = ({
       
       const ticketData: SupportTicketApiRequest = {
         customFields: data.customFields as Record<string, string | number | boolean | Date>,
-        associations: associations,
-        subject: data.subject,
-        description: data.description,
-        status: data.status as SupportTicket['status'],
-        priority: data.priority as SupportTicket['priority'],
-        assignedTo: data.assignedTo
+        associations: associations
       };
 
       console.log("Submitting support ticket data:", ticketData);

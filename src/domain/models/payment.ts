@@ -22,8 +22,8 @@ export interface PaymentAssociations {
 export interface PaymentApiRequest {
   customFields: Record<string, string | number | boolean | Date>;
   associations: PaymentAssociations;
-  method: Payment['method'];
-  amount: number;
+  method?: Payment['method'];
+  amount?: number;
   reference?: string;
-  status: Payment['status'];
+  status?: Payment['status'];
 }

@@ -28,7 +28,7 @@ export interface OrderAssociations {
 export interface OrderApiRequest {
   customFields: Record<string, string | number | boolean | Date>;
   associations: OrderAssociations;
-  items: OrderItem[];
-  status: Order['status'];
-  total: number;
+  items?: OrderItem[];
+  status?: Order['status'];
+  total?: number;
 }

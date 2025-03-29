@@ -29,11 +29,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      method: (payment?.method as string) || "credit_card",
-      status: (payment?.status as string) || "pending",
-      amount: payment?.amount || 0,
-      reference: payment?.reference || "",
-      customFields: payment?.customFields as Record<string, string | number> || {}
+      customFields: (payment?.customFields || {}) as Record<string, string | number>
     }
   });
 
@@ -66,11 +62,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     if (isEditMode && payment) {
       // Reset form with payment values
       form.reset({
-        method: payment.method,
-        status: payment.status,
-        amount: payment.amount,
-        reference: payment.reference || "",
-        customFields: payment.customFields as Record<string, string | number> || {}
+        customFields: (payment.customFields || {}) as Record<string, string | number>
       });
     }
   }, [isEditMode, payment, form]);
@@ -104,11 +96,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       
       const paymentData: PaymentApiRequest = {
         customFields: data.customFields as Record<string, string | number | boolean | Date>,
-        associations: associations,
-        method: data.method as Payment['method'],
-        status: data.status as Payment['status'],
-        amount: data.amount,
-        reference: data.reference
+        associations: associations
       };
 
       console.log("Submitting payment data:", paymentData);

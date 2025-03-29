@@ -29,10 +29,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      status: (order?.status as string) || "pending",
-      total: order?.total || 0,
-      items: order?.items || [{ id: "1", productName: "", quantity: 1, unitPrice: 0, total: 0 }],
-      customFields: order?.customFields as Record<string, string | number> || {}
+      customFields: (order?.customFields || {}) as Record<string, string | number>
     }
   });
 
@@ -65,10 +62,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     if (isEditMode && order) {
       // Reset form with order values
       form.reset({
-        status: order.status,
-        total: order.total,
-        items: order.items,
-        customFields: order.customFields as Record<string, string | number> || {}
+        customFields: (order.customFields || {}) as Record<string, string | number>
       });
     }
   }, [isEditMode, order, form]);
@@ -97,10 +91,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
       
       const orderData: OrderApiRequest = {
         customFields: data.customFields as Record<string, string | number | boolean | Date>,
-        associations: associations,
-        items: data.items,
-        status: data.status as Order['status'],
-        total: data.total
+        associations: associations
       };
 
       console.log("Submitting order data:", orderData);

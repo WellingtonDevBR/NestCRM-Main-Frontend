@@ -29,14 +29,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
   // Initialize form with default values
   const form = useForm({
     defaultValues: {
-      type: (interaction?.type as string) || "email",
-      subject: interaction?.subject || "",
-      content: interaction?.content || "",
-      status: (interaction?.status as string) || "open",
-      duration: interaction?.duration || 0,
-      assignedTo: interaction?.assignedTo || "",
-      agentName: interaction?.agentName || "",
-      customFields: interaction?.customFields as Record<string, string | number> || {}
+      customFields: (interaction?.customFields || {}) as Record<string, string | number>
     }
   });
 
@@ -69,14 +62,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
     if (isEditMode && interaction) {
       // Reset form with interaction values
       form.reset({
-        type: interaction.type,
-        subject: interaction.subject,
-        content: interaction.content,
-        status: interaction.status,
-        duration: interaction.duration || 0,
-        assignedTo: interaction.assignedTo || "",
-        agentName: interaction.agentName || "",
-        customFields: interaction.customFields as Record<string, string | number> || {}
+        customFields: (interaction.customFields || {}) as Record<string, string | number>
       });
     }
   }, [isEditMode, interaction, form]);
@@ -105,14 +91,7 @@ const InteractionForm: React.FC<InteractionFormProps> = ({
       
       const interactionData: InteractionApiRequest = {
         customFields: data.customFields as Record<string, string | number | boolean | Date>,
-        associations: associations,
-        type: data.type as Interaction['type'],
-        subject: data.subject,
-        content: data.content,
-        status: data.status as Interaction['status'],
-        duration: data.duration,
-        assignedTo: data.assignedTo,
-        agentName: data.agentName
+        associations: associations
       };
 
       console.log("Submitting interaction data:", interactionData);
