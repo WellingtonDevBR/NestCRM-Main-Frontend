@@ -63,10 +63,11 @@ const CustomFieldsSection: React.FC<CustomFieldsSectionProps> = ({
     
     const fieldProps = getFieldProps(field, value, onFieldChange);
     
+    // Fixed: Safely handle className
     return (
       <Input 
         {...fieldProps}
-        className={`${fieldProps.className || ''} ${inputClassName}`.trim()}
+        className={inputClassName}
       />
     );
   };
