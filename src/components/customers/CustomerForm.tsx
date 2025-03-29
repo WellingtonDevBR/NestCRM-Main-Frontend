@@ -94,6 +94,22 @@ const CustomerForm: React.FC<CustomerFormProps> = ({
       toast.error(`Please fill in required fields: ${fieldLabels}`);
       return;
     }
+    
+    // Validate identifier fields
+    const identifierFields = customerFields.filter(field => field.isIdentifier);
+    
+    if (identifierFields.length > 0) {
+      const missingIdentifiers = identifierFields.filter(field => {
+        const value = formData.customFields[field.label];
+        return value === undefined || value === null || value === "";
+      });
+      
+      if (missingIdentifiers.length > 0) {
+        const fieldLabels = missingIdentifiers.map(f => f.label).join(", ");
+        toast.error(`Please fill in identifier fields: ${fieldLabels}`);
+        return;
+      }
+    }
 
     try {
       if (isEditMode && customer) {

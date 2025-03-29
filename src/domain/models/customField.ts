@@ -7,6 +7,7 @@ export interface CustomField {
   required: boolean;
   options?: string[]; // For select type fields
   uiConfig?: UIConfig; // Property for UI rendering configuration
+  isIdentifier?: boolean; // New property to mark a field as an identifier
 }
 
 // UI Configuration for custom field rendering
@@ -53,3 +54,6 @@ export const FIELD_CATEGORIES: FieldCategory[] = [
   "Interaction", 
   "Support"
 ];
+
+// Identifier field types
+export const IDENTIFIER_FIELD_TYPES = ["text", "number"];

@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Trash2, Plus, X, Settings2 } from "lucide-react";
+import { Trash2, Plus, X, Settings2, Link2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import {
   PopoverTrigger
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { CustomField, UIConfig } from "@/domain/models/customField";
+import { CustomField, UIConfig, IDENTIFIER_FIELD_TYPES } from "@/domain/models/customField";
 import { Separator } from "@/components/ui/separator";
 
 interface CustomFieldItemProps {
@@ -27,6 +27,7 @@ interface CustomFieldItemProps {
   index: number;
   onUpdateField: (index: number, updates: Partial<CustomField>) => void;
   onRemoveField: (index: number) => void;
+  category?: string;
 }
 
 const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
@@ -34,10 +35,14 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   index,
   onUpdateField,
   onRemoveField,
+  category = "Customer"
 }) => {
   const [newOption, setNewOption] = useState("");
   const [colorKey, setColorKey] = useState("");
   const [colorValue, setColorValue] = useState("green");
+  
+  // Check if field type is eligible to be an identifier
+  const canBeIdentifier = category === "Customer" && IDENTIFIER_FIELD_TYPES.includes(field.type);
   
   const addOption = () => {
     if (!newOption.trim()) return;
@@ -200,11 +205,20 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
       <div className="col-span-2">
         <Select
           value={field.type}
-          onValueChange={value => onUpdateField(index, { 
-            type: value as "text" | "date" | "number" | "select",
-            // Initialize options array if selecting "select" type
-            ...(value === "select" && !field.options ? { options: [] } : {})
-          })}
+          onValueChange={value => {
+            const updates: Partial<CustomField> = { 
+              type: value as "text" | "date" | "number" | "select",
+              // Initialize options array if selecting "select" type
+              ...(value === "select" && !field.options ? { options: [] } : {})
+            };
+            
+            // Unset isIdentifier if new type can't be an identifier
+            if (field.isIdentifier && !IDENTIFIER_FIELD_TYPES.includes(value)) {
+              updates.isIdentifier = false;
+            }
+            
+            onUpdateField(index, updates);
+          }}
         >
           <SelectTrigger className="dark:bg-gray-800 dark:border-gray-700">
             <SelectValue placeholder="Select type" />
@@ -218,13 +232,32 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
         </Select>
       </div>
       <div className="col-span-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Switch
-            id={`required-${index}`}
-            checked={field.required}
-            onCheckedChange={checked => onUpdateField(index, { required: checked })}
-          />
-          <Label htmlFor={`required-${index}`} className="cursor-pointer">Required field</Label>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <Switch
+              id={`required-${index}`}
+              checked={field.required}
+              onCheckedChange={checked => onUpdateField(index, { required: checked })}
+            />
+            <Label htmlFor={`required-${index}`} className="cursor-pointer">Required field</Label>
+          </div>
+          
+          {canBeIdentifier && (
+            <div className="flex items-center gap-2">
+              <Switch
+                id={`identifier-${index}`}
+                checked={field.isIdentifier || false}
+                onCheckedChange={checked => onUpdateField(index, { isIdentifier: checked })}
+              />
+              <Label htmlFor={`identifier-${index}`} className="cursor-pointer flex items-center gap-1">
+                <Link2 className="h-3.5 w-3.5" />
+                <span>Use as identifier</span>
+              </Label>
+              {field.isIdentifier && (
+                <Badge className="ml-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Primary Link</Badge>
+              )}
+            </div>
+          )}
         </div>
         
         {field.type === "select" && (

@@ -1,11 +1,12 @@
 
 import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CustomField } from "@/domain/models/customField";
 import CustomFieldItem from "./CustomFieldItem";
 import NoCustomFields from "./NoCustomFields";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface CustomFieldFormProps {
   fields: CustomField[];
@@ -15,6 +16,7 @@ interface CustomFieldFormProps {
   onRemoveField: (index: number) => void;
   onUpdateField: (index: number, updates: Partial<CustomField>) => void;
   onSubmit: (e: React.FormEvent) => Promise<void>;
+  activeCategory?: string;
 }
 
 const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
@@ -25,6 +27,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
   onRemoveField,
   onUpdateField,
   onSubmit,
+  activeCategory = "Customer"
 }) => {
   if (isLoading) {
     return (
@@ -36,16 +39,57 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
     );
   }
   
+  // Check if there are identifier fields in the list
+  const hasIdentifierField = fields.some(field => field.isIdentifier);
+  
+  // Get identifier fields that are being used
+  const identifierFields = fields.filter(field => field.isIdentifier);
+  
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
         <div className="flex gap-2">
           <div className="text-sm text-amber-800 dark:text-amber-200">
-            Customer ID, Name, Email, and Phone are built-in fields and don't need to be added here.
-            Fields configured here will appear in the corresponding section of the application.
+            {activeCategory === "Customer" ? (
+              <>
+                Customer ID, Name, Email, and Phone are built-in fields. You need to mark at least one field as an identifier (
+                <Link2 className="inline h-3.5 w-3.5" />) to link customers across modules.
+              </>
+            ) : (
+              <>
+                Fields in this category will be linked to customers using the identifier field you selected in the Customer category.
+              </>
+            )}
           </div>
         </div>
       </div>
+      
+      {activeCategory === "Customer" && !hasIdentifierField && fields.length > 0 && (
+        <Alert className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+          <AlertTitle className="text-blue-800 dark:text-blue-200">
+            <Link2 className="inline h-4 w-4 mr-2" />
+            Please designate an identifier field
+          </AlertTitle>
+          <AlertDescription className="text-blue-700 dark:text-blue-300">
+            Mark at least one text or number field as an identifier to link customers across modules.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {activeCategory === "Customer" && hasIdentifierField && (
+        <Alert className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+          <AlertTitle className="text-green-800 dark:text-green-200">
+            <Link2 className="inline h-4 w-4 mr-2" />
+            Identifier field configured
+          </AlertTitle>
+          <AlertDescription className="text-green-700 dark:text-green-300">
+            {identifierFields.length === 1 
+              ? `"${identifierFields[0].label}" will be used to identify customers` 
+              : `${identifierFields.length} fields will be used to identify customers`
+            }
+          </AlertDescription>
+        </Alert>
+      )}
       
       {fields.length === 0 ? (
         <NoCustomFields onAddField={onAddField} />
@@ -66,6 +110,7 @@ const CustomFieldForm: React.FC<CustomFieldFormProps> = ({
               index={index}
               onUpdateField={onUpdateField}
               onRemoveField={onRemoveField}
+              category={activeCategory}
             />
           ))}
         </div>

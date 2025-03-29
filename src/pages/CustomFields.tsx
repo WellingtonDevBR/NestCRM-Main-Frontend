@@ -96,6 +96,18 @@ const CustomFields = () => {
       return;
     }
     
+    // For non-Customer categories, check if there are identifier fields
+    if (activeCategory !== "Customer") {
+      // Customer identifiers available?
+      const customerCategory = customFieldCategories?.find(c => c.category === "Customer");
+      const hasCustomerIdentifiers = customerCategory?.fields.some(f => f.isIdentifier);
+      
+      if (!hasCustomerIdentifiers) {
+        toast.error("Please configure at least one identifier field in the Customer category first");
+        return;
+      }
+    }
+    
     try {
       setIsUpdating(true);
       console.log(`Submitting fields for ${activeCategory}:`, categoryFields);
@@ -139,7 +151,7 @@ const CustomFields = () => {
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Important</AlertTitle>
               <AlertDescription>
-                Configure the custom fields for each module in the system. Each category's fields will be displayed in their respective section.
+                Configure the custom fields for each module in the system. For Customer category, mark at least one field as an identifier to link with other modules.
               </AlertDescription>
             </Alert>
             
@@ -163,6 +175,7 @@ const CustomFields = () => {
                       onRemoveField={removeField}
                       onUpdateField={updateField}
                       onSubmit={handleSubmit}
+                      activeCategory={category}
                     />
                   </CustomFieldsContainer>
                 </TabsContent>
