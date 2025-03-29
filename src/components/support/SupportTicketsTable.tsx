@@ -29,7 +29,7 @@ const SupportTicketsTable: React.FC<SupportTicketsTableProps> = ({ tickets, isLo
   
   // Filter out association fields that are not marked for use
   const visibleSupportFields = supportCustomFields.filter(field => 
-    !field.isAssociationField || field.useAsAssociation
+    !field.isAssociationField || field.useAsAssociation === true
   );
 
   // Column visibility state - start with all custom fields visible

@@ -37,6 +37,14 @@ const CustomFieldItem: React.FC<CustomFieldItemProps> = ({
   
   // Determine if this is a special association field (customer_id or email)
   const isSpecialAssociationField = field.isAssociationField === true;
+
+  // Debug logs for field states
+  useEffect(() => {
+    if (isSpecialAssociationField) {
+      console.log(`Association field in ${category}: ${field.key}`, 
+        { useAsAssociation: field.useAsAssociation });
+    }
+  }, [field, category, isSpecialAssociationField]);
   
   return (
     <div className={`grid grid-cols-12 gap-4 items-center p-4 border rounded-lg bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm hover:border-purple-200 dark:hover:border-purple-700 transition-colors ${

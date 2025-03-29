@@ -38,7 +38,11 @@ export function useCustomFieldsManager() {
       console.log("useCustomFieldsManager > Found category data:", category);
       
       if (category) {
-        dispatch({ type: 'SET_FIELDS', payload: category.fields || [] });
+        // Ensure association fields are properly set up for this category before setting fields
+        const fieldsWithAssociations = category.fields ? 
+          ensureAssociationFields(category.fields, activeCategory) : [];
+        
+        dispatch({ type: 'SET_FIELDS', payload: fieldsWithAssociations });
         setInitialized(true);
       } else {
         dispatch({ type: 'SET_FIELDS', payload: [] });
@@ -49,14 +53,15 @@ export function useCustomFieldsManager() {
     }
   }, [customFieldCategories, activeCategory]);
 
-  // Ensure BOTH association fields are present in each category
-  // This runs only once after the initial fields are loaded to avoid infinite loops
+  // Update association fields when switching categories
   useEffect(() => {
     if (initialized && categoryFields.length > 0) {
+      console.log(`Checking association fields for ${activeCategory}`);
       const updatedFields = ensureAssociationFields(categoryFields, activeCategory);
       
-      // Only update if we actually added fields
-      if (updatedFields.length !== categoryFields.length) {
+      // Only update if we actually need to change something
+      if (JSON.stringify(updatedFields) !== JSON.stringify(categoryFields)) {
+        console.log(`Updating association fields for ${activeCategory}`);
         dispatch({ type: 'SET_FIELDS', payload: updatedFields });
       }
     }

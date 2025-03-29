@@ -98,6 +98,7 @@ export const ensureAssociationFields = (
   
   // For existing association fields, respect their current configuration
   if (fieldsToAdd.length > 0) {
+    console.log(`Adding association fields for ${category}:`, fieldsToAdd);
     return [...fieldsToAdd, ...fields];
   }
   
