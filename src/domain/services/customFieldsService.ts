@@ -80,9 +80,19 @@ export const ensureAssociationFields = (
         // For non-Customer categories, default customer_id to true
         // For Customer category, we don't set any defaults so user must choose
         useAsAssociation: 
-          defaultField.key === "customer_id" && category !== "Customer"
+          category !== "Customer" ? defaultField.key === "customer_id" : false
       };
       fieldsToAdd.push(newField);
+    } else {
+      // Field exists, preserve its current state
+      const existingField = existingFieldMap[defaultField.key];
+      
+      // If the field exists but doesn't have useAsAssociation set (undefined),
+      // set a default value based on category and field key
+      if (existingField.useAsAssociation === undefined) {
+        existingField.useAsAssociation = 
+          category !== "Customer" ? defaultField.key === "customer_id" : false;
+      }
     }
   });
   

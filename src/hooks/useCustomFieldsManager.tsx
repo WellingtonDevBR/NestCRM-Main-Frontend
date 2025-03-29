@@ -26,6 +26,7 @@ export function useCustomFieldsManager() {
   const [activeCategory, setActiveCategory] = useState("Customer");
   const [categoryFields, dispatch] = useReducer(customFieldsReducer, []);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   // When customFieldCategories data is loaded or activeCategory changes, update the fields
   useEffect(() => {
@@ -38,6 +39,7 @@ export function useCustomFieldsManager() {
       
       if (category) {
         dispatch({ type: 'SET_FIELDS', payload: category.fields || [] });
+        setInitialized(true);
       } else {
         dispatch({ type: 'SET_FIELDS', payload: [] });
       }
@@ -48,14 +50,17 @@ export function useCustomFieldsManager() {
   }, [customFieldCategories, activeCategory]);
 
   // Ensure BOTH association fields are present in each category
+  // This runs only once after the initial fields are loaded to avoid infinite loops
   useEffect(() => {
-    const updatedFields = ensureAssociationFields(categoryFields, activeCategory);
-    
-    // Only update if we actually added fields
-    if (updatedFields.length !== categoryFields.length) {
-      dispatch({ type: 'SET_FIELDS', payload: updatedFields });
+    if (initialized && categoryFields.length > 0) {
+      const updatedFields = ensureAssociationFields(categoryFields, activeCategory);
+      
+      // Only update if we actually added fields
+      if (updatedFields.length !== categoryFields.length) {
+        dispatch({ type: 'SET_FIELDS', payload: updatedFields });
+      }
     }
-  }, [activeCategory, categoryFields]);
+  }, [initialized, activeCategory]);
 
   const addField = () => {
     dispatch({ type: 'ADD_FIELD' });

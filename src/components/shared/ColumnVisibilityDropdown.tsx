@@ -31,9 +31,9 @@ const ColumnVisibilityDropdown: React.FC<ColumnVisibilityDropdownProps> = ({
   onToggleColumn,
   basicColumns = [],
 }) => {
-  // Filter out association fields that are not marked for use
+  // Only show association fields that are marked for use
   const visibleFields = customFields.filter(field => 
-    !field.isAssociationField || field.useAsAssociation
+    !field.isAssociationField || field.useAsAssociation === true
   );
 
   return (
