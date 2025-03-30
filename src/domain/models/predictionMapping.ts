@@ -62,7 +62,7 @@ export const FULL_FEATURES: ModelFeature[] = [
   ...LIGHT_FEATURES,
   { 
     modelField: "Dependents", 
-    modelType: "select", 
+    modelType: "number", 
     description: "Whether customer has dependents (e.g., children, elderly parents)" 
   },
   { 
