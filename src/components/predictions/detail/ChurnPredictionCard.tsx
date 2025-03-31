@@ -19,20 +19,29 @@ const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction })
       return { 
         label: "High Risk", 
         variant: "destructive" as const,
-        icon: <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+        icon: <AlertTriangle className="h-3.5 w-3.5 mr-1" />,
+        bgClass: "bg-red-50 dark:bg-red-900/20",
+        borderClass: "border-red-200 dark:border-red-800/30",
+        textClass: "text-red-700 dark:text-red-300"
       };
     }
     if (percentage >= 40) {
       return { 
         label: "Medium Risk", 
         variant: "warning" as const,
-        icon: <AlertCircle className="h-3.5 w-3.5 mr-1" />
+        icon: <AlertCircle className="h-3.5 w-3.5 mr-1" />,
+        bgClass: "bg-amber-50 dark:bg-amber-900/20",
+        borderClass: "border-amber-200 dark:border-amber-800/30",
+        textClass: "text-amber-700 dark:text-amber-300"
       };
     }
     return { 
       label: "Low Risk", 
       variant: "success" as const,
-      icon: <CheckCircle className="h-3.5 w-3.5 mr-1" />
+      icon: <CheckCircle className="h-3.5 w-3.5 mr-1" />,
+      bgClass: "bg-green-50 dark:bg-green-900/20",
+      borderClass: "border-green-200 dark:border-green-800/30",
+      textClass: "text-green-700 dark:text-green-300"
     };
   };
   
@@ -53,10 +62,12 @@ const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction })
         <span className="text-sm text-muted-foreground">
           Prediction Date: {formatDate(prediction.predictionDate)}
         </span>
-        <Badge variant={riskInfo.variant} className="flex items-center font-medium">
+        
+        {/* Updated Badge with better design */}
+        <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${riskInfo.bgClass} ${riskInfo.borderClass} ${riskInfo.textClass} border`}>
           {riskInfo.icon}
           {riskInfo.label}
-        </Badge>
+        </div>
       </div>
       
       <div className="mt-5 mb-4">

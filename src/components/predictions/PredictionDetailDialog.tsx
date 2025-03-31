@@ -12,8 +12,10 @@ import ChurnPredictionCard from "./detail/ChurnPredictionCard";
 import CustomerInfoCard from "./detail/CustomerInfoCard";
 import ContributingFactorsTable from "./detail/ContributingFactorsTable";
 import CustomerEngagementSection from "./detail/CustomerEngagementSection";
-import { useCustomerLookup } from "@/hooks/useCustomerLookup";
 import { formatDate } from "./detailUtils";
+import { useCustomerLookup } from "@/hooks/useCustomerLookup";
+import { usePredictionMapping } from "@/hooks/usePredictionMapping";
+import { useFieldMappedCustomerData } from "@/hooks/useFieldMappedCustomerData";
 
 interface PredictionDetailDialogProps {
   prediction: CustomerPrediction | null;
@@ -26,8 +28,20 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
   isOpen,
   onClose
 }) => {
-  // Fetch customer data using the customer lookup hook
-  const { customerData, isLoading } = useCustomerLookup(prediction);
+  // Get raw customer data
+  const { customerData, isLoading: isLoadingCustomer } = useCustomerLookup(prediction);
+  
+  // Get field mappings
+  const { mappingData, isLoading: isLoadingMappings } = usePredictionMapping();
+  
+  // Get field-mapped customer data
+  const { 
+    mappedCustomerData, 
+    isLoading: isLoadingMappedData,
+    getFieldValue 
+  } = useFieldMappedCustomerData(prediction);
+  
+  const isLoading = isLoadingCustomer || isLoadingMappings || isLoadingMappedData;
 
   if (!prediction) return null;
 
@@ -51,7 +65,9 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
           <CustomerInfoCard 
             customerId={prediction.customerId} 
             customerData={customerData}
+            mappingData={mappingData}
             loading={isLoading}
+            getFieldValue={getFieldValue}
           />
         </div>
 
@@ -61,7 +77,9 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
         {/* Customer Engagement and Support History */}
         <CustomerEngagementSection 
           customerData={customerData}
+          mappingData={mappingData}
           loading={isLoading}
+          getFieldValue={getFieldValue}
         />
       </DialogContent>
     </Dialog>
