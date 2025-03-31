@@ -12,12 +12,14 @@ export function usePredictions() {
   } = useQuery({
     queryKey: ["predictionModels"],
     queryFn: predictionService.getPredictionModels,
-    onSuccess: () => {
-      console.log("Models loaded successfully");
-    },
-    onError: (error) => {
-      toast.error("Failed to load prediction models");
-      console.error("Error loading models:", error);
+    meta: {
+      onSuccess: () => {
+        console.log("Models loaded successfully");
+      },
+      onError: (error: Error) => {
+        toast.error("Failed to load prediction models");
+        console.error("Error loading models:", error);
+      }
     }
   });
 
@@ -29,12 +31,14 @@ export function usePredictions() {
   } = useQuery({
     queryKey: ["customerPredictions"],
     queryFn: predictionService.getCustomerPredictions,
-    onSuccess: () => {
-      console.log("Predictions loaded successfully");
-    },
-    onError: (error) => {
-      toast.error("Failed to load customer predictions");
-      console.error("Error loading predictions:", error);
+    meta: {
+      onSuccess: () => {
+        console.log("Predictions loaded successfully");
+      },
+      onError: (error: Error) => {
+        toast.error("Failed to load customer predictions");
+        console.error("Error loading predictions:", error);
+      }
     }
   });
 
@@ -54,9 +58,11 @@ export function useCustomerPrediction(customerId: string) {
     queryKey: ["customerPrediction", customerId],
     queryFn: () => predictionService.getPredictionsByCustomerId(customerId),
     enabled: !!customerId,
-    onError: (error) => {
-      toast.error(`Failed to load prediction for customer ${customerId}`);
-      console.error("Error loading customer prediction:", error);
+    meta: {
+      onError: (error: Error) => {
+        toast.error(`Failed to load prediction for customer ${customerId}`);
+        console.error("Error loading customer prediction:", error);
+      }
     }
   });
 }
