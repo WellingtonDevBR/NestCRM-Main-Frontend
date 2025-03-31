@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { CustomerPrediction } from "@/domain/models/prediction";
 import { formatDate } from "../detailUtils";
 import { AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ChurnPredictionCardProps {
   prediction: CustomerPrediction;
@@ -17,23 +18,20 @@ const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction })
     if (percentage >= 70) {
       return { 
         label: "High Risk", 
-        color: "bg-red-100 text-red-800 border-red-300",
-        hoverColor: "hover:bg-red-200",
+        variant: "destructive" as const,
         icon: <AlertTriangle className="h-3.5 w-3.5 mr-1" />
       };
     }
     if (percentage >= 40) {
       return { 
         label: "Medium Risk", 
-        color: "bg-amber-100 text-amber-800 border-amber-300",
-        hoverColor: "hover:bg-amber-200",
+        variant: "warning" as const,
         icon: <AlertCircle className="h-3.5 w-3.5 mr-1" />
       };
     }
     return { 
       label: "Low Risk", 
-      color: "bg-green-100 text-green-800 border-green-300",
-      hoverColor: "hover:bg-green-200",
+      variant: "success" as const,
       icon: <CheckCircle className="h-3.5 w-3.5 mr-1" />
     };
   };
@@ -48,35 +46,35 @@ const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction })
   };
 
   return (
-    <div className="rounded-lg border p-4 shadow-sm">
-      <h3 className="font-medium text-lg mb-2">Churn Prediction</h3>
+    <div className="rounded-lg border bg-card p-5 shadow-sm transition-all hover:shadow-md">
+      <h3 className="font-semibold text-lg mb-3 text-card-foreground">Churn Prediction</h3>
       
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-center mb-3">
         <span className="text-sm text-muted-foreground">
           Prediction Date: {formatDate(prediction.predictionDate)}
         </span>
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${riskInfo.color} ${riskInfo.hoverColor} border`}>
+        <Badge variant={riskInfo.variant} className="flex items-center font-medium">
           {riskInfo.icon}
           {riskInfo.label}
-        </span>
+        </Badge>
       </div>
       
-      <div className="mt-4">
-        <div className="flex justify-between items-center mb-1">
-          <span>Churn Probability</span>
-          <span className="font-bold">{percentage}%</span>
+      <div className="mt-5 mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-medium">Churn Probability</span>
+          <span className="font-bold text-base">{percentage}%</span>
         </div>
         <Progress 
           value={percentage} 
-          className={`h-2 ${getProgressColorClass()}`}
+          className={`h-2.5 ${getProgressColorClass()}`}
         />
       </div>
       
-      <div className="mt-4">
-        <h4 className="text-sm font-medium mb-2">Prediction Model</h4>
-        <div className="text-sm text-muted-foreground">
-          <div>Model: {prediction.modelName}</div>
-          <div>Model ID: {prediction.modelId}</div>
+      <div className="mt-5 pt-3 border-t">
+        <h4 className="text-sm font-medium mb-2 text-card-foreground">Prediction Model</h4>
+        <div className="grid grid-cols-2 gap-1 text-sm text-muted-foreground">
+          <div>Model:</div><div className="font-medium text-foreground">{prediction.modelName}</div>
+          <div>Model ID:</div><div className="font-medium text-foreground">{prediction.modelId}</div>
         </div>
       </div>
     </div>

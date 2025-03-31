@@ -4,7 +4,8 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { CustomerPrediction } from "@/domain/models/prediction";
 import ChurnPredictionCard from "./detail/ChurnPredictionCard";
@@ -12,6 +13,7 @@ import CustomerInfoCard from "./detail/CustomerInfoCard";
 import ContributingFactorsTable from "./detail/ContributingFactorsTable";
 import CustomerEngagementSection from "./detail/CustomerEngagementSection";
 import { useCustomerLookup } from "@/hooks/useCustomerLookup";
+import { formatDate } from "./detailUtils";
 
 interface PredictionDetailDialogProps {
   prediction: CustomerPrediction | null;
@@ -31,14 +33,17 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-1">
+          <DialogTitle className="text-xl font-bold">
             Customer Prediction: {prediction.customerName || `Customer ${prediction.customerId}`}
           </DialogTitle>
+          <DialogDescription>
+            Analysis from {formatDate(prediction.predictionDate)} using {prediction.modelName} model
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
           {/* Prediction Overview Card */}
           <ChurnPredictionCard prediction={prediction} />
 
