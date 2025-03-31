@@ -1,47 +1,28 @@
 
-import { useQuery } from "@tanstack/react-query";
-import { predictionService } from "@/services/predictionService";
-import { toast } from "sonner";
+import { usePredictionModels } from "@/hooks/usePredictionModels";
+import { useCustomerPredictions } from "@/hooks/useCustomerPredictions";
 
+/**
+ * Facade hook that combines model and customer prediction data
+ * This follows clean architecture by separating the data fetching concerns
+ * into individual hooks while providing a simple interface for components
+ */
 export function usePredictions() {
-  // Get prediction models
+  // Get prediction models using the dedicated hook
   const { 
-    data: models = [], 
+    models,
     isLoading: isModelsLoading,
     error: modelsError
-  } = useQuery({
-    queryKey: ["predictionModels"],
-    queryFn: predictionService.getPredictionModels,
-    meta: {
-      onSuccess: () => {
-        console.log("Models loaded successfully");
-      },
-      onError: (error: Error) => {
-        toast.error("Failed to load prediction models");
-        console.error("Error loading models:", error);
-      }
-    }
-  });
+  } = usePredictionModels();
 
-  // Get customer predictions
+  // Get customer predictions using the dedicated hook
   const {
-    data: predictions = [],
+    predictions,
     isLoading: isPredictionsLoading,
     error: predictionsError
-  } = useQuery({
-    queryKey: ["customerPredictions"],
-    queryFn: predictionService.getCustomerPredictions,
-    meta: {
-      onSuccess: () => {
-        console.log("Predictions loaded successfully");
-      },
-      onError: (error: Error) => {
-        toast.error("Failed to load customer predictions");
-        console.error("Error loading predictions:", error);
-      }
-    }
-  });
+  } = useCustomerPredictions();
 
+  // Combine loading states and errors
   const isLoading = isModelsLoading || isPredictionsLoading;
   const error = modelsError || predictionsError;
 
@@ -53,16 +34,5 @@ export function usePredictions() {
   };
 }
 
-export function useCustomerPrediction(customerId: string) {
-  return useQuery({
-    queryKey: ["customerPrediction", customerId],
-    queryFn: () => predictionService.getPredictionsByCustomerId(customerId),
-    enabled: !!customerId,
-    meta: {
-      onError: (error: Error) => {
-        toast.error(`Failed to load prediction for customer ${customerId}`);
-        console.error("Error loading customer prediction:", error);
-      }
-    }
-  });
-}
+// Re-export the single customer prediction hook for convenience
+export { useCustomerPredictionById } from "@/hooks/useCustomerPredictions";

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { usePredictions } from "@/hooks/usePredictions";
 import { usePredictionState } from "@/hooks/usePredictionState";
@@ -12,11 +11,9 @@ import ErrorState from "@/components/predictions/ErrorState";
 const Predictions: React.FC = () => {
   const { models, predictions, isLoading, error } = usePredictions();
   
-  // For detail dialog
   const [selectedPrediction, setSelectedPrediction] = useState<CustomerPrediction | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   
-  // Get prediction state from custom hook
   const {
     currentPage,
     setCurrentPage,
@@ -51,10 +48,8 @@ const Predictions: React.FC = () => {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Predictions</h1>
       
-      {/* Models section */}
       <ModelsSection models={models} />
       
-      {/* Customer predictions section */}
       <PredictionTabs
         activeTab={activeTab}
         onTabChange={handleTabChange}
@@ -69,7 +64,6 @@ const Predictions: React.FC = () => {
         onSelectPrediction={openPredictionDetails}
       />
       
-      {/* Prediction Details Dialog */}
       <PredictionDetailDialog 
         prediction={selectedPrediction}
         isOpen={dialogOpen}
