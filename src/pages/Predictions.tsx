@@ -1,6 +1,6 @@
 
-import React, { useState } from "react";
-import { usePredictions, useCustomerPrediction } from "@/hooks/usePredictions";
+import React, { useState, useEffect } from "react";
+import { usePredictions } from "@/hooks/usePredictions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +28,64 @@ const Predictions: React.FC = () => {
   // For detail dialog
   const [selectedPrediction, setSelectedPrediction] = useState<CustomerPrediction | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // For tabs and filtered data
+  const [activeTab, setActiveTab] = useState("all");
+  const [highRiskCustomers, setHighRiskCustomers] = useState<CustomerPrediction[]>([]);
+  const [mediumRiskCustomers, setMediumRiskCustomers] = useState<CustomerPrediction[]>([]);
+  const [lowRiskCustomers, setLowRiskCustomers] = useState<CustomerPrediction[]>([]);
+  const [sortedPredictions, setSortedPredictions] = useState<CustomerPrediction[]>([]);
+  const [currentItems, setCurrentItems] = useState<CustomerPrediction[]>([]);
+  const [pageCount, setPageCount] = useState(0);
+
+  // Process predictions when data changes
+  useEffect(() => {
+    if (predictions.length > 0) {
+      // Sort predictions by churn probability (highest first)
+      const sorted = [...predictions].sort((a, b) => 
+        b.churnProbability - a.churnProbability
+      );
+      setSortedPredictions(sorted);
+      
+      // High-risk customers (>70% churn probability)
+      setHighRiskCustomers(sorted.filter(p => p.churnProbability >= 0.7));
+      
+      // Medium-risk customers (40-70% churn probability)
+      setMediumRiskCustomers(sorted.filter(p => 
+        p.churnProbability >= 0.4 && p.churnProbability < 0.7
+      ));
+      
+      // Low-risk customers (<40% churn probability)
+      setLowRiskCustomers(sorted.filter(p => p.churnProbability < 0.4));
+    }
+  }, [predictions]);
+
+  // Update current items and page count when tab or page changes
+  useEffect(() => {
+    let items: CustomerPrediction[] = [];
+    let count = 0;
+    
+    switch(activeTab) {
+      case "high-risk":
+        items = paginatePredictions(highRiskCustomers);
+        count = getPageCount(highRiskCustomers.length);
+        break;
+      case "medium-risk":
+        items = paginatePredictions(mediumRiskCustomers);
+        count = getPageCount(mediumRiskCustomers.length);
+        break;
+      case "low-risk":
+        items = paginatePredictions(lowRiskCustomers);
+        count = getPageCount(lowRiskCustomers.length);
+        break;
+      default:
+        items = paginatePredictions(sortedPredictions);
+        count = getPageCount(sortedPredictions.length);
+    }
+    
+    setCurrentItems(items);
+    setPageCount(count);
+  }, [activeTab, currentPage, highRiskCustomers, mediumRiskCustomers, lowRiskCustomers, sortedPredictions]);
 
   const openPredictionDetails = (prediction: CustomerPrediction) => {
     setSelectedPrediction(prediction);
@@ -36,6 +94,22 @@ const Predictions: React.FC = () => {
 
   const closePredictionDetails = () => {
     setDialogOpen(false);
+  };
+
+  // Pagination functions
+  const paginatePredictions = (predictionsList: CustomerPrediction[]) => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return predictionsList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
+
+  const getPageCount = (totalItems: number) => {
+    return Math.ceil(totalItems / ITEMS_PER_PAGE);
+  };
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // Reset to first page when changing tabs
   };
 
   if (isLoading) {
@@ -67,62 +141,6 @@ const Predictions: React.FC = () => {
       </div>
     );
   }
-
-  // Sort predictions by churn probability (highest first)
-  const sortedPredictions = [...predictions].sort((a, b) => 
-    b.churnProbability - a.churnProbability
-  );
-
-  // High-risk customers (>70% churn probability)
-  const highRiskCustomers = sortedPredictions.filter(p => p.churnProbability >= 0.7);
-  
-  // Medium-risk customers (40-70% churn probability)
-  const mediumRiskCustomers = sortedPredictions.filter(p => 
-    p.churnProbability >= 0.4 && p.churnProbability < 0.7
-  );
-  
-  // Low-risk customers (<40% churn probability)
-  const lowRiskCustomers = sortedPredictions.filter(p => p.churnProbability < 0.4);
-
-  // Pagination functions
-  const paginatePredictions = (predictionsList: CustomerPrediction[]) => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return predictionsList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  };
-
-  const getPageCount = (totalItems: number) => {
-    return Math.ceil(totalItems / ITEMS_PER_PAGE);
-  };
-
-  // Handle tab-specific pagination
-  const [activeTab, setActiveTab] = useState("all");
-  
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setCurrentPage(1); // Reset to first page when changing tabs
-  };
-  
-  // Get current items and page count for the active tab
-  const getCurrentItems = () => {
-    switch(activeTab) {
-      case "high-risk": return paginatePredictions(highRiskCustomers);
-      case "medium-risk": return paginatePredictions(mediumRiskCustomers);
-      case "low-risk": return paginatePredictions(lowRiskCustomers);
-      default: return paginatePredictions(sortedPredictions);
-    }
-  };
-  
-  const getCurrentPageCount = () => {
-    switch(activeTab) {
-      case "high-risk": return getPageCount(highRiskCustomers.length);
-      case "medium-risk": return getPageCount(mediumRiskCustomers.length);
-      case "low-risk": return getPageCount(lowRiskCustomers.length);
-      default: return getPageCount(sortedPredictions.length);
-    }
-  };
-  
-  const currentItems = getCurrentItems();
-  const pageCount = getCurrentPageCount();
 
   return (
     <div className="space-y-6">
