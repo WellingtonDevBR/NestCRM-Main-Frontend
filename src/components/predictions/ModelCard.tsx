@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { PredictionModel } from "@/domain/models/prediction";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 
 interface ModelCardProps {
   model: PredictionModel;
@@ -27,6 +27,17 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
     }
   };
 
+  // Format date safely
+  const formatDate = (dateString: string) => {
+    try {
+      const date = parseISO(dateString);
+      return isValid(date) ? format(date, "MMM d, yyyy") : "Invalid date";
+    } catch (error) {
+      console.error("Error parsing date:", error);
+      return "Invalid date";
+    }
+  };
+
   return (
     <Card className="h-full">
       <CardHeader className="pb-2">
@@ -47,7 +58,7 @@ const ModelCard: React.FC<ModelCardProps> = ({ model }) => {
           <div className="text-right">
             <span className="text-sm text-muted-foreground">Last Trained</span>
             <div className="text-sm">
-              {format(new Date(model.lastTrained), "MMM d, yyyy")}
+              {formatDate(model.lastTrained)}
             </div>
           </div>
         </div>

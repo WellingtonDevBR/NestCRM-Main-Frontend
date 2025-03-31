@@ -54,14 +54,18 @@ const PredictionScoreCard: React.FC<PredictionScoreCardProps> = ({
       <div className="mt-4">
         <h5 className="text-sm font-medium text-muted-foreground mb-2">Key Factors:</h5>
         <ul className="space-y-1">
-          {factorsContributing.map((factor, index) => (
-            <li key={index} className="text-sm flex justify-between">
-              <span>{factor.factor}</span>
-              <span className="text-muted-foreground">
-                {Math.round(factor.impact * 100)}%
-              </span>
-            </li>
-          ))}
+          {factorsContributing.length > 0 ? (
+            factorsContributing.map((factor, index) => (
+              <li key={index} className="text-sm flex justify-between">
+                <span>{factor.factor}</span>
+                <span className="text-muted-foreground">
+                  {Math.round(factor.impact * 100)}%
+                </span>
+              </li>
+            ))
+          ) : (
+            <li className="text-sm text-muted-foreground">No factors available</li>
+          )}
         </ul>
       </div>
     </Card>

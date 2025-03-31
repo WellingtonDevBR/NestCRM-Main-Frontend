@@ -1,35 +1,53 @@
 
 import { CustomerPrediction, PredictionModel } from "@/domain/models/prediction";
+import { api } from "@/utils/api";
 
 // Mock prediction models
 const mockPredictionModels: PredictionModel[] = [
   {
     id: "model-1",
-    name: "Churn Predictor v1",
+    name: "Basic Churn Model Predictor V1",
     description: "Basic model using customer activity and payment patterns",
-    accuracy: 0.87,
-    lastTrained: "2023-08-15T14:23:45Z",
+    accuracy: 0.74,
+    lastTrained: new Date().toISOString(),
     status: "active"
   },
   {
     id: "model-2",
-    name: "Advanced Churn Model",
+    name: "Advanced Churn Model Predictor",
     description: "Enhanced model using ML algorithms with support interaction analysis",
-    accuracy: 0.92,
-    lastTrained: "2023-09-05T11:30:22Z",
+    accuracy: 0.95,
+    lastTrained: new Date().toISOString(),
     status: "active"
-  },
-  {
-    id: "model-3",
-    name: "Behavioral Analysis Model",
-    description: "Experimental model focusing on user engagement patterns",
-    accuracy: 0.76,
-    lastTrained: "2023-07-28T09:45:11Z",
-    status: "training"
   }
 ];
 
-// Mock customer predictions
+// API function to fetch customer predictions
+const fetchCustomerPredictions = async (): Promise<CustomerPrediction[]> => {
+  try {
+    const response = await api.get<any[]>('/ai/predict');
+    
+    // Transform API response to match our domain model
+    return response.map(item => ({
+      id: item.id || `pred-${Math.random().toString(36).substr(2, 9)}`,
+      customerId: item.customer_id,
+      customerName: item.customer_name || `Customer ${item.customer_id}`, // Use provided name or generate one
+      churnProbability: item.churn_probability / 100, // Convert percentage to decimal
+      predictionDate: item.latest_prediction_at,
+      modelId: "model-1", // Default to first model
+      modelName: "Basic Churn Model Predictor V1",
+      factorsContributing: (item.key_factors || []).map(factor => ({
+        factor: factor.feature,
+        impact: factor.contribution / 100 // Convert percentage to decimal
+      }))
+    }));
+  } catch (error) {
+    console.error("Error fetching predictions:", error);
+    return mockCustomerPredictions; // Fallback to mock data if API fails
+  }
+};
+
+// Mock customer predictions (fallback data)
 const mockCustomerPredictions: CustomerPrediction[] = [
   {
     id: "pred-1",
@@ -124,21 +142,18 @@ export const predictionService = {
     return mockPredictionModels;
   },
 
-  // Get customer predictions
-  getCustomerPredictions: async (): Promise<CustomerPrediction[]> => {
-    // This would be replaced with an actual API call
-    return mockCustomerPredictions;
-  },
+  // Get customer predictions - now calls the API
+  getCustomerPredictions: fetchCustomerPredictions,
 
   // Get prediction by ID
   getPredictionById: async (id: string): Promise<CustomerPrediction | undefined> => {
-    // This would be replaced with an actual API call
-    return mockCustomerPredictions.find(pred => pred.id === id);
+    const predictions = await fetchCustomerPredictions();
+    return predictions.find(pred => pred.id === id);
   },
 
   // Get predictions by customer ID
   getPredictionsByCustomerId: async (customerId: string): Promise<CustomerPrediction[]> => {
-    // This would be replaced with an actual API call
-    return mockCustomerPredictions.filter(pred => pred.customerId === customerId);
+    const predictions = await fetchCustomerPredictions();
+    return predictions.filter(pred => pred.customerId === customerId);
   }
 };
