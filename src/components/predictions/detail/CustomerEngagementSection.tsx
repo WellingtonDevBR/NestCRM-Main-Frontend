@@ -2,9 +2,9 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Line } from "lucide-react";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { PredictionMapping } from "@/domain/models/predictionMapping";
-import { formatModelFieldValue } from "@/utils/fieldMappingUtils";
+import { formatCustomerField } from "../detailUtils";
 
 interface CustomerEngagementSectionProps {
   customerData: any;
@@ -21,75 +21,126 @@ const CustomerEngagementSection: React.FC<CustomerEngagementSectionProps> = ({
 }) => {
   if (loading) {
     return (
-      <Card className="mt-6 shadow-sm">
+      <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-lg">Customer Engagement</CardTitle>
+          <CardTitle>Customer Engagement & Support History</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-24 w-full" />
+        <CardContent>
+          <Skeleton className="h-64 w-full" />
         </CardContent>
       </Card>
     );
   }
 
-  // Define engagement metrics to display - using model field names
-  const engagementMetrics = [
-    { label: "Usage Frequency", field: "Usage_Frequency", icon: "📊" },
-    { label: "Days Since Last Interaction", field: "Days_Since_Last_Interaction", icon: "🗓️" },
-    { label: "Support Tickets", field: "Support_Calls", icon: "🎫" },
-    { label: "Payment Delay (Average)", field: "Payment_Delay", icon: "💲" },
-    { label: "Total Spend", field: "Total_Spend", icon: "💰" },
-  ];
+  const supportTickets = getFieldValue("Support_Calls");
+  const paymentDelays = getFieldValue("Payment_Delay");
+  const usageFrequency = getFieldValue("Usage_Frequency");
+  const daysSinceLastUse = getFieldValue("Days_Since_Last_Interaction");
 
-  // Count how many metrics we have values for
-  const availableMetrics = engagementMetrics.filter(metric => 
-    getFieldValue(metric.field) !== undefined
-  );
-
-  // If no metrics are available, return a message
-  if (availableMetrics.length === 0) {
-    return (
-      <Card className="mt-6 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg">Customer Engagement</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-sm">No engagement data available for this customer.</p>
-        </CardContent>
-      </Card>
-    );
+  // Only show section if we have at least one of these values
+  if (!supportTickets && !paymentDelays && !usageFrequency && !daysSinceLastUse) {
+    return null;
   }
 
   return (
-    <Card className="mt-6 shadow-sm transition-all hover:shadow-md">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Customer Engagement & Activity</CardTitle>
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Customer Engagement & Support History</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {availableMetrics.map(metric => {
-            const value = getFieldValue(metric.field);
-            if (value === undefined) return null;
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Engagement Metric</TableHead>
+              <TableHead>Value</TableHead>
+              <TableHead>Risk Assessment</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {supportTickets !== undefined && (
+              <TableRow>
+                <TableCell className="font-medium">Support Tickets</TableCell>
+                <TableCell>{formatCustomerField(supportTickets)}</TableCell>
+                <TableCell>
+                  <RiskIndicator value={supportTickets} threshold={3} inverse={false} />
+                </TableCell>
+              </TableRow>
+            )}
             
-            return (
-              <div 
-                key={metric.field} 
-                className="flex flex-col p-3 border rounded-md bg-gray-50 dark:bg-gray-800"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg">{metric.icon}</span>
-                  <span className="text-sm font-medium text-muted-foreground">{metric.label}</span>
-                </div>
-                <span className="text-lg font-semibold">
-                  {formatModelFieldValue(value, metric.field)}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+            {paymentDelays !== undefined && (
+              <TableRow>
+                <TableCell className="font-medium">Payment Delays</TableCell>
+                <TableCell>{formatCustomerField(paymentDelays)}</TableCell>
+                <TableCell>
+                  <RiskIndicator value={paymentDelays} threshold={15} inverse={false} />
+                </TableCell>
+              </TableRow>
+            )}
+            
+            {usageFrequency !== undefined && (
+              <TableRow>
+                <TableCell className="font-medium">Usage Frequency</TableCell>
+                <TableCell>{formatCustomerField(usageFrequency)}</TableCell>
+                <TableCell>
+                  <RiskIndicator value={usageFrequency} threshold={30} inverse={true} />
+                </TableCell>
+              </TableRow>
+            )}
+            
+            {daysSinceLastUse !== undefined && (
+              <TableRow>
+                <TableCell className="font-medium">Days Since Last Usage</TableCell>
+                <TableCell>{formatCustomerField(daysSinceLastUse)}</TableCell>
+                <TableCell>
+                  <RiskIndicator value={daysSinceLastUse} threshold={14} inverse={false} />
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
+  );
+};
+
+interface RiskIndicatorProps {
+  value: number;
+  threshold: number;
+  inverse: boolean;
+}
+
+// Risk indicator component
+const RiskIndicator: React.FC<RiskIndicatorProps> = ({ value, threshold, inverse }) => {
+  // For inverse metrics (like usage frequency), higher is better
+  // For regular metrics (like support tickets), lower is better
+  const isHighRisk = inverse 
+    ? value < threshold 
+    : value > threshold;
+  
+  const isMediumRisk = inverse
+    ? value < threshold * 1.5 && value >= threshold
+    : value > threshold * 0.5 && value <= threshold;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div 
+        className={`h-3 w-3 rounded-full ${
+          isHighRisk 
+            ? 'bg-red-500' 
+            : isMediumRisk 
+              ? 'bg-amber-500' 
+              : 'bg-green-500'
+        }`}
+      />
+      <span>
+        {isHighRisk 
+          ? 'High Risk' 
+          : isMediumRisk 
+            ? 'Medium Risk' 
+            : 'Low Risk'
+        }
+      </span>
+    </div>
   );
 };
 

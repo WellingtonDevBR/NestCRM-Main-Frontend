@@ -8,12 +8,16 @@ export function usePredictionState(predictions: CustomerPrediction[]) {
   // For pagination
   const [currentPage, setCurrentPage] = useState(1);
   
+  // For search
+  const [searchTerm, setSearchTerm] = useState("");
+  
   // For tabs and filtered data
   const [activeTab, setActiveTab] = useState("all");
   const [highRiskCustomers, setHighRiskCustomers] = useState<CustomerPrediction[]>([]);
   const [mediumRiskCustomers, setMediumRiskCustomers] = useState<CustomerPrediction[]>([]);
   const [lowRiskCustomers, setLowRiskCustomers] = useState<CustomerPrediction[]>([]);
   const [sortedPredictions, setSortedPredictions] = useState<CustomerPrediction[]>([]);
+  const [filteredPredictions, setFilteredPredictions] = useState<CustomerPrediction[]>([]);
   const [currentItems, setCurrentItems] = useState<CustomerPrediction[]>([]);
   const [pageCount, setPageCount] = useState(0);
 
@@ -39,32 +43,47 @@ export function usePredictionState(predictions: CustomerPrediction[]) {
     }
   }, [predictions]);
 
-  // Update current items and page count when tab or page changes
+  // Apply search filter across all predictions
   useEffect(() => {
-    let items: CustomerPrediction[] = [];
-    let count = 0;
-    
-    switch(activeTab) {
-      case "high-risk":
-        items = paginatePredictions(highRiskCustomers);
-        count = getPageCount(highRiskCustomers.length);
-        break;
-      case "medium-risk":
-        items = paginatePredictions(mediumRiskCustomers);
-        count = getPageCount(mediumRiskCustomers.length);
-        break;
-      case "low-risk":
-        items = paginatePredictions(lowRiskCustomers);
-        count = getPageCount(lowRiskCustomers.length);
-        break;
-      default:
-        items = paginatePredictions(sortedPredictions);
-        count = getPageCount(sortedPredictions.length);
+    if (searchTerm.trim() === "") {
+      // No search term, use unfiltered lists
+      setFilteredPredictions(getActiveTabPredictions());
+    } else {
+      // Filter the active tab predictions by search term
+      const predictions = getActiveTabPredictions();
+      const filtered = predictions.filter(prediction => 
+        prediction.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prediction.customerId.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredPredictions(filtered);
     }
+
+    // Reset to first page when search changes
+    setCurrentPage(1);
+  }, [searchTerm, activeTab, highRiskCustomers, mediumRiskCustomers, lowRiskCustomers, sortedPredictions]);
+
+  // Update current items and page count when filtered predictions or page changes
+  useEffect(() => {
+    const items = paginatePredictions(filteredPredictions);
+    const count = getPageCount(filteredPredictions.length);
     
     setCurrentItems(items);
     setPageCount(count);
-  }, [activeTab, currentPage, highRiskCustomers, mediumRiskCustomers, lowRiskCustomers, sortedPredictions]);
+  }, [filteredPredictions, currentPage]);
+
+  // Get predictions based on active tab
+  const getActiveTabPredictions = () => {
+    switch(activeTab) {
+      case "high-risk":
+        return highRiskCustomers;
+      case "medium-risk":
+        return mediumRiskCustomers;
+      case "low-risk":
+        return lowRiskCustomers;
+      default:
+        return sortedPredictions;
+    }
+  };
 
   // Pagination functions
   const paginatePredictions = (predictionsList: CustomerPrediction[]) => {
@@ -82,14 +101,22 @@ export function usePredictionState(predictions: CustomerPrediction[]) {
     setCurrentPage(1); // Reset to first page when changing tabs
   };
 
+  // Handle search change
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
   return {
     currentPage,
     setCurrentPage,
+    searchTerm,
+    handleSearchChange,
     activeTab,
     highRiskCustomers,
     mediumRiskCustomers,
     lowRiskCustomers,
     sortedPredictions,
+    filteredPredictions,
     currentItems,
     pageCount,
     handleTabChange

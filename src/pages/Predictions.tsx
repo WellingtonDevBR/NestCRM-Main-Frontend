@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { usePredictions } from "@/hooks/usePredictions";
 import { usePredictionState } from "@/hooks/usePredictionState";
@@ -17,11 +18,14 @@ const Predictions: React.FC = () => {
   const {
     currentPage,
     setCurrentPage,
+    searchTerm,
+    handleSearchChange,
     activeTab,
     highRiskCustomers,
     mediumRiskCustomers,
     lowRiskCustomers,
     sortedPredictions,
+    filteredPredictions,
     currentItems,
     pageCount,
     handleTabChange
@@ -53,10 +57,13 @@ const Predictions: React.FC = () => {
       <PredictionTabs
         activeTab={activeTab}
         onTabChange={handleTabChange}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
         sortedPredictions={sortedPredictions}
         highRiskCustomers={highRiskCustomers}
         mediumRiskCustomers={mediumRiskCustomers}
         lowRiskCustomers={lowRiskCustomers}
+        filteredPredictions={filteredPredictions}
         currentItems={currentItems}
         currentPage={currentPage}
         pageCount={pageCount}

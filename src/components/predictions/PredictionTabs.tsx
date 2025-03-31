@@ -4,14 +4,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomerPrediction } from "@/domain/models/prediction";
 import PredictionsList from "./PredictionsList";
+import PredictionSearch from "./PredictionSearch";
 
 interface PredictionTabsProps {
   activeTab: string;
   onTabChange: (value: string) => void;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
   sortedPredictions: CustomerPrediction[];
   highRiskCustomers: CustomerPrediction[];
   mediumRiskCustomers: CustomerPrediction[];
   lowRiskCustomers: CustomerPrediction[];
+  filteredPredictions: CustomerPrediction[];
   currentItems: CustomerPrediction[];
   currentPage: number;
   pageCount: number;
@@ -22,10 +26,13 @@ interface PredictionTabsProps {
 const PredictionTabs: React.FC<PredictionTabsProps> = ({
   activeTab,
   onTabChange,
+  searchTerm,
+  onSearchChange,
   sortedPredictions,
   highRiskCustomers,
   mediumRiskCustomers,
   lowRiskCustomers,
+  filteredPredictions,
   currentItems,
   currentPage,
   pageCount,
@@ -38,6 +45,12 @@ const PredictionTabs: React.FC<PredictionTabsProps> = ({
         <CardTitle>Customer Churn Predictions</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Add search input */}
+        <PredictionSearch 
+          searchTerm={searchTerm} 
+          onSearchChange={onSearchChange} 
+        />
+        
         <Tabs defaultValue={activeTab} onValueChange={onTabChange}>
           <TabsList>
             <TabsTrigger value="all">All Customers ({sortedPredictions.length})</TabsTrigger>
