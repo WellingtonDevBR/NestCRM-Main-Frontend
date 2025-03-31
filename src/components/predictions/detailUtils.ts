@@ -62,3 +62,30 @@ export const generateMockCustomerData = () => {
     }
   };
 };
+
+/**
+ * Format a customer field value for display
+ * @param value The value to format
+ * @returns Formatted value as string
+ */
+export const formatCustomerField = (value: any): string => {
+  if (value === undefined || value === null) {
+    return 'N/A';
+  }
+  
+  if (typeof value === 'number') {
+    // Format as number with no decimal places for integers, 
+    // or 2 decimal places for floating point numbers
+    return Number.isInteger(value) ? value.toString() : value.toFixed(2);
+  }
+  
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No';
+  }
+  
+  if (typeof value === 'object' && value instanceof Date) {
+    return value.toLocaleDateString();
+  }
+  
+  return String(value);
+};
