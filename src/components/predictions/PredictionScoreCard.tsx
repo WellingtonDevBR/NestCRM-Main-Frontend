@@ -10,12 +10,14 @@ interface PredictionScoreCardProps {
     factor: string;
     impact: number;
   }[];
+  onClick?: () => void;
 }
 
 const PredictionScoreCard: React.FC<PredictionScoreCardProps> = ({ 
   probability, 
   customerName, 
-  factorsContributing 
+  factorsContributing,
+  onClick
 }) => {
   // Format probability as percentage
   const percentage = Math.round(probability * 100);
@@ -35,7 +37,10 @@ const PredictionScoreCard: React.FC<PredictionScoreCardProps> = ({
   };
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card 
+      className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
       <div className="mb-3">
         <div className="flex justify-between items-start">
           <h4 className="font-medium">{customerName}</h4>

@@ -1,14 +1,42 @@
 
-import React from "react";
-import { usePredictions } from "@/hooks/usePredictions";
+import React, { useState } from "react";
+import { usePredictions, useCustomerPrediction } from "@/hooks/usePredictions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
 import PredictionScoreCard from "@/components/predictions/PredictionScoreCard";
 import ModelCard from "@/components/predictions/ModelCard";
+import PredictionDetailDialog from "@/components/predictions/PredictionDetailDialog";
+import { CustomerPrediction } from "@/domain/models/prediction";
+
+const ITEMS_PER_PAGE = 6; // Number of cards per page
 
 const Predictions: React.FC = () => {
   const { models, predictions, isLoading, error } = usePredictions();
+  
+  // For pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // For detail dialog
+  const [selectedPrediction, setSelectedPrediction] = useState<CustomerPrediction | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const openPredictionDetails = (prediction: CustomerPrediction) => {
+    setSelectedPrediction(prediction);
+    setDialogOpen(true);
+  };
+
+  const closePredictionDetails = () => {
+    setDialogOpen(false);
+  };
 
   if (isLoading) {
     return (
@@ -56,6 +84,46 @@ const Predictions: React.FC = () => {
   // Low-risk customers (<40% churn probability)
   const lowRiskCustomers = sortedPredictions.filter(p => p.churnProbability < 0.4);
 
+  // Pagination functions
+  const paginatePredictions = (predictionsList: CustomerPrediction[]) => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return predictionsList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
+
+  const getPageCount = (totalItems: number) => {
+    return Math.ceil(totalItems / ITEMS_PER_PAGE);
+  };
+
+  // Handle tab-specific pagination
+  const [activeTab, setActiveTab] = useState("all");
+  
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // Reset to first page when changing tabs
+  };
+  
+  // Get current items and page count for the active tab
+  const getCurrentItems = () => {
+    switch(activeTab) {
+      case "high-risk": return paginatePredictions(highRiskCustomers);
+      case "medium-risk": return paginatePredictions(mediumRiskCustomers);
+      case "low-risk": return paginatePredictions(lowRiskCustomers);
+      default: return paginatePredictions(sortedPredictions);
+    }
+  };
+  
+  const getCurrentPageCount = () => {
+    switch(activeTab) {
+      case "high-risk": return getPageCount(highRiskCustomers.length);
+      case "medium-risk": return getPageCount(mediumRiskCustomers.length);
+      case "low-risk": return getPageCount(lowRiskCustomers.length);
+      default: return getPageCount(sortedPredictions.length);
+    }
+  };
+  
+  const currentItems = getCurrentItems();
+  const pageCount = getCurrentPageCount();
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Predictions</h1>
@@ -80,7 +148,7 @@ const Predictions: React.FC = () => {
           <CardTitle>Customer Churn Predictions</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all">
+          <Tabs defaultValue="all" onValueChange={handleTabChange}>
             <TabsList>
               <TabsTrigger value="all">All Customers ({predictions.length})</TabsTrigger>
               <TabsTrigger value="high-risk">
@@ -96,58 +164,185 @@ const Predictions: React.FC = () => {
             
             <TabsContent value="all" className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sortedPredictions.map(prediction => (
+                {currentItems.map(prediction => (
                   <PredictionScoreCard
                     key={prediction.id}
                     probability={prediction.churnProbability}
                     customerName={prediction.customerName}
                     factorsContributing={prediction.factorsContributing}
+                    onClick={() => openPredictionDetails(prediction)}
                   />
                 ))}
               </div>
+              
+              {pageCount > 1 && (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} />
+                      </PaginationItem>
+                    )}
+                    
+                    {Array.from({ length: pageCount }).map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink 
+                          isActive={currentPage === index + 1}
+                          onClick={() => setCurrentPage(index + 1)}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    {currentPage < pageCount && (
+                      <PaginationItem>
+                        <PaginationNext onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))} />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              )}
             </TabsContent>
             
             <TabsContent value="high-risk" className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {highRiskCustomers.map(prediction => (
+                {currentItems.map(prediction => (
                   <PredictionScoreCard
                     key={prediction.id}
                     probability={prediction.churnProbability}
                     customerName={prediction.customerName}
                     factorsContributing={prediction.factorsContributing}
+                    onClick={() => openPredictionDetails(prediction)}
                   />
                 ))}
               </div>
+              
+              {pageCount > 1 && (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} />
+                      </PaginationItem>
+                    )}
+                    
+                    {Array.from({ length: pageCount }).map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink 
+                          isActive={currentPage === index + 1}
+                          onClick={() => setCurrentPage(index + 1)}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    {currentPage < pageCount && (
+                      <PaginationItem>
+                        <PaginationNext onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))} />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              )}
             </TabsContent>
             
             <TabsContent value="medium-risk" className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {mediumRiskCustomers.map(prediction => (
+                {currentItems.map(prediction => (
                   <PredictionScoreCard
                     key={prediction.id}
                     probability={prediction.churnProbability}
                     customerName={prediction.customerName}
                     factorsContributing={prediction.factorsContributing}
+                    onClick={() => openPredictionDetails(prediction)}
                   />
                 ))}
               </div>
+              
+              {pageCount > 1 && (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} />
+                      </PaginationItem>
+                    )}
+                    
+                    {Array.from({ length: pageCount }).map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink 
+                          isActive={currentPage === index + 1}
+                          onClick={() => setCurrentPage(index + 1)}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    {currentPage < pageCount && (
+                      <PaginationItem>
+                        <PaginationNext onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))} />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              )}
             </TabsContent>
             
             <TabsContent value="low-risk" className="mt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {lowRiskCustomers.map(prediction => (
+                {currentItems.map(prediction => (
                   <PredictionScoreCard
                     key={prediction.id}
                     probability={prediction.churnProbability}
                     customerName={prediction.customerName}
                     factorsContributing={prediction.factorsContributing}
+                    onClick={() => openPredictionDetails(prediction)}
                   />
                 ))}
               </div>
+              
+              {pageCount > 1 && (
+                <Pagination className="mt-6">
+                  <PaginationContent>
+                    {currentPage > 1 && (
+                      <PaginationItem>
+                        <PaginationPrevious onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} />
+                      </PaginationItem>
+                    )}
+                    
+                    {Array.from({ length: pageCount }).map((_, index) => (
+                      <PaginationItem key={index}>
+                        <PaginationLink 
+                          isActive={currentPage === index + 1}
+                          onClick={() => setCurrentPage(index + 1)}
+                        >
+                          {index + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    
+                    {currentPage < pageCount && (
+                      <PaginationItem>
+                        <PaginationNext onClick={() => setCurrentPage(prev => Math.min(prev + 1, pageCount))} />
+                      </PaginationItem>
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+      
+      {/* Prediction Details Dialog */}
+      <PredictionDetailDialog 
+        prediction={selectedPrediction}
+        isOpen={dialogOpen}
+        onClose={closePredictionDetails}
+      />
     </div>
   );
 };
