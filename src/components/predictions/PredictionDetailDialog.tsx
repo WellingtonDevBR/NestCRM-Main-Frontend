@@ -11,7 +11,7 @@ import ChurnPredictionCard from "./detail/ChurnPredictionCard";
 import CustomerInfoCard from "./detail/CustomerInfoCard";
 import ContributingFactorsTable from "./detail/ContributingFactorsTable";
 import CustomerEngagementSection from "./detail/CustomerEngagementSection";
-import { generateMockCustomerData } from "./detailUtils";
+import { useCustomerLookup } from "@/hooks/useCustomerLookup";
 
 interface PredictionDetailDialogProps {
   prediction: CustomerPrediction | null;
@@ -24,17 +24,17 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
   isOpen,
   onClose
 }) => {
-  if (!prediction) return null;
+  // Fetch customer data using the customer lookup hook
+  const { customerData, isLoading } = useCustomerLookup(prediction);
 
-  // Generate mock data for the customer
-  const mockCustomerData = generateMockCustomerData();
+  if (!prediction) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl">
-            Customer Prediction: {prediction.customerName}
+            Customer Prediction: {prediction.customerName || `Customer ${prediction.customerId}`}
           </DialogTitle>
         </DialogHeader>
 
@@ -45,7 +45,8 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
           {/* Customer Info Card */}
           <CustomerInfoCard 
             customerId={prediction.customerId} 
-            mockData={mockCustomerData} 
+            customerData={customerData}
+            loading={isLoading}
           />
         </div>
 
@@ -54,8 +55,8 @@ const PredictionDetailDialog: React.FC<PredictionDetailDialogProps> = ({
         
         {/* Customer Engagement and Support History */}
         <CustomerEngagementSection 
-          supportData={mockCustomerData.supportData}
-          usageData={mockCustomerData.usageData}
+          customerData={customerData}
+          loading={isLoading}
         />
       </DialogContent>
     </Dialog>

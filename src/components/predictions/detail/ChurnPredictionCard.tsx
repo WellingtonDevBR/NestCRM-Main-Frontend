@@ -1,9 +1,9 @@
 
 import React from "react";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { CustomerPrediction } from "@/domain/models/prediction";
 import { formatDate } from "../detailUtils";
+import { AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
 
 interface ChurnPredictionCardProps {
   prediction: CustomerPrediction;
@@ -12,11 +12,30 @@ interface ChurnPredictionCardProps {
 const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction }) => {
   const percentage = Math.round(prediction.churnProbability * 100);
   
-  // Determine risk level color and label
+  // Determine risk level styling and icon
   const getRiskLevel = () => {
-    if (percentage >= 70) return { label: "High Risk", color: "bg-red-100 text-red-800 hover:bg-red-200" };
-    if (percentage >= 40) return { label: "Medium Risk", color: "bg-amber-100 text-amber-800 hover:bg-amber-200" };
-    return { label: "Low Risk", color: "bg-green-100 text-green-800 hover:bg-green-200" };
+    if (percentage >= 70) {
+      return { 
+        label: "High Risk", 
+        color: "bg-red-100 text-red-800 border-red-300",
+        hoverColor: "hover:bg-red-200",
+        icon: <AlertTriangle className="h-3.5 w-3.5 mr-1" />
+      };
+    }
+    if (percentage >= 40) {
+      return { 
+        label: "Medium Risk", 
+        color: "bg-amber-100 text-amber-800 border-amber-300",
+        hoverColor: "hover:bg-amber-200",
+        icon: <AlertCircle className="h-3.5 w-3.5 mr-1" />
+      };
+    }
+    return { 
+      label: "Low Risk", 
+      color: "bg-green-100 text-green-800 border-green-300",
+      hoverColor: "hover:bg-green-200",
+      icon: <CheckCircle className="h-3.5 w-3.5 mr-1" />
+    };
   };
   
   const riskInfo = getRiskLevel();
@@ -36,7 +55,10 @@ const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction })
         <span className="text-sm text-muted-foreground">
           Prediction Date: {formatDate(prediction.predictionDate)}
         </span>
-        <Badge className={riskInfo.color}>{riskInfo.label}</Badge>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${riskInfo.color} ${riskInfo.hoverColor} border`}>
+          {riskInfo.icon}
+          {riskInfo.label}
+        </span>
       </div>
       
       <div className="mt-4">
@@ -46,7 +68,7 @@ const ChurnPredictionCard: React.FC<ChurnPredictionCardProps> = ({ prediction })
         </div>
         <Progress 
           value={percentage} 
-          className={`h-2 bg-secondary ${getProgressColorClass()} [&>div]:${getProgressColorClass()}`}
+          className={`h-2 ${getProgressColorClass()}`}
         />
       </div>
       
