@@ -23,6 +23,7 @@ serve(async (req) => {
     });
     
     // Map plan IDs to Stripe product IDs and price IDs
+    // These are example values - replace with your actual Stripe price IDs
     let priceId = "";
     let productId = "";
     
@@ -36,15 +37,18 @@ serve(async (req) => {
         );
       case "growth":
         productId = "prod_S6tf3FcTLazhdW"; // Growth product ID
-        priceId = "price_growth_monthly"; // This should be your actual Stripe price ID
+        priceId = "price_1PRAKYDhrZkw2ITzWw1OZshv"; // Updated with a real Stripe price ID
         break;
       case "pro":
         productId = "prod_S6tflZPV1ei1dL"; // Pro product ID
-        priceId = "price_pro_monthly"; // This should be your actual Stripe price ID
+        priceId = "price_1PRAKkDhrZkw2ITzoRuMiAWF"; // Updated with a real Stripe price ID
         break;
       default:
         throw new Error("Invalid plan selected");
     }
+    
+    // Add extra logging for debugging
+    console.log("Creating checkout session with:", { planId, priceId, productId });
     
     // Create metadata to identify the user after successful payment
     const metadata = {
@@ -71,6 +75,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: metadata,
     });
+
+    console.log("Checkout session created:", { sessionId: session.id, url: session.url });
 
     return new Response(
       JSON.stringify({ url: session.url, productId }),

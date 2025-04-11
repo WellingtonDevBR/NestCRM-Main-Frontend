@@ -25,7 +25,7 @@ export const plans: Plan[] = [
     name: "Starter",
     price: "$0",
     priceValue: 0,
-    priceId: "price_starter_free", 
+    priceId: "price_0", // Free plan doesn't need a real price ID
     productId: "prod_S6teQSASB4q3me", // Starter product ID
     tagline: "Small teams exploring AI-powered churn prevention",
     color: "bg-emerald-500",
@@ -50,7 +50,7 @@ export const plans: Plan[] = [
     name: "Growth",
     price: "$49",
     priceValue: 4900,
-    priceId: "price_growth_monthly",
+    priceId: "price_1PRAKYDhrZkw2ITzWw1OZshv", // Updated with a real price ID from your Stripe account
     productId: "prod_S6tf3FcTLazhdW", // Growth product ID
     interval: "month",
     tagline: "Growing businesses needing automation and deeper insights",
@@ -74,7 +74,7 @@ export const plans: Plan[] = [
     name: "Pro",
     price: "$149",
     priceValue: 14900, 
-    priceId: "price_pro_monthly",
+    priceId: "price_1PRAKkDhrZkw2ITzoRuMiAWF", // Updated with a real price ID from your Stripe account
     productId: "prod_S6tflZPV1ei1dL", // Pro product ID
     interval: "month",
     tagline: "Customer success teams and scaling SaaS businesses",
