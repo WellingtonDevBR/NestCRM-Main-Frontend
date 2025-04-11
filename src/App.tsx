@@ -14,6 +14,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import DataProtection from "./pages/DataProtection";
 import GDPRCompliance from "./pages/GDPRCompliance";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
+import PaymentResult from "./pages/PaymentResult";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Suspense } from "react";
 import CookieBanner from "./components/CookieBanner";
@@ -51,6 +52,8 @@ function App() {
                 <Route path="/cookie-policy" element={<CookiePolicy />} />
                 <Route path="/data-protection" element={<DataProtection />} />
                 <Route path="/gdpr-compliance" element={<GDPRCompliance />} />
+                <Route path="/payment-success" element={<PaymentResult />} />
+                <Route path="/payment-canceled" element={<PaymentResult />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <CookieBanner />

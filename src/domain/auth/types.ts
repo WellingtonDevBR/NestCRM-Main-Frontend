@@ -39,6 +39,7 @@ export interface SignUpData {
   email: string;
   subdomain: string;
   password: string;
+  planId?: string; // Add planId for subscription information
 }
 
 export interface AuthResult {
