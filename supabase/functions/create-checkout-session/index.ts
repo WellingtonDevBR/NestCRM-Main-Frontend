@@ -22,6 +22,10 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
     
+    // Add debug logging
+    console.log("Received request with planId:", planId);
+    console.log("Processing signup data for:", signupData.email);
+    
     // Map plan IDs to Stripe product IDs and price IDs
     let priceId = "";
     let productId = "";
@@ -36,11 +40,55 @@ serve(async (req) => {
         );
       case "growth":
         productId = "prod_S6tf3FcTLazhdW"; // Growth product ID
-        priceId = "price_1PRAKYDhrZkw2ITzWw1OZshv"; // Updated with a real Stripe price ID
+        
+        // Use Stripe's Price API to find an existing price for this product
+        const growthPrices = await stripe.prices.list({
+          product: productId,
+          active: true,
+          limit: 1
+        });
+        
+        if (growthPrices.data.length > 0) {
+          priceId = growthPrices.data[0].id;
+          console.log("Found existing price for growth plan:", priceId);
+        } else {
+          // If no price exists, create a new test price
+          console.log("No existing price found for growth plan, creating a new one");
+          const newPrice = await stripe.prices.create({
+            product: productId,
+            unit_amount: 4900, // $49.00
+            currency: 'usd',
+            recurring: { interval: 'month' }
+          });
+          priceId = newPrice.id;
+          console.log("Created new price for growth plan:", priceId);
+        }
         break;
       case "pro":
         productId = "prod_S6tflZPV1ei1dL"; // Pro product ID
-        priceId = "price_1PRAKkDhrZkw2ITzoRuMiAWF"; // Updated with a real Stripe price ID
+        
+        // Use Stripe's Price API to find an existing price for this product
+        const proPrices = await stripe.prices.list({
+          product: productId,
+          active: true,
+          limit: 1
+        });
+        
+        if (proPrices.data.length > 0) {
+          priceId = proPrices.data[0].id;
+          console.log("Found existing price for pro plan:", priceId);
+        } else {
+          // If no price exists, create a new test price
+          console.log("No existing price found for pro plan, creating a new one");
+          const newPrice = await stripe.prices.create({
+            product: productId,
+            unit_amount: 14900, // $149.00
+            currency: 'usd',
+            recurring: { interval: 'month' }
+          });
+          priceId = newPrice.id;
+          console.log("Created new price for pro plan:", priceId);
+        }
         break;
       default:
         throw new Error("Invalid plan selected");

@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData } from "@/domain/auth/types";
@@ -22,7 +21,16 @@ export class PaymentService {
       
       if (error) {
         console.error('Error invoking create-checkout-session:', error);
-        throw new Error(error.message);
+        throw new Error(error.message || 'Failed to create checkout session');
+      }
+      
+      if (!data || !data.url) {
+        // Handle case where data exists but url is missing (except for free plans)
+        if (data && data.free === true) {
+          return null;
+        }
+        console.error('Invalid response from create-checkout-session:', data);
+        throw new Error('Invalid response from checkout session');
       }
       
       return data.url;
