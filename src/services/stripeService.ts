@@ -24,8 +24,18 @@ export class StripeService {
       
       if (error) throw new Error(error.message);
       
-      // For free plan, no need to go to Stripe
+      // For free plan or trial, no need to go to Stripe
       if (data.free) {
+        // Store trial information if applicable
+        if (plan.trial && plan.trialDays) {
+          const trialInfo = {
+            planId: plan.id,
+            productId: data.productId,
+            trialStartDate: new Date().toISOString(),
+            trialEndDate: new Date(Date.now() + plan.trialDays * 24 * 60 * 60 * 1000).toISOString()
+          };
+          localStorage.setItem('trial_info', JSON.stringify(trialInfo));
+        }
         return null;
       }
       
@@ -44,7 +54,6 @@ export class StripeService {
    */
   static storeSignupData(signupData: SignUpData, planId: string): void {
     // Store signup data in localStorage to retrieve after payment
-    // In a real implementation, you might want to encrypt this or use a more secure method
     localStorage.setItem('pending_signup', JSON.stringify({
       signupData,
       planId,
@@ -88,5 +97,48 @@ export class StripeService {
    */
   static clearStoredSignupData(): void {
     localStorage.removeItem('pending_signup');
+  }
+
+  /**
+   * Get trial information for the user
+   */
+  static getTrialInfo(): {
+    planId: string;
+    productId: string;
+    trialStartDate: string;
+    trialEndDate: string;
+    daysRemaining: number;
+  } | null {
+    const trialData = localStorage.getItem('trial_info');
+    
+    if (!trialData) return null;
+    
+    try {
+      const trial = JSON.parse(trialData);
+      const now = new Date();
+      const endDate = new Date(trial.trialEndDate);
+      const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+      
+      return {
+        ...trial,
+        daysRemaining
+      };
+    } catch (e) {
+      console.error('Error parsing trial info:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Check if the trial period has ended
+   */
+  static isTrialExpired(): boolean {
+    const trial = this.getTrialInfo();
+    if (!trial) return true;
+    
+    const now = new Date();
+    const endDate = new Date(trial.trialEndDate);
+    
+    return now > endDate;
   }
 }

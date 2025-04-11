@@ -6,6 +6,7 @@ export interface Plan {
   price: string;
   priceValue: number;
   priceId: string; // Stripe price ID
+  productId: string; // Stripe product ID
   interval?: string;
   tagline: string;
   color: string;
@@ -24,7 +25,8 @@ export const plans: Plan[] = [
     name: "Starter",
     price: "$0",
     priceValue: 0,
-    priceId: "price_starter_free", // This would be your actual Stripe price ID
+    priceId: "price_starter_free", 
+    productId: "prod_S6teQSASB4q3me", // Starter product ID
     tagline: "Small teams exploring AI-powered churn prevention",
     color: "bg-emerald-500",
     colorClass: "from-emerald-500 to-emerald-400",
@@ -39,7 +41,7 @@ export const plans: Plan[] = [
       "No credit card required"
     ],
     popular: false,
-    buttonText: "Start Free",
+    buttonText: "Start Free Trial",
     trial: true,
     trialDays: 14
   },
@@ -48,7 +50,8 @@ export const plans: Plan[] = [
     name: "Growth",
     price: "$49",
     priceValue: 4900,
-    priceId: "price_growth_monthly", // This would be your actual Stripe price ID
+    priceId: "price_growth_monthly",
+    productId: "prod_S6tf3FcTLazhdW", // Growth product ID
     interval: "month",
     tagline: "Growing businesses needing automation and deeper insights",
     color: "bg-blue-500",
@@ -71,7 +74,8 @@ export const plans: Plan[] = [
     name: "Pro",
     price: "$149",
     priceValue: 14900, 
-    priceId: "price_pro_monthly", // This would be your actual Stripe price ID
+    priceId: "price_pro_monthly",
+    productId: "prod_S6tflZPV1ei1dL", // Pro product ID
     interval: "month",
     tagline: "Customer success teams and scaling SaaS businesses",
     color: "bg-purple-600",

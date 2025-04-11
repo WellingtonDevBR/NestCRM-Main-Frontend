@@ -22,19 +22,24 @@ serve(async (req) => {
       apiVersion: "2023-10-16",
     });
     
+    // Map plan IDs to Stripe product IDs and price IDs
     let priceId = "";
-    // Map plan IDs to Stripe price IDs
+    let productId = "";
+    
     switch (planId) {
       case "starter":
-        // Free plan, no need for Stripe checkout
+        // Free trial plan
+        productId = "prod_S6teQSASB4q3me"; // Starter product ID
         return new Response(
-          JSON.stringify({ url: null, free: true }),
+          JSON.stringify({ url: null, free: true, productId }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       case "growth":
+        productId = "prod_S6tf3FcTLazhdW"; // Growth product ID
         priceId = "price_growth_monthly"; // This should be your actual Stripe price ID
         break;
       case "pro":
+        productId = "prod_S6tflZPV1ei1dL"; // Pro product ID
         priceId = "price_pro_monthly"; // This should be your actual Stripe price ID
         break;
       default:
@@ -49,6 +54,7 @@ serve(async (req) => {
       companyName: signupData.companyName,
       subdomain: signupData.subdomain,
       planId: planId,
+      productId: productId
     };
     
     // Create a checkout session
@@ -67,7 +73,7 @@ serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ url: session.url, productId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

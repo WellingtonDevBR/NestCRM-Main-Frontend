@@ -31,6 +31,11 @@ export const PlanCard = ({ plan, isSelected }: PlanCardProps) => {
                 MOST POPULAR
               </div>
             )}
+            {plan.trial && (
+              <div className="mb-2 py-1 px-3 text-xs font-medium rounded-full bg-amber-500 text-white w-fit">
+                {plan.trialDays}-DAY FREE TRIAL
+              </div>
+            )}
             <CardTitle className="text-2xl font-bold flex items-center justify-between">
               {plan.name}
               {isSelected && (
