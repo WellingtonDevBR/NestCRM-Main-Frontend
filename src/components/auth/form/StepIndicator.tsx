@@ -1,7 +1,7 @@
 
 import { Check } from "lucide-react";
 
-export type SignupStep = "form" | "plan_selection" | "payment" | "processing";
+export type SignupStep = "form" | "plan_selection" | "processing";
 
 interface StepIndicatorProps {
   currentStep: SignupStep;
@@ -34,7 +34,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                   ${isCompleted 
                     ? "bg-primary text-white" 
                     : isActive 
-                      ? "border-2 border-primary bg-white shadow-sm" 
+                      ? "border-2 border-primary bg-primary/10 text-primary" 
                       : "border-2 border-gray-200 bg-white"
                   }`}
               >

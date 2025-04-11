@@ -29,8 +29,8 @@ const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps
 
   return (
     <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Choose Your Plan</h2>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-primary">Choose Your Plan</h2>
         <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
           Select the plan that best fits your business needs. All plans include a {plans[0].trialDays}-day trial.
         </p>
@@ -50,22 +50,22 @@ const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps
         ))}
       </RadioGroup>
 
-      <div className="flex justify-center mt-10">
+      <div className="flex justify-center mt-8">
         <Button 
           size="lg"
           onClick={handleContinue}
           disabled={isLoading}
-          className="bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all duration-300 min-w-60 h-12 rounded-lg shadow-lg"
+          className="bg-primary hover:opacity-90 transition-all duration-300 min-w-52 h-11 rounded-md shadow-md"
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
-              <span className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+              <span className="h-4 w-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
               Processing...
             </span>
           ) : (
             <span className="flex items-center gap-2">
               Continue with {selectedPlan?.name}
-              <ArrowRight className="h-5 w-5" />
+              <ArrowRight className="h-4 w-4" />
             </span>
           )}
         </Button>

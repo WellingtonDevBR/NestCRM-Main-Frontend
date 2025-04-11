@@ -10,16 +10,16 @@ interface PlanFeaturesProps {
 
 export const PlanFeatures = ({ features, color }: PlanFeaturesProps) => {
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-3">
       {features.map((feature, i) => (
         <li key={i} className="flex items-start gap-2.5 group">
           <div className={cn(
-            "rounded-full p-1 mt-0.5 flex-shrink-0 transition-colors",
-            color, "text-white shadow-sm"
+            "rounded-full p-1 mt-0.5 flex-shrink-0 shadow-sm",
+            color, "text-white"
           )}>
-            <Check className="h-3.5 w-3.5" />
+            <Check className="h-3 w-3" />
           </div>
-          <span className="text-sm text-gray-700 group-hover:text-foreground/90 transition-colors">
+          <span className="text-sm text-gray-700">
             {feature}
           </span>
         </li>
