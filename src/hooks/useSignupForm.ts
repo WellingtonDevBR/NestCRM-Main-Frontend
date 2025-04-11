@@ -6,7 +6,6 @@ import { AuthResult } from "@/domain/auth/types";
 import { useSignupFormState } from "@/hooks/useSignupFormState";
 import { useSignupProgress } from "@/hooks/useSignupProgress";
 import { useSignupPayment } from "@/hooks/useSignupPayment";
-import { tenantService } from "@/domain/tenant/tenantService";
 
 export const useSignupForm = () => {
   const { signUp } = useAuth();
@@ -92,6 +91,7 @@ export const useSignupForm = () => {
           return;
         }
         // If successful without redirect, plan was a free trial
+        // The createTrialAccount already handles the API signup
         setSignupStage("processing");
       } else if (result.error) {
         throw result.error;
@@ -123,18 +123,28 @@ export const useSignupForm = () => {
         planId
       };
 
-      // If not using Supabase directly for signup, continue with external API
+      // Use the external API for consistent tenant provisioning
       const result: AuthResult = await signUp(finalSignupData);
 
       if (result.success && result.session) {
         toast.success("Account created successfully!");
         
-        // Direct navigation to tenant domain instead of using redirectToTenantDomain
+        // Handle redirection to tenant domain
         if (result.session.tenant && result.session.tenant.domain) {
-          // Use window.location.replace for cleaner redirect
+          // Log the tenant information for debugging
+          console.log('Tenant information for redirect:', result.session.tenant);
+          
+          // Use direct navigation for consistent redirection
           const protocol = window.location.protocol;
-          window.location.replace(`${protocol}//${result.session.tenant.domain}/dashboard`);
+          const url = `${protocol}//${result.session.tenant.domain}/dashboard`;
+          console.log('Redirecting to tenant URL:', url);
+          
+          // Use window.location.replace for a cleaner redirect
+          window.location.replace(url);
           return;
+        } else {
+          console.error('Missing tenant domain in auth response', result.session);
+          throw new Error('Invalid tenant information in response');
         }
       } else {
         setShowSetupProgress(false);

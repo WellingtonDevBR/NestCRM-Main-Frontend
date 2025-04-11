@@ -71,10 +71,12 @@ export class AuthApi {
         email: data.email,
         subdomain: data.subdomain,
         domain: domain,
-        password: data.password
+        password: data.password,
+        // Include plan ID if available
+        planId: data.planId
       };
 
-      console.log('Signup payload:', signupPayload);
+      console.log('Signup API call - Payload:', JSON.stringify(signupPayload));
 
       const response = await fetch(`${this.baseUrl}/tenants/signup`, {
         method: 'POST',
@@ -85,16 +87,19 @@ export class AuthApi {
         credentials: 'include',
       });
 
+      console.log('Signup API call - Response status:', response.status);
+
       if (!response.ok) {
         // Check if response is JSON
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
           const errorData = await response.json();
+          console.error('Signup API call - Error response:', errorData);
           throw new Error(errorData.message || `Failed to sign up (${response.status})`);
         } else {
           // Handle non-JSON error responses
           const errorText = await response.text();
-          console.error('Non-JSON error response:', errorText);
+          console.error('Signup API call - Non-JSON error response:', errorText);
           throw new Error(`Server error (${response.status}). Please try again later.`);
         }
       }
@@ -102,7 +107,13 @@ export class AuthApi {
       // Try to parse JSON response
       try {
         const responseData = await response.json();
-        console.log('Signup API response:', responseData);
+        console.log('Signup API call - Success response:', responseData);
+
+        // Validate tenant info exists in response
+        if (!responseData.tenant || !responseData.tenant.domain) {
+          console.error('Signup API call - Missing tenant domain in response:', responseData);
+          throw new Error('Invalid response: Missing tenant domain information');
+        }
 
         // Return the tenant information from the response
         return {
@@ -110,11 +121,11 @@ export class AuthApi {
           message: responseData.message
         };
       } catch (parseError) {
-        console.error('Error parsing JSON response:', parseError);
+        console.error('Signup API call - Error parsing JSON response:', parseError);
         throw new Error('Invalid response format from server');
       }
     } catch (error) {
-      console.error('Signup API error:', error);
+      console.error('Signup API call - Error:', error);
       // Re-throw to be handled by service layer
       throw error;
     }

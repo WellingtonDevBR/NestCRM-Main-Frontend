@@ -2,13 +2,14 @@
 import { toast } from "sonner";
 import { PaymentService } from "@/services/paymentService";
 import { SignUpData } from "@/domain/auth/types";
-import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/authService";
 
 export const useSignupPayment = () => {
   const createTrialAccount = async (signupData: SignUpData, planId: string): Promise<boolean> => {
     try {
-      // For the starter plan (free trial), we'll bypass the external API and use Supabase directly
+      // Get the selected plan info
       const selectedPlan = PaymentService.getPlanById(planId);
+      
       if (selectedPlan?.trial) {
         // Store trial information
         PaymentService.storeTrialInfo(
@@ -17,30 +18,20 @@ export const useSignupPayment = () => {
           selectedPlan.trialDays || 14
         );
 
-        // Implement direct Supabase registration
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: signupData.email,
-          password: signupData.password,
-          options: {
-            data: {
-              first_name: signupData.firstName,
-              last_name: signupData.lastName,
-              company_name: signupData.companyName,
-              subdomain: signupData.subdomain,
-              plan_id: planId
-            }
-          }
-        });
-
-        if (authError) throw authError;
-
+        // Always use the external API signup for consistent tenant provisioning
+        // This ensures all accounts go through the same tenant setup process
+        const finalSignupData = {
+          ...signupData,
+          planId: planId
+        };
+        
+        const result = await authService.signUp(finalSignupData);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || "Failed to create account");
+        }
+        
         toast.success("Account created successfully!");
-        
-        // Redirect to dashboard after successful signup
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1500);
-        
         return true;
       }
       
@@ -63,7 +54,7 @@ export const useSignupPayment = () => {
 
       console.log('Selected plan:', selectedPlan);
 
-      // For free plan or trial, create account directly
+      // For free plan or trial, create account directly through API
       if (selectedPlan.priceValue === 0 || selectedPlan.trial) {
         const success = await createTrialAccount(signupData, planId);
         return { success };
