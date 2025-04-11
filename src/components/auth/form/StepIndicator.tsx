@@ -17,7 +17,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
 
   return (
     <nav aria-label="Progress" className="mb-8">
-      <ol role="list" className="flex items-center">
+      <ol role="list" className="flex items-center w-full justify-between">
         {steps.map((step, stepIdx) => {
           const isActive = step.id === currentStep;
           const isCompleted = 
@@ -28,46 +28,42 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
           return (
             <li
               key={step.id}
-              className={`relative ${stepIdx !== steps.length - 1 ? "pr-8 flex-1" : ""}`}
+              className={`relative flex items-center ${stepIdx !== steps.length - 1 ? "flex-1" : ""}`}
             >
-              {/* Connecting line - Now positioned correctly behind the step circle */}
+              {/* Step circle with number or check */}
+              <div
+                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center z-10 
+                  ${isCompleted 
+                    ? "bg-gradient-to-r from-primary to-accent text-white shadow-md" 
+                    : isActive 
+                      ? "border-2 border-primary bg-white shadow-sm" 
+                      : "border-2 border-gray-200 bg-white"
+                  }`}
+              >
+                {isCompleted ? (
+                  <Check className="h-5 w-5 text-white" />
+                ) : isActive ? (
+                  <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+                ) : (
+                  <span className="text-sm text-muted-foreground">{stepIdx + 1}</span>
+                )}
+              </div>
+              
+              {/* Step name */}
+              <span 
+                className={`ml-3 text-sm font-medium whitespace-nowrap
+                  ${isActive ? "text-primary font-semibold" : isCompleted ? "text-foreground" : "text-muted-foreground"}`}
+              >
+                {step.name}
+              </span>
+
+              {/* Connector line */}
               {stepIdx < steps.length - 1 && (
                 <div 
-                  className={`absolute top-1/2 left-10 right-0 h-0.5 -translate-y-1/2 ${
-                    isCompleted ? "bg-gradient-to-r from-primary to-accent" : "bg-gray-200"
-                  }`}
+                  className={`absolute left-12 right-0 h-0.5 top-5 mx-4
+                    ${isCompleted ? "bg-gradient-to-r from-primary to-accent" : "bg-gray-200"}`}
                 />
               )}
-              
-              <div className="flex items-center relative z-10">
-                {/* Step circle - higher z-index to appear above line */}
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                    isCompleted 
-                      ? "bg-gradient-to-r from-primary to-accent text-white shadow-md" 
-                      : isActive 
-                        ? "border-2 border-primary bg-white/80 backdrop-blur-sm shadow-sm" 
-                        : "border-2 border-gray-200 bg-white/50"
-                  }`}
-                >
-                  {isCompleted ? (
-                    <Check className="h-5 w-5 text-white" />
-                  ) : isActive ? (
-                    <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
-                  ) : (
-                    <span className="text-sm text-muted-foreground">{stepIdx + 1}</span>
-                  )}
-                </div>
-                
-                {/* Step name - now with proper z-index */}
-                <span 
-                  className={`ml-3 text-sm font-medium transition-all duration-300 relative z-10 ${
-                    isActive ? "text-primary font-semibold" : isCompleted ? "text-foreground" : "text-muted-foreground"
-                  }`}
-                >
-                  {step.name}
-                </span>
-              </div>
             </li>
           );
         })}

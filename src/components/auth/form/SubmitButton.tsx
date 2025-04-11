@@ -1,20 +1,41 @@
 
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface SubmitButtonProps {
   isLoading: boolean;
   loadingText?: string;
   children?: React.ReactNode;
+  className?: string;
 }
 
-const SubmitButton = ({ isLoading, loadingText = "Creating account...", children }: SubmitButtonProps) => {
+const SubmitButton = ({ 
+  isLoading, 
+  loadingText = "Creating account...", 
+  children,
+  className
+}: SubmitButtonProps) => {
   return (
     <Button
       type="submit"
-      className="w-full button-gradient"
+      className={cn(
+        "w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all h-11",
+        className
+      )}
       disabled={isLoading}
     >
-      {isLoading ? loadingText : children || "Create account"}
+      {isLoading ? (
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          {loadingText}
+        </div>
+      ) : (
+        <div className="flex items-center justify-center gap-2">
+          {children || "Create account"}
+          <ArrowRight className="h-4 w-4" />
+        </div>
+      )}
     </Button>
   );
 };

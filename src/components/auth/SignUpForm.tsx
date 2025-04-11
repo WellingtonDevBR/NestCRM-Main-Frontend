@@ -3,6 +3,7 @@ import React from "react";
 import StepIndicator from "@/components/auth/form/StepIndicator";
 import SignupStageManager from "@/components/auth/form/SignupStageManager";
 import { useSignupForm } from "@/hooks/useSignupForm";
+import { Card } from "@/components/ui/card";
 
 const SignUpForm = () => {
   const {
@@ -43,20 +44,22 @@ const SignUpForm = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-sm mx-auto w-full">
-      <StepIndicator currentStep={signupStage} />
-      <SignupStageManager
-        signupStage={signupStage}
-        errorMessage={errorMessage}
-        isLoading={isLoading}
-        showSetupProgress={showSetupProgress}
-        setupStage={setupStage}
-        setupProgress={setupProgress}
-        userData={userData}
-        onFormSubmit={handleFormSubmit}
-        onPlanSelected={handlePlanSelected}
-      />
-    </div>
+    <Card className="shadow-md border-slate-200/60 p-6">
+      <div className="space-y-6 w-full">
+        <StepIndicator currentStep={signupStage} />
+        <SignupStageManager
+          signupStage={signupStage}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+          showSetupProgress={showSetupProgress}
+          setupStage={setupStage}
+          setupProgress={setupProgress}
+          userData={userData}
+          onFormSubmit={handleFormSubmit}
+          onPlanSelected={handlePlanSelected}
+        />
+      </div>
+    </Card>
   );
 };
 

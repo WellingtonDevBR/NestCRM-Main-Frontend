@@ -12,6 +12,7 @@ import SetupProgress from "@/components/auth/form/SetupProgress";
 import SignupProcessing from "@/components/auth/form/SignupProcessing";
 import { SignupStep } from "@/components/auth/form/StepIndicator";
 import { SignUpData } from "@/domain/auth/types";
+import { Separator } from "@/components/ui/separator";
 
 interface SignupStageManagerProps {
   signupStage: SignupStep;
@@ -68,32 +69,60 @@ const SignupStageManager: React.FC<SignupStageManagerProps> = ({
       return (
         <form onSubmit={onFormSubmit} className="space-y-6">
           {errorMessage && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 animate-in fade-in slide-in-from-top-5 duration-300">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           
-          <PersonalInfoFields
-            firstName={firstName}
-            setFirstName={setFirstName}
-            lastName={lastName}
-            setLastName={setLastName}
-            email={email}
-            setEmail={setEmail}
-          />
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium leading-6">Personal Information</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Enter your details to create your account
+              </p>
+            </div>
+            <PersonalInfoFields
+              firstName={firstName}
+              setFirstName={setFirstName}
+              lastName={lastName}
+              setLastName={setLastName}
+              email={email}
+              setEmail={setEmail}
+            />
+          </div>
 
-          <CompanyInfoFields
-            companyName={companyName}
-            setCompanyName={setCompanyName}
-            subdomain={subdomain}
-            setSubdomain={setSubdomain}
-          />
+          <Separator className="my-6" />
 
-          <PasswordField
-            password={password}
-            setPassword={setPassword}
-          />
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium leading-6">Company Information</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Set up your organization workspace
+              </p>
+            </div>
+            <CompanyInfoFields
+              companyName={companyName}
+              setCompanyName={setCompanyName}
+              subdomain={subdomain}
+              setSubdomain={setSubdomain}
+            />
+          </div>
+
+          <Separator className="my-6" />
+
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium leading-6">Security</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Create a secure password for your account
+              </p>
+            </div>
+            <PasswordField
+              password={password}
+              setPassword={setPassword}
+            />
+          </div>
 
           <TermsCheckbox />
 

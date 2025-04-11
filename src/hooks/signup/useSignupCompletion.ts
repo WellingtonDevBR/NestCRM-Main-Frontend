@@ -54,7 +54,9 @@ export const useSignupCompletion = ({
       const result: AuthResult = await signUp(finalSignupData);
 
       if (result.success && result.session) {
-        toast.success("Account created successfully!");
+        toast.success("Account created successfully!", {
+          description: "Setting up your workspace..."
+        });
         
         // Handle redirection to tenant domain
         if (result.session.tenant && result.session.tenant.domain) {
@@ -65,38 +67,68 @@ export const useSignupCompletion = ({
           const tenantDomain = result.session.tenant.domain;
           setSetupStage("Setting up your workspace...");
           
-          // Show a loading toast before starting to poll
-          toast.loading("Preparing your workspace - this may take a minute...");
+          // Show a more persistent loading toast
+          const loadingToastId = toast.loading(
+            "Preparing your workspace - this may take a minute...", 
+            { duration: 60000 } // Long duration to ensure visibility
+          );
           
           // Poll for tenant status with improved reliability
-          const isReady = await pollTenantStatus(tenantDomain);
-          
-          if (isReady) {
-            console.log('Tenant domain is ready, proceeding with redirect');
-            // Success toast before redirect
-            toast.success("Your workspace is ready!");
+          try {
+            const isReady = await pollTenantStatus(tenantDomain);
             
-            // Use direct navigation for consistent redirection
+            // Dismiss the loading toast
+            toast.dismiss(loadingToastId);
+            
+            if (isReady) {
+              console.log('Tenant domain is ready, proceeding with redirect');
+              
+              // Success toast before redirect
+              toast.success("Your workspace is ready!", {
+                description: "Redirecting you now..."
+              });
+              
+              // Use direct navigation for consistent redirection
+              const protocol = window.location.protocol;
+              const url = `${protocol}//${tenantDomain}/dashboard`;
+              console.log('Redirecting to tenant URL:', url);
+              
+              // Use setTimeout to ensure cookies are properly set before redirecting
+              setTimeout(() => {
+                console.log('Executing redirect to:', url);
+                // Use window.location.replace for a cleaner redirect
+                window.location.replace(url);
+              }, 1800);
+            } else {
+              // Even if polling timed out, still try to redirect
+              console.log('Tenant polling timed out, attempting redirect anyway');
+              
+              toast.info("Your workspace is still being set up", {
+                description: "Redirecting you now. This may take a few moments to complete setup..."
+              });
+              
+              const protocol = window.location.protocol;
+              const url = `${protocol}//${tenantDomain}/dashboard`;
+              
+              setTimeout(() => {
+                window.location.replace(url);
+              }, 2500);
+            }
+          } catch (error) {
+            console.error("Error during tenant polling:", error);
+            toast.dismiss(loadingToastId);
+            
+            // Still attempt redirect on error
+            toast.error("There was an issue checking your workspace status", {
+              description: "We'll try redirecting you anyway..."
+            });
+            
             const protocol = window.location.protocol;
             const url = `${protocol}//${tenantDomain}/dashboard`;
-            console.log('Redirecting to tenant URL:', url);
             
-            // Use setTimeout to ensure cookies are properly set before redirecting
-            setTimeout(() => {
-              console.log('Executing redirect to:', url);
-              // Use window.location.replace for a cleaner redirect
-              window.location.replace(url);
-            }, 1500);
-          } else {
-            // Even if polling timed out, still try to redirect
-            console.log('Tenant polling timed out, attempting redirect anyway');
-            const protocol = window.location.protocol;
-            const url = `${protocol}//${tenantDomain}/dashboard`;
-            
-            toast.loading("Your workspace is still being set up. Redirecting you now...");
             setTimeout(() => {
               window.location.replace(url);
-            }, 2000);
+            }, 3000);
           }
           
           return;

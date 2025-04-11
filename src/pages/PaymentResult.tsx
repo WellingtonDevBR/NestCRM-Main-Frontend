@@ -1,8 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaymentService } from "@/services/paymentService";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const PaymentResult = () => {
   const navigate = useNavigate();
@@ -59,60 +61,72 @@ const PaymentResult = () => {
   
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="h-8 w-8 text-green-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
-          <p className="text-muted-foreground mb-6">
-            Your payment has been processed. We're now setting up your account.
-          </p>
-          <p className="text-sm text-muted-foreground mb-4">
-            You'll be redirected automatically...
-          </p>
-          <div className="flex justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full shadow-lg border-green-100">
+          <CardHeader className="pb-4 text-center border-b border-green-100">
+            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <Check className="h-8 w-8 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-green-700">Payment Successful!</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground mb-4">
+              Your payment has been processed. We're now setting up your account.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              You'll be redirected automatically...
+            </p>
+          </CardContent>
+          <CardFooter className="flex justify-center pt-2 pb-6">
             <Button onClick={() => navigate('/')} variant="outline">Return to Homepage</Button>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
   
   if (status === 'cancelled') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <X className="h-8 w-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Payment Cancelled</h1>
-          <p className="text-muted-foreground mb-6">
-            Your payment was cancelled. You can try again or choose a different plan.
-          </p>
-          <p className="text-sm text-muted-foreground mb-4">
-            You'll be redirected to signup automatically...
-          </p>
-          <div className="flex justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full shadow-lg border-red-100">
+          <CardHeader className="pb-4 text-center border-b border-red-100">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <X className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-red-700">Payment Cancelled</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground mb-4">
+              Your payment was cancelled. You can try again or choose a different plan.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              You'll be redirected to signup automatically...
+            </p>
+          </CardContent>
+          <CardFooter className="flex justify-center pt-2 pb-6">
             <Button onClick={() => navigate('/signup')}>Return to Signup</Button>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </div>
     );
   }
   
   if (status === 'processing') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="max-w-md w-full p-8 bg-white rounded-lg shadow-lg text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-          </div>
-          <h1 className="text-2xl font-bold mb-4">Processing Payment</h1>
-          <p className="text-muted-foreground mb-6">
-            We're confirming your payment details. Please wait a moment...
-          </p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="max-w-md w-full shadow-lg border-blue-100">
+          <CardHeader className="pb-4 text-center border-b border-blue-100">
+            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+              <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-blue-700">Processing Payment</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 text-center">
+            <p className="text-muted-foreground">
+              We're confirming your payment details. Please wait a moment...
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
