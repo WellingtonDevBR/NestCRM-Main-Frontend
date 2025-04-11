@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { Plan, plans } from "@/components/auth/form/PlanSelection";
+import { Plan, plans } from "@/components/auth/form/plan/planData";
 import { SignUpData } from "@/domain/auth/types";
 import { supabase } from "@/integrations/supabase/client";
 
