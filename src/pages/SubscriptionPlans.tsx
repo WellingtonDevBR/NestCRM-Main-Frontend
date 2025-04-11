@@ -61,69 +61,7 @@ const SubscriptionPlans = () => {
           </div>
         </div>
 
-        {/* Add-ons Section */}
-        <div className="container-custom mt-16">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">Customizable Add-ons</h2>
-              <p className="text-muted-foreground">
-                Extend your plan with these powerful features
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Additional Users</CardTitle>
-                  <CardDescription>$10/user/month</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Add more team members to collaborate on customer retention.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">SMS Integration</CardTitle>
-                  <CardDescription>Contact for pricing</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Send SMS notifications for critical customer retention activities.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Predictive Revenue Forecasting</CardTitle>
-                  <CardDescription>Contact for pricing</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    AI-powered revenue projections based on customer behavior.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Multilingual Support</CardTitle>
-                  <CardDescription>Contact for pricing</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Communicate with customers in multiple languages.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-        
-        {/* FAQs or CTA section could be added here */}
+        {/* CTA section */}
         <div className="container-custom mt-16">
           <div className="bg-muted p-8 rounded-lg text-center max-w-2xl mx-auto">
             <h2 className="text-2xl font-bold mb-4">Need a custom solution?</h2>

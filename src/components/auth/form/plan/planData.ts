@@ -97,30 +97,5 @@ export const plans: Plan[] = [
     buttonText: "Choose Pro",
     trial: true,
     trialDays: 14
-  },
-  {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "Custom",
-    priceValue: 0, // Custom pricing
-    priceId: "price_enterprise",
-    productId: "prod_enterprise",
-    tagline: "Large-scale platforms with high customer volumes",
-    color: "bg-amber-500",
-    colorClass: "from-amber-500 to-amber-400",
-    features: [
-      "Unlimited customers tracked",
-      "Dedicated AI model tuning",
-      "Custom data pipelines & analytics",
-      "Onboarding & training sessions",
-      "SOC 2 & HIPAA compliance options",
-      "Role-based access control",
-      "SLA-backed 24/7 support",
-      "Account manager & quarterly reviews"
-    ],
-    popular: false,
-    buttonText: "Contact Sales",
-    trial: false,
-    trialDays: 0
   }
 ];
