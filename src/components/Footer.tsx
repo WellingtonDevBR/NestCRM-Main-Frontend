@@ -80,7 +80,11 @@ const Footer = () => {
                   Cookie Policy
                 </Link>
               </li>
-              <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">Data Processing</a></li>
+              <li>
+                <Link to="/data-protection" className="text-foreground/70 hover:text-primary transition-colors">
+                  Data Protection
+                </Link>
+              </li>
               <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">GDPR Compliance</a></li>
             </ul>
           </div>
@@ -94,6 +98,7 @@ const Footer = () => {
             <Link to="/privacy-policy" className="text-foreground/60 hover:text-primary transition-colors text-sm">Privacy</Link>
             <Link to="/terms-of-service" className="text-foreground/60 hover:text-primary transition-colors text-sm">Terms</Link>
             <Link to="/cookie-policy" className="text-foreground/60 hover:text-primary transition-colors text-sm">Cookies</Link>
+            <Link to="/data-protection" className="text-foreground/60 hover:text-primary transition-colors text-sm">Data Protection</Link>
           </div>
         </div>
       </div>

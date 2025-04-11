@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
+import DataProtection from "./pages/DataProtection";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Suspense } from "react";
 
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/cookie-policy" element={<CookiePolicy />} />
+                <Route path="/data-protection" element={<DataProtection />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>
