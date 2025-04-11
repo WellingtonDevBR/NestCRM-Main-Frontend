@@ -33,25 +33,27 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               <div className="flex items-center">
                 {/* Step circle */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isCompleted 
-                      ? "bg-primary" 
+                      ? "bg-gradient-to-r from-primary to-accent text-white shadow-md" 
                       : isActive 
-                        ? "border-2 border-primary" 
-                        : "border-2 border-gray-300"
+                        ? "border-2 border-primary bg-white/80 backdrop-blur-sm shadow-sm" 
+                        : "border-2 border-gray-200 bg-white/50"
                   }`}
                 >
                   {isCompleted ? (
-                    <Check className="h-4 w-4 text-white" />
+                    <Check className="h-5 w-5 text-white" />
                   ) : isActive ? (
-                    <div className="w-3 h-3 bg-primary rounded-full" />
-                  ) : null}
+                    <div className="w-3 h-3 bg-primary rounded-full animate-pulse" />
+                  ) : (
+                    <span className="text-sm text-muted-foreground">{stepIdx + 1}</span>
+                  )}
                 </div>
                 
                 {/* Step name */}
                 <span 
-                  className={`ml-3 text-sm font-medium ${
-                    isActive ? "text-primary" : isCompleted ? "text-gray-900" : "text-muted-foreground"
+                  className={`ml-3 text-sm font-medium transition-all duration-300 ${
+                    isActive ? "text-primary font-semibold" : isCompleted ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {step.name}
@@ -61,8 +63,8 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               {/* Connecting line */}
               {stepIdx < steps.length - 1 && (
                 <div 
-                  className={`absolute left-4 top-4 -ml-px h-0.5 w-full ${
-                    isCompleted ? "bg-primary" : "bg-gray-300"
+                  className={`absolute left-5 top-5 -ml-px h-0.5 w-full transition-all duration-300 ${
+                    isCompleted ? "bg-gradient-to-r from-primary to-accent" : "bg-gray-200"
                   }`}
                   style={{ transform: "translateY(-50%)" }}
                 />
