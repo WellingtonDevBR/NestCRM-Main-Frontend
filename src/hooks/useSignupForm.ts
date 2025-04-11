@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -52,10 +51,12 @@ export const useSignupForm = () => {
         setCompanyName(suggestedCompany);
       }
       
-      // Auto-populate subdomain
-      setSubdomain(suggestedSubdomain);
+      // Auto-suggest subdomain (but don't force it)
+      if (!subdomain) {
+        setSubdomain(suggestedSubdomain);
+      }
     }
-  }, [email, companyName]);
+  }, [email]);
 
   // Poll for tenant status after signup
   const pollTenantStatus = async (domain) => {
@@ -117,12 +118,11 @@ export const useSignupForm = () => {
     setErrorMessage(null);
 
     try {
-      // Validate that subdomain is derived from email domain
-      const emailDomain = email.split('@')[1]?.split('.')[0].toLowerCase();
-      if (subdomain !== emailDomain) {
-        setErrorMessage("Subdomain must match your email domain");
+      // Validate subdomain (basic validation, no longer enforcing email domain match)
+      if (!subdomain || subdomain.trim() === "") {
+        setErrorMessage("Subdomain is required");
         toast.error("Validation failed", {
-          description: "Subdomain must match your email domain"
+          description: "Please provide a subdomain for your workspace"
         });
         return;
       }
@@ -145,6 +145,15 @@ export const useSignupForm = () => {
     try {
       const signupData = getFormData();
       
+      // For free/trial plans, go directly to signup without Stripe redirect
+      if (planId === "starter") {
+        console.log("Free plan selected, proceeding with direct signup");
+        setSignupStage("processing");
+        await completeSignup(signupData, planId);
+        return;
+      }
+      
+      // For paid plans, use the existing flow with Stripe
       const result = await handlePlanSelection(signupData, planId);
       
       if (result.success) {

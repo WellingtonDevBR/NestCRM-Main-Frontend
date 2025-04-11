@@ -38,14 +38,14 @@ const CompanyInfoFields = ({
             name="subdomain"
             type="text"
             value={subdomain}
-            // Make subdomain read-only since it's auto-populated from email
-            readOnly
-            className="bg-gray-50"
+            onChange={(e) => setSubdomain(e.target.value)}
+            required
+            className="bg-white"
           />
           <span className="ml-2 text-foreground/70">.nestcrm.com.au</span>
         </div>
         <p className="text-xs text-foreground/70">
-          Your subdomain is automatically generated from your email domain and cannot be changed
+          Choose a subdomain for your workspace
         </p>
       </div>
     </>

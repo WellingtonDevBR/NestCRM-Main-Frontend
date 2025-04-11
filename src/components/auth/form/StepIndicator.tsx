@@ -24,6 +24,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               stepIdx !== steps.length - 1 ? "flex-1" : ""
             }`}
           >
+            {/* Step indicator circle */}
             {step.id === currentStep ? (
               <div className="flex items-center" aria-current="step">
                 <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary">
@@ -33,16 +34,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                   {step.name}
                 </span>
               </div>
-            ) : step.id === "form" && currentStep === "plan_selection" ? (
-              <div className="group flex items-center">
-                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
-                  <Check className="h-3 w-3 text-white" />
-                </span>
-                <span className="ml-8 text-sm font-medium text-muted-foreground">
-                  {step.name}
-                </span>
-              </div>
-            ) : step.id === "form" && currentStep === "processing" ? (
+            ) : step.id === "form" && (currentStep === "plan_selection" || currentStep === "processing") ? (
               <div className="group flex items-center">
                 <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
                   <Check className="h-3 w-3 text-white" />
@@ -70,14 +62,17 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                 </span>
               </div>
             )}
+            
+            {/* Connecting line between steps */}
             {stepIdx !== steps.length - 1 ? (
               <div
-                className={`absolute left-3.5 top-3 -ml-px h-0.5 w-full ${
+                className={`absolute top-3 left-0 -ml-px h-0.5 w-full ${
                   (stepIdx === 0 && currentStep !== "form") ||
                   (stepIdx === 1 && currentStep === "processing")
                     ? "bg-primary"
                     : "bg-gray-300"
                 }`}
+                style={{ transform: "translateX(3px)", width: "calc(100% - 6px)" }}
               />
             ) : null}
           </li>
