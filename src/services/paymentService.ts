@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData } from "@/domain/auth/types";
@@ -5,7 +6,7 @@ import { Plan, plans } from "@/components/auth/form/plan/planData";
 
 export class PaymentService {
   /**
-   * Create a checkout session for a paid plan subscription
+   * Create a checkout session for a subscription
    */
   static async createCheckoutSession(
     signupData: SignUpData, 
@@ -25,10 +26,6 @@ export class PaymentService {
       }
       
       if (!data || !data.url) {
-        // Handle case where data exists but url is missing (except for free plans)
-        if (data && data.free === true) {
-          return null;
-        }
         console.error('Invalid response from create-checkout-session:', data);
         throw new Error('Invalid response from checkout session');
       }
@@ -92,63 +89,6 @@ export class PaymentService {
     localStorage.removeItem('pending_signup');
   }
 
-  /**
-   * Get trial information
-   */
-  static getTrialInfo(): {
-    planId: string;
-    productId: string;
-    trialStartDate: string;
-    trialEndDate: string;
-    daysRemaining: number;
-  } | null {
-    const trialData = localStorage.getItem('trial_info');
-    
-    if (!trialData) return null;
-    
-    try {
-      const trial = JSON.parse(trialData);
-      const now = new Date();
-      const endDate = new Date(trial.trialEndDate);
-      const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
-      
-      return {
-        ...trial,
-        daysRemaining
-      };
-    } catch (e) {
-      console.error('Error parsing trial info:', e);
-      return null;
-    }
-  }
-
-  /**
-   * Check if the trial has expired
-   */
-  static isTrialExpired(): boolean {
-    const trial = this.getTrialInfo();
-    if (!trial) return true;
-    
-    const now = new Date();
-    const endDate = new Date(trial.trialEndDate);
-    
-    return now > endDate;
-  }
-  
-  /**
-   * Store trial information
-   */
-  static storeTrialInfo(planId: string, productId: string, trialDays: number): void {
-    const trialInfo = {
-      planId,
-      productId,
-      trialStartDate: new Date().toISOString(),
-      trialEndDate: new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString()
-    };
-    
-    localStorage.setItem('trial_info', JSON.stringify(trialInfo));
-  }
-  
   /**
    * Get a plan by ID
    */

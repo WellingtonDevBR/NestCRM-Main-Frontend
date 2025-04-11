@@ -1,7 +1,7 @@
 
 import { Check } from "lucide-react";
 
-export type SignupStep = "form" | "plan_selection" | "processing";
+export type SignupStep = "form" | "plan_selection" | "payment" | "processing";
 
 interface StepIndicatorProps {
   currentStep: SignupStep;
@@ -11,6 +11,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
   const steps = [
     { id: "form", name: "Account Details" },
     { id: "plan_selection", name: "Select Plan" },
+    { id: "payment", name: "Payment" },
     { id: "processing", name: "Complete" },
   ];
 
@@ -20,8 +21,9 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
         {steps.map((step, stepIdx) => {
           const isActive = step.id === currentStep;
           const isCompleted = 
-            (step.id === "form" && (currentStep === "plan_selection" || currentStep === "processing")) ||
-            (step.id === "plan_selection" && currentStep === "processing");
+            (step.id === "form" && (currentStep === "plan_selection" || currentStep === "payment" || currentStep === "processing")) ||
+            (step.id === "plan_selection" && (currentStep === "payment" || currentStep === "processing")) ||
+            (step.id === "payment" && currentStep === "processing");
           
           return (
             <li

@@ -14,8 +14,8 @@ export interface Plan {
   features: string[];
   popular: boolean;
   buttonText: string;
-  trial?: boolean;
-  trialDays?: number;
+  trial: boolean;
+  trialDays: number;
 }
 
 // Plans data structure
@@ -25,7 +25,7 @@ export const plans: Plan[] = [
     name: "Starter",
     price: "$0",
     priceValue: 0,
-    priceId: "", // Free plan doesn't need a real price ID
+    priceId: "price_starter", // Will be mapped in the edge function
     productId: "prod_S6teQSASB4q3me", // Starter product ID
     tagline: "Small teams exploring AI-powered churn prevention",
     color: "bg-emerald-500",
@@ -38,7 +38,7 @@ export const plans: Plan[] = [
       "Real-time Risk Alerts (Limited to 10/month)",
       "Access to Retention Dashboard (basic view)",
       "Email support (response in 48h)",
-      "No credit card required"
+      "Credit card required"
     ],
     popular: false,
     buttonText: "Start Free Trial",
@@ -67,7 +67,9 @@ export const plans: Plan[] = [
       "Priority email support (24h)"
     ],
     popular: true,
-    buttonText: "Choose Growth"
+    buttonText: "Choose Growth",
+    trial: true,
+    trialDays: 14
   },
   {
     id: "pro",
@@ -92,7 +94,8 @@ export const plans: Plan[] = [
       "Live Chat Support"
     ],
     popular: false,
-    buttonText: "Choose Pro"
+    buttonText: "Choose Pro",
+    trial: true,
+    trialDays: 14
   }
 ];
-

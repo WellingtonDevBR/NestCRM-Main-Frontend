@@ -29,15 +29,39 @@ serve(async (req) => {
     // Map plan IDs to Stripe product IDs and price IDs
     let priceId = "";
     let productId = "";
+    let trialDays = 0;
     
     switch (planId) {
       case "starter":
-        // Free trial plan
         productId = "prod_S6teQSASB4q3me"; // Starter product ID
-        return new Response(
-          JSON.stringify({ url: null, free: true, productId }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        // For the free plan, we'll still create a Stripe subscription with a $0 price
+        // and a trial period
+        
+        // Find or create a $0 price for the starter plan
+        const starterPrices = await stripe.prices.list({
+          product: productId,
+          active: true,
+          unit_amount: 0, // $0
+          limit: 1
+        });
+        
+        if (starterPrices.data.length > 0) {
+          priceId = starterPrices.data[0].id;
+          console.log("Found existing free price for starter plan:", priceId);
+        } else {
+          // If no price exists, create a new $0 price
+          console.log("No existing price found for starter plan, creating a new one");
+          const newPrice = await stripe.prices.create({
+            product: productId,
+            unit_amount: 0, // $0.00
+            currency: 'usd',
+            recurring: { interval: 'month' }
+          });
+          priceId = newPrice.id;
+          console.log("Created new price for starter plan:", priceId);
+        }
+        trialDays = 14;
+        break;
       case "growth":
         productId = "prod_S6tf3FcTLazhdW"; // Growth product ID
         
@@ -63,6 +87,7 @@ serve(async (req) => {
           priceId = newPrice.id;
           console.log("Created new price for growth plan:", priceId);
         }
+        trialDays = 14;
         break;
       case "pro":
         productId = "prod_S6tflZPV1ei1dL"; // Pro product ID
@@ -89,13 +114,14 @@ serve(async (req) => {
           priceId = newPrice.id;
           console.log("Created new price for pro plan:", priceId);
         }
+        trialDays = 14;
         break;
       default:
         throw new Error("Invalid plan selected");
     }
     
     // Add extra logging for debugging
-    console.log("Creating checkout session with:", { planId, priceId, productId });
+    console.log("Creating checkout session with:", { planId, priceId, productId, trialDays });
     
     // Create metadata to identify the user after successful payment
     const metadata = {
@@ -108,7 +134,7 @@ serve(async (req) => {
       productId: productId
     };
     
-    // Create a checkout session
+    // Create a checkout session with trial period
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
@@ -118,6 +144,9 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
+      subscription_data: {
+        trial_period_days: trialDays
+      },
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: metadata,
@@ -126,7 +155,7 @@ serve(async (req) => {
     console.log("Checkout session created:", { sessionId: session.id, url: session.url });
 
     return new Response(
-      JSON.stringify({ url: session.url, productId }),
+      JSON.stringify({ url: session.url }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

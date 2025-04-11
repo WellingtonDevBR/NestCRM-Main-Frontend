@@ -5,48 +5,6 @@ import { SignUpData } from "@/domain/auth/types";
 import { authService } from "@/services/authService";
 
 export const useSignupPayment = () => {
-  const createTrialAccount = async (signupData: SignUpData, planId: string): Promise<boolean> => {
-    try {
-      // Get the selected plan info
-      const selectedPlan = PaymentService.getPlanById(planId);
-      
-      if (selectedPlan?.trial) {
-        console.log('Creating trial account with plan:', selectedPlan);
-        
-        // For the free plan, we want to properly track trial information
-        // Store trial information
-        PaymentService.storeTrialInfo(
-          planId, 
-          selectedPlan.productId, 
-          selectedPlan.trialDays || 14
-        );
-        
-        // We still use the external API signup for consistent tenant provisioning
-        // This ensures all accounts go through the same tenant setup process
-        const finalSignupData = {
-          ...signupData,
-          planId: planId
-        };
-        
-        console.log('Sending signup data for free trial:', finalSignupData);
-        
-        const result = await authService.signUp(finalSignupData);
-        
-        if (!result.success) {
-          throw new Error(result.error?.message || "Failed to create account");
-        }
-        
-        toast.success("Trial account created successfully!");
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error("Error creating trial account:", error);
-      throw error;
-    }
-  };
-
   const handlePlanSelection = async (
     signupData: SignUpData, 
     planId: string
@@ -59,14 +17,7 @@ export const useSignupPayment = () => {
 
       console.log('Selected plan:', selectedPlan);
 
-      // For free plan or trial, create account directly through API
-      if (selectedPlan.priceValue === 0 || selectedPlan.trial) {
-        console.log('Starting free trial plan setup:', planId);
-        const success = await createTrialAccount(signupData, planId);
-        return { success };
-      }
-
-      // For paid plans, create a checkout session
+      // For all plans (including trials), create a checkout session
       const checkoutUrl = await PaymentService.createCheckoutSession(signupData, selectedPlan);
 
       if (checkoutUrl) {
@@ -105,7 +56,6 @@ export const useSignupPayment = () => {
     handlePlanSelection,
     checkPaymentStatus,
     getStoredSignupData,
-    clearStoredSignupData,
-    createTrialAccount
+    clearStoredSignupData
   };
 };
