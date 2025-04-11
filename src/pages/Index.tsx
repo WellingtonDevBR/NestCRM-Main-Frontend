@@ -1,6 +1,7 @@
 
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
+import HomePricing from "@/components/HomePricing";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SalesStatistics from "@/components/SalesStatistics";
@@ -34,6 +35,7 @@ const Index = () => {
       <Hero />
       <SalesStatistics />
       <Features />
+      <HomePricing />
       <CallToAction />
       <Footer />
     </div>
