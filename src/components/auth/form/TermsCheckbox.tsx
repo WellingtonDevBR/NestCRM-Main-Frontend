@@ -9,11 +9,11 @@ const TermsCheckbox = () => {
       <Checkbox id="terms" required />
       <Label htmlFor="terms" className="text-sm">
         I agree to the{" "}
-        <Link to="/terms-of-service" className="text-primary hover:text-primary/80">
+        <Link to="/terms-of-service" className="text-primary hover:text-primary/80" target="_blank" rel="noopener noreferrer">
           Terms of Service
         </Link>{" "}
         and{" "}
-        <Link to="/privacy-policy" className="text-primary hover:text-primary/80">
+        <Link to="/privacy-policy" className="text-primary hover:text-primary/80" target="_blank" rel="noopener noreferrer">
           Privacy Policy
         </Link>
       </Label>
