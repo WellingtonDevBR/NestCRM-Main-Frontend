@@ -65,8 +65,16 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold text-lg mb-4">Legal</h3>
             <ul className="space-y-3">
-              <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">Terms of Service</a></li>
+              <li>
+                <Link to="/privacy-policy" className="text-foreground/70 hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms-of-service" className="text-foreground/70 hover:text-primary transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
               <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">Cookie Policy</a></li>
               <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">Data Processing</a></li>
               <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">GDPR Compliance</a></li>
@@ -79,8 +87,8 @@ const Footer = () => {
             © {new Date().getFullYear()} NESTCRM. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <a href="#" className="text-foreground/60 hover:text-primary transition-colors text-sm">Privacy</a>
-            <a href="#" className="text-foreground/60 hover:text-primary transition-colors text-sm">Terms</a>
+            <Link to="/privacy-policy" className="text-foreground/60 hover:text-primary transition-colors text-sm">Privacy</Link>
+            <Link to="/terms-of-service" className="text-foreground/60 hover:text-primary transition-colors text-sm">Terms</Link>
             <a href="#" className="text-foreground/60 hover:text-primary transition-colors text-sm">Cookies</a>
           </div>
         </div>

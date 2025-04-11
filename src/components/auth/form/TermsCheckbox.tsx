@@ -1,6 +1,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 
 const TermsCheckbox = () => {
   return (
@@ -8,13 +9,13 @@ const TermsCheckbox = () => {
       <Checkbox id="terms" required />
       <Label htmlFor="terms" className="text-sm">
         I agree to the{" "}
-        <a href="#" className="text-primary hover:text-primary/80">
+        <Link to="/terms-of-service" className="text-primary hover:text-primary/80">
           Terms of Service
-        </a>{" "}
+        </Link>{" "}
         and{" "}
-        <a href="#" className="text-primary hover:text-primary/80">
+        <Link to="/privacy-policy" className="text-primary hover:text-primary/80">
           Privacy Policy
-        </a>
+        </Link>
       </Label>
     </div>
   );

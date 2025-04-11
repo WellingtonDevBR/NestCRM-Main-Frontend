@@ -6,7 +6,6 @@ import { Home, AlertTriangle, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
-// new uodate
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
