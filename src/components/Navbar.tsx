@@ -74,17 +74,17 @@ const Navbar = () => {
             >
               Features
             </a>
+            <Link
+              to="/pricing"
+              className="text-foreground/80 hover:text-purple-600 transition-colors"
+            >
+              Pricing
+            </Link>
             <a
               href="#testimonials"
               className="text-foreground/80 hover:text-purple-600 transition-colors"
             >
               Testimonials
-            </a>
-            <a
-              href="#pricing"
-              className="text-foreground/80 hover:text-purple-600 transition-colors"
-            >
-              Pricing
             </a>
           </nav>
 
@@ -140,19 +140,19 @@ const Navbar = () => {
             >
               Features
             </a>
+            <Link
+              to="/pricing"
+              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Pricing
+            </Link>
             <a
               href="#testimonials"
               className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Testimonials
-            </a>
-            <a
-              href="#pricing"
-              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Pricing
             </a>
             {showAuthButtons && (
               isAuthenticated && tenant ? (

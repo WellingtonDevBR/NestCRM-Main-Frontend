@@ -13,6 +13,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 import DataProtection from "./pages/DataProtection";
 import GDPRCompliance from "./pages/GDPRCompliance";
+import SubscriptionPlans from "./pages/SubscriptionPlans";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Suspense } from "react";
 import CookieBanner from "./components/CookieBanner";
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<SignUp />} />
+                <Route path="/pricing" element={<SubscriptionPlans />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="/cookie-policy" element={<CookiePolicy />} />
