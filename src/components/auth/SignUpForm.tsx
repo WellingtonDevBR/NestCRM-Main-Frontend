@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -33,26 +32,20 @@ const SignUpForm = () => {
   const [companyName, setCompanyName] = useState("");
   const [subdomain, setSubdomain] = useState("");
 
-  // Check if returning from Stripe checkout
   useEffect(() => {
     const checkPaymentStatus = () => {
-      // Check if URL contains success parameter from Stripe redirect
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('payment_status')) {
         const status = urlParams.get('payment_status');
         
-        // Get stored signup data
         const storedData = StripeService.getStoredSignupData();
         if (storedData) {
           if (status === 'success') {
-            // Complete signup with the stored data
             completeSignup(storedData.signupData, storedData.planId);
           } else {
-            // Payment was cancelled or failed
             toast.error("Payment was not completed", {
               description: "You can try again or choose a different plan"
             });
-            // Return to plan selection with stored data
             setFirstName(storedData.signupData.firstName);
             setLastName(storedData.signupData.lastName);
             setEmail(storedData.signupData.email);
@@ -61,7 +54,6 @@ const SignUpForm = () => {
             setSubdomain(storedData.signupData.subdomain);
             setSignupStage("plan_selection");
           }
-          // Clear stored data
           StripeService.clearStoredSignupData();
         }
       }
@@ -70,7 +62,6 @@ const SignUpForm = () => {
     checkPaymentStatus();
   }, []);
 
-  // Progress simulation
   useEffect(() => {
     if (!showSetupProgress) return;
 
@@ -91,10 +82,9 @@ const SignUpForm = () => {
         return;
       }
 
-      progress += 2; // Slower progress increment
+      progress += 2;
       setSetupProgress(progress);
 
-      // Update stage message at certain progress points
       if (progress === 20 && currentStage < 1) {
         currentStage = 1;
         setSetupStage(stages[currentStage]);
@@ -113,13 +103,11 @@ const SignUpForm = () => {
     return () => clearInterval(interval);
   }, [showSetupProgress]);
   
-  // Initial form submission
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
     
     try {
-      // Move to plan selection step
       setSignupStage("plan_selection");
     } catch (error: any) {
       console.error("Form submission error:", error);
@@ -131,7 +119,6 @@ const SignUpForm = () => {
     }
   };
   
-  // Plan selection handler
   const handlePlanSelected = async (planId: string) => {
     setIsLoading(true);
     setErrorMessage(null);
@@ -140,7 +127,6 @@ const SignUpForm = () => {
       const selectedPlan = plans.find(p => p.id === planId);
       if (!selectedPlan) throw new Error("Invalid plan selected");
       
-      // Create signup data object with the correct structure
       const signupData = {
         firstName,
         lastName,
@@ -152,20 +138,15 @@ const SignUpForm = () => {
       
       console.log('Selected plan:', selectedPlan);
       
-      // If it's a free plan, proceed directly to account creation
       if (selectedPlan.priceValue === 0) {
         await completeSignup(signupData, planId);
         return;
       }
       
-      // For paid plans, create a Stripe checkout session
       const checkoutUrl = await StripeService.createCheckoutSession(signupData, selectedPlan);
       
       if (checkoutUrl) {
-        // Store signup data for after payment completion
         StripeService.storeSignupData(signupData, planId);
-        
-        // Redirect to Stripe checkout
         window.location.href = checkoutUrl;
       } else {
         throw new Error("Could not create checkout session");
@@ -181,20 +162,17 @@ const SignUpForm = () => {
     }
   };
   
-  // Complete signup after plan selection/payment
   const completeSignup = async (signupData: any, planId: string) => {
     setSignupStage("processing");
     setIsLoading(true);
     setErrorMessage(null);
     
     try {
-      // Start showing first stage before API call
       setSetupStage("Creating your account...");
       setShowSetupProgress(true);
       
       console.log('Completing signup with data:', { signupData, planId });
       
-      // Add plan information to the signup data
       const finalSignupData = {
         ...signupData,
         planId
@@ -204,11 +182,7 @@ const SignUpForm = () => {
       
       if (result.success && result.session) {
         toast.success("Account created successfully!");
-        
-        // Redirect will handle status checks and retries
         redirectToTenantDomain(result.session.tenant);
-        
-        // Let the progress bar continue running during the redirect process
       } else {
         setShowSetupProgress(false);
         const errorMsg = result.error?.message || "Please try again later.";
@@ -282,7 +256,9 @@ const SignUpForm = () => {
 
             <TermsCheckbox />
 
-            <SubmitButton isLoading={isLoading} text="Continue" />
+            <SubmitButton isLoading={isLoading}>
+              Continue
+            </SubmitButton>
           </form>
         );
         
