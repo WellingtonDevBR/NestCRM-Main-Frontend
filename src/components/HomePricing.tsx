@@ -7,10 +7,10 @@ import { plans } from "@/components/auth/form/plan/planData";
 
 const HomePricing = () => {
   return (
-    <section id="pricing" className="py-20 bg-white">
+    <section id="pricing" className="py-24 bg-gradient-to-b from-white to-secondary/20">
       <div className="container-custom">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-sm font-medium">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 text-primary text-sm font-medium">
             <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
             Pricing Plans
           </div>
@@ -20,18 +20,22 @@ const HomePricing = () => {
               pricing
             </span>
           </h2>
-          <p className="text-lg text-foreground/70">
+          <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
             Choose the plan that fits your business needs. All plans include a {plans[0].trialDays}-day free trial.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {plans.map((plan, index) => (
             <Card 
               key={plan.name} 
-              className={`border shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl ${
+              className={`border shadow-lg overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px] ${
                 plan.popular ? "ring-2 ring-primary" : ""
               }`}
+              style={{
+                animationDelay: `${index * 0.15}s`,
+                animationFillMode: 'both'
+              }}
             >
               <CardHeader className={`${plan.popular ? `bg-gradient-to-br ${plan.colorClass} text-white` : ""}`}>
                 {plan.popular && (
@@ -50,7 +54,7 @@ const HomePricing = () => {
               </CardHeader>
               <CardContent className="flex-grow pt-6">
                 <ul className="space-y-3">
-                  {plan.features.slice(0, 5).map((feature, i) => (
+                  {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-2">
                       <div className={`rounded-full p-1 mt-0.5 flex-shrink-0 ${plan.color} text-white`}>
                         <Check className="h-3 w-3" />

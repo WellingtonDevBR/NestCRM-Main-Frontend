@@ -56,40 +56,40 @@ const features = [
 
 const Features = () => {
   return (
-    <section id="features" className="section-padding bg-secondary/50">
+    <section id="features" className="py-24 bg-gradient-to-b from-secondary/30 to-white">
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-sm font-medium">
+          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 text-primary text-sm font-medium">
             <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
             Key Features
           </div>
-          <h2 className="heading-lg mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Everything you need to{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
               prevent customer churn
             </span>
           </h2>
-          <p className="text-lg text-foreground/70">
+          <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
             NestCRM combines powerful AI with intuitive tools to help you identify, understand, and address customer churn before it impacts your business.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
           {features.map((feature, index) => (
             <div
               key={index}
-              className="feature-card"
+              className="feature-card group hover:bg-white transition-all duration-300 p-6 rounded-xl hover:shadow-md"
               style={{
                 animationDelay: `${index * 0.1}s`,
                 animationFillMode: 'both'
               }}
             >
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/10 mr-4">
+              <div className="mb-5">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
                   <feature.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="font-semibold text-xl">{feature.title}</h3>
               </div>
+              <h3 className="font-semibold text-xl mb-3">{feature.title}</h3>
               <p className="text-foreground/70">{feature.description}</p>
             </div>
           ))}

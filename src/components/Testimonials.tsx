@@ -24,26 +24,26 @@ const testimonials = [
 
 const Testimonials = () => {
   return (
-    <section id="testimonials" className="section-padding relative overflow-hidden">
+    <section id="testimonials" className="py-24 bg-white relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container-custom">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-sm font-medium">
+          <div className="inline-flex items-center px-3 py-1 mb-4 rounded-full bg-gradient-to-r from-primary/10 to-primary/5 text-primary text-sm font-medium">
             <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
             Customer Stories
           </div>
-          <h2 className="heading-lg mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
             See what our clients have to say about{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
               NestCRM
             </span>
           </h2>
-          <p className="text-lg text-foreground/70">
+          <p className="text-lg text-foreground/70 max-w-2xl mx-auto">
             Businesses across industries are using NestCRM to predict and prevent customer churn, leading to increased retention and growth.
           </p>
         </div>
@@ -52,9 +52,9 @@ const Testimonials = () => {
           {testimonials.map((testimonial, index) => (
             <div
               key={index}
-              className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-white/20 hover:shadow-md transition-all duration-300"
+              className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-md border border-white/20 hover:shadow-lg transition-all duration-300 hover:translate-y-[-5px]"
               style={{
-                animationDelay: `${index * 0.1}s`,
+                animationDelay: `${index * 0.2}s`,
                 animationFillMode: 'both'
               }}
             >
@@ -66,22 +66,12 @@ const Testimonials = () => {
               <blockquote className="text-lg mb-6 text-foreground/80 italic">
                 "{testimonial.quote}"
               </blockquote>
-              <div>
+              <div className="border-t border-gray-100 pt-4">
                 <p className="font-semibold">{testimonial.author}</p>
                 <p className="text-sm text-foreground/60">{testimonial.title}</p>
               </div>
             </div>
           ))}
-        </div>
-
-        <div className="mt-20 p-8 md:p-12 glass-card max-w-4xl mx-auto text-center">
-          <h3 className="heading-md mb-6">Ready to reduce customer churn?</h3>
-          <p className="text-lg mb-8 text-foreground/70 max-w-2xl mx-auto">
-            Join the businesses that are transforming their customer retention strategies with NestCRM's AI-powered platform.
-          </p>
-          <div className="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-lg hover:shadow-lg transition-all duration-300 cursor-pointer">
-            Start Your Free Trial
-          </div>
         </div>
       </div>
     </section>
