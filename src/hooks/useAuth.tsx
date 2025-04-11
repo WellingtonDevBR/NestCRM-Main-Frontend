@@ -2,6 +2,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { authService } from '@/services/authService';
+import { tenantService } from '@/domain/tenant/tenantService';
 
 /**
  * Custom hook for authentication functionality
@@ -33,7 +34,12 @@ export function useAuth() {
         console.error('signOut method not available');
         return Promise.resolve();
       }),
-    // Removed redirectToTenantDomain from the returned object to use direct navigation instead
+    // Add back the redirectToTenantDomain method
+    redirectToTenantDomain: tenantService?.redirectToTenantDomain?.bind(tenantService) || 
+      ((tenant) => {
+        console.error('redirectToTenantDomain method not available');
+        return Promise.resolve();
+      }),
   };
   
   return {

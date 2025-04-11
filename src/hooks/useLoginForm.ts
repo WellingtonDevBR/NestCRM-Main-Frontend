@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
 import { toast } from "sonner";
+import { TenantInfo } from "@/domain/auth/types";
 
 // Form validation schema
 const loginSchema = z.object({
@@ -19,7 +20,7 @@ export type LoginFormErrors = {
 };
 
 export function useLoginForm() {
-  const { signIn, redirectToTenantDomain, isAuthenticated } = useAuth();
+  const { signIn, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -74,17 +75,21 @@ export function useLoginForm() {
     return isValid;
   };
 
-  // Handle successful login and redirection
+  // Handle successful login and redirection using direct navigation
   const handleSuccessfulAuth = (response: any): void => {
     if (response && response.success && response.session && response.session.tenant) {
-      const tenant = response.session.tenant;
+      const tenant: TenantInfo = response.session.tenant;
       
       console.log('Redirect info:', { tenant });
       
-      if (tenant) {
-        // Use the auth service to handle the redirect
-        // Cookies will be sent automatically
-        redirectToTenantDomain(tenant);
+      if (tenant && tenant.domain) {
+        // Use direct navigation instead of redirectToTenantDomain
+        console.log('Tenant is ready, redirecting to:', tenant.domain);
+        const protocol = window.location.protocol;
+        const url = `${protocol}//${tenant.domain}/dashboard`;
+        
+        // Use window.location.replace for a cleaner redirect
+        window.location.replace(url);
       } else {
         console.error('Invalid tenant in response', response.session);
         throw new Error('Invalid authentication response');
@@ -119,7 +124,7 @@ export function useLoginForm() {
         toast.success('Login successful!');
         
         try {
-          // Redirect to tenant subdomain (cookies will be sent automatically)
+          // Direct navigation to tenant subdomain
           handleSuccessfulAuth(response);
         } catch (redirectError: any) {
           console.error('❌ Redirect Error:', redirectError);
