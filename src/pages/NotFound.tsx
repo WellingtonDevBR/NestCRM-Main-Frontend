@@ -6,6 +6,7 @@ import { Home, AlertTriangle, ChevronLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
+// new uodate
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -20,11 +21,11 @@ const NotFound = () => {
       "Authentication status:",
       isAuthenticated ? "Authenticated" : "Not authenticated"
     );
-    
+
     // Check if we're trying to access the dashboard path
     if (location.pathname === '/dashboard' && isAuthenticated) {
       setIsOnDashboardPath(true);
-      
+
       // Show toast notification to explain the situation
       toast.error("Unable to access the dashboard directly", {
         description: "Please select an organization first",
@@ -32,7 +33,7 @@ const NotFound = () => {
       });
     }
   }, [location.pathname, isAuthenticated]);
-  
+
   const handleNavigateToOrganizations = () => {
     // Determine the correct organizations path
     const organizationsPath = '/organizations';
@@ -47,20 +48,20 @@ const NotFound = () => {
             <AlertTriangle className="h-10 w-10 text-red-600" />
           </div>
         </div>
-        
+
         <h1 className="text-4xl font-bold mb-2 text-foreground">404</h1>
         <p className="text-xl font-medium mb-6 text-foreground">Page not found</p>
-        
+
         <p className="text-muted-foreground mb-8">
-          {isOnDashboardPath 
+          {isOnDashboardPath
             ? "To access the dashboard, you need to select an organization first."
             : "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable."}
         </p>
-        
+
         {isAuthenticated ? (
           <div className="space-y-4">
             {isOnDashboardPath ? (
-              <Button 
+              <Button
                 className="w-full"
                 onClick={handleNavigateToOrganizations}
               >
