@@ -30,24 +30,26 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
             >
               <div className="flex items-center">
                 {/* Step circle */}
-                <div className="absolute flex items-center justify-center w-6 h-6 rounded-full">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    isCompleted 
+                      ? "bg-primary" 
+                      : isActive 
+                        ? "border-2 border-primary" 
+                        : "border-2 border-gray-300"
+                  }`}
+                >
                   {isCompleted ? (
-                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                      <Check className="h-3 w-3 text-white" />
-                    </div>
+                    <Check className="h-4 w-4 text-white" />
                   ) : isActive ? (
-                    <div className="w-6 h-6 border-2 border-primary rounded-full flex items-center justify-center">
-                      <div className="w-2.5 h-2.5 bg-primary rounded-full" />
-                    </div>
-                  ) : (
-                    <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
-                  )}
+                    <div className="w-3 h-3 bg-primary rounded-full" />
+                  ) : null}
                 </div>
                 
                 {/* Step name */}
                 <span 
-                  className={`ml-8 text-sm font-medium ${
-                    isActive ? "text-primary" : "text-muted-foreground"
+                  className={`ml-3 text-sm font-medium ${
+                    isActive ? "text-primary" : isCompleted ? "text-gray-900" : "text-muted-foreground"
                   }`}
                 >
                   {step.name}
@@ -57,12 +59,10 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               {/* Connecting line */}
               {stepIdx < steps.length - 1 && (
                 <div 
-                  className="absolute top-3 h-0.5" 
-                  style={{ 
-                    left: "1.5rem", 
-                    right: "0.75rem",
-                    backgroundColor: isCompleted ? "var(--primary)" : "#e5e7eb" // Use CSS var for primary or gray
-                  }}
+                  className={`absolute left-4 top-4 -ml-px h-0.5 w-full ${
+                    isCompleted ? "bg-primary" : "bg-gray-300"
+                  }`}
+                  style={{ transform: "translateY(-50%)" }}
                 />
               )}
             </li>

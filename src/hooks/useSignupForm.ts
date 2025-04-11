@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
@@ -58,9 +59,9 @@ export const useSignupForm = () => {
     }
   }, [email]);
 
-  // Poll for tenant status after signup
+  // Poll for tenant status after signup with improved reliability
   const pollTenantStatus = async (domain) => {
-    const maxRetries = 10;
+    const maxRetries = 20; // Increased for better reliability
     let retries = 0;
     
     const checkStatus = async () => {
@@ -81,12 +82,16 @@ export const useSignupForm = () => {
       }
     };
     
-    // Initial check
+    // Initial check with delay to give server time to initialize
+    await new Promise(resolve => setTimeout(resolve, 2000));
     let isReady = await checkStatus();
     
     while (!isReady && retries < maxRetries) {
       retries++;
-      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+      // Exponential backoff for more efficient polling
+      const delay = Math.min(2000 + (retries * 1000), 10000);
+      console.log(`Waiting ${delay}ms before next check`);
+      await new Promise(resolve => setTimeout(resolve, delay));
       isReady = await checkStatus();
     }
     
@@ -118,7 +123,7 @@ export const useSignupForm = () => {
     setErrorMessage(null);
 
     try {
-      // Validate subdomain (basic validation, no longer enforcing email domain match)
+      // Validate subdomain (basic validation)
       if (!subdomain || subdomain.trim() === "") {
         setErrorMessage("Subdomain is required");
         toast.error("Validation failed", {
@@ -145,26 +150,22 @@ export const useSignupForm = () => {
     try {
       const signupData = getFormData();
       
-      // For free/trial plans, go directly to signup without Stripe redirect
-      if (planId === "starter") {
-        console.log("Free plan selected, proceeding with direct signup");
-        setSignupStage("processing");
-        await completeSignup(signupData, planId);
-        return;
-      }
+      setSignupStage("processing");
+      console.log(`Plan ${planId} selected, proceeding with signup`);
       
-      // For paid plans, use the existing flow with Stripe
+      // For both free and paid plans, use the handlePlanSelection function
+      // which will either create a trial account directly or redirect to Stripe
       const result = await handlePlanSelection(signupData, planId);
       
       if (result.success) {
         if (result.redirectUrl) {
-          // Redirect to Stripe checkout
+          // Redirect to Stripe checkout for paid plans
+          console.log("Redirecting to Stripe checkout:", result.redirectUrl);
           window.location.href = result.redirectUrl;
           return;
         }
-        // If successful without redirect, plan was a free trial
-        // The createTrialAccount already handles the API signup
-        setSignupStage("processing");
+        // If successful without redirect, free plan/trial was processed directly
+        console.log("Free trial plan processed successfully");
       } else if (result.error) {
         throw result.error;
       }
@@ -176,6 +177,7 @@ export const useSignupForm = () => {
         description: errorMsg
       });
       setIsLoading(false);
+      setSignupStage("plan_selection");
     }
   };
 
@@ -212,16 +214,19 @@ export const useSignupForm = () => {
           
           // Wait for tenant to be ready before redirecting
           const tenantDomain = result.session.tenant.domain;
-          setSetupStage("Waiting for your workspace to be ready...");
+          setSetupStage("Setting up your workspace...");
           
           // Show a loading toast before starting to poll
-          toast.loading("Setting up your workspace...");
+          toast.loading("Preparing your workspace - this may take a minute...");
           
-          // Poll for tenant status (max 10 retries, 3 second intervals)
+          // Poll for tenant status with improved reliability
           const isReady = await pollTenantStatus(tenantDomain);
           
           if (isReady) {
             console.log('Tenant domain is ready, proceeding with redirect');
+            // Success toast before redirect
+            toast.success("Your workspace is ready!");
+            
             // Use direct navigation for consistent redirection
             const protocol = window.location.protocol;
             const url = `${protocol}//${tenantDomain}/dashboard`;
@@ -229,10 +234,10 @@ export const useSignupForm = () => {
             
             // Use setTimeout to ensure cookies are properly set before redirecting
             setTimeout(() => {
-              console.log('Executing delayed redirect to:', url);
+              console.log('Executing redirect to:', url);
               // Use window.location.replace for a cleaner redirect
               window.location.replace(url);
-            }, 1000);
+            }, 1500);
           } else {
             // Even if polling timed out, still try to redirect
             console.log('Tenant polling timed out, attempting redirect anyway');
@@ -258,6 +263,7 @@ export const useSignupForm = () => {
           description: errorMsg
         });
         setIsLoading(false);
+        setSignupStage("plan_selection");
       }
     } catch (error: any) {
       console.error("Signup error:", error);
@@ -268,6 +274,7 @@ export const useSignupForm = () => {
         description: errorMsg
       });
       setIsLoading(false);
+      setSignupStage("plan_selection");
     }
   };
 
