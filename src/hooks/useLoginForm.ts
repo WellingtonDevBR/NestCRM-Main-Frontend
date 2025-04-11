@@ -75,20 +75,59 @@ export function useLoginForm() {
     return isValid;
   };
 
+  // Poll for tenant status for better redirection
+  const pollTenantDomain = async (domain: string): Promise<boolean> => {
+    const maxRetries = 5;
+    let retries = 0;
+    
+    const checkStatus = async () => {
+      console.log(`Polling tenant domain: attempt ${retries + 1} for ${domain}`);
+      try {
+        const response = await fetch(`https://${domain}/api/status`, {
+          method: 'GET',
+          mode: 'no-cors',
+          credentials: 'include'
+        });
+        console.log("Tenant domain appears available");
+        return true;
+      } catch (error) {
+        console.log("Tenant domain not yet ready");
+        return false;
+      }
+    };
+    
+    // Initial check
+    let isReady = await checkStatus();
+    
+    while (!isReady && retries < maxRetries) {
+      retries++;
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+      isReady = await checkStatus();
+    }
+    
+    return isReady;
+  };
+
   // Handle successful login and redirection using direct navigation
-  const handleSuccessfulAuth = (response: any): void => {
+  const handleSuccessfulAuth = async (response: any): Promise<void> => {
     if (response && response.success && response.session && response.session.tenant) {
       const tenant: TenantInfo = response.session.tenant;
       
       console.log('Redirect info:', { tenant });
       
       if (tenant && tenant.domain) {
+        // Show a loading toast before trying to check tenant status
+        toast.loading("Verifying your workspace connection...");
+        
+        // Poll for tenant domain readiness
+        const isReady = await pollTenantDomain(tenant.domain);
+        
         // For consistent redirection, always use dashboard path
-        console.log('Tenant is ready, redirecting to:', tenant.domain);
+        console.log('Preparing redirect to:', tenant.domain, 'Domain ready:', isReady);
         const protocol = window.location.protocol;
         const url = `${protocol}//${tenant.domain}/dashboard`;
         
-        // Show a loading toast before redirect
+        // Update toast message before redirect
         toast.loading("Connecting to your dashboard...");
         
         // Use setTimeout to ensure cookies are properly set before redirecting
@@ -96,7 +135,7 @@ export function useLoginForm() {
           console.log('Executing delayed redirect to:', url);
           // Use window.location.replace for a cleaner redirect
           window.location.replace(url);
-        }, 500);
+        }, 1000);
       } else {
         console.error('Invalid tenant in response', response.session);
         throw new Error('Invalid authentication response');
@@ -131,8 +170,8 @@ export function useLoginForm() {
         toast.success('Login successful!');
         
         try {
-          // Direct navigation to tenant subdomain
-          handleSuccessfulAuth(response);
+          // Direct navigation to tenant subdomain with polling
+          await handleSuccessfulAuth(response);
         } catch (redirectError: any) {
           console.error('❌ Redirect Error:', redirectError);
           setErrors((prev) => ({ ...prev, form: 'Error during redirect. Please try again.' }));
