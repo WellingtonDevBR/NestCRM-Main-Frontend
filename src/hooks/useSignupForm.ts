@@ -2,18 +2,14 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { SignUpData, AuthResult } from "@/domain/auth/types";
-import { StripeService } from "@/services/stripeService";
-import { SignupStep } from "@/components/auth/form/StepIndicator";
-import { useSignupProgress } from "./useSignupProgress";
-import { supabase } from "@/integrations/supabase/client";
+import { AuthResult } from "@/domain/auth/types";
+import { useSignupFormState } from "@/hooks/useSignupFormState";
+import { useSignupProgress } from "@/hooks/useSignupProgress";
+import { useSignupPayment } from "@/hooks/useSignupPayment";
 
 export const useSignupForm = () => {
   const { signUp, redirectToTenantDomain } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [signupStage, setSignupStage] = useState<SignupStep>("form");
-
+  const formState = useSignupFormState();
   const {
     setupProgress,
     setupStage,
@@ -22,44 +18,45 @@ export const useSignupForm = () => {
     startProgressSimulation,
     setSetupStage
   } = useSignupProgress();
+  const {
+    handlePlanSelection,
+    checkPaymentStatus,
+    getStoredSignupData,
+    clearStoredSignupData,
+  } = useSignupPayment();
 
-  // Form state
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [subdomain, setSubdomain] = useState("");
+  // Destructure form state for easier access
+  const {
+    isLoading, setIsLoading,
+    errorMessage, setErrorMessage,
+    signupStage, setSignupStage,
+    firstName, setFirstName,
+    lastName, setLastName,
+    email, setEmail,
+    password, setPassword,
+    companyName, setCompanyName,
+    subdomain, setSubdomain,
+    setFormDataFromStored, getFormData
+  } = formState;
 
   useEffect(() => {
     // Check payment status when component mounts
-    const checkPaymentStatus = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.has('payment_status')) {
-        const status = urlParams.get('payment_status');
-
-        const storedData = StripeService.getStoredSignupData();
-        if (storedData) {
-          if (status === 'success') {
-            completeSignup(storedData.signupData, storedData.planId);
-          } else {
-            toast.error("Payment was not completed", {
-              description: "You can try again or choose a different plan"
-            });
-            setFirstName(storedData.signupData.firstName);
-            setLastName(storedData.signupData.lastName);
-            setEmail(storedData.signupData.email);
-            setPassword(storedData.signupData.password);
-            setCompanyName(storedData.signupData.companyName);
-            setSubdomain(storedData.signupData.subdomain);
-            setSignupStage("plan_selection");
-          }
-          StripeService.clearStoredSignupData();
+    const status = checkPaymentStatus();
+    if (status) {
+      const storedData = getStoredSignupData();
+      if (storedData) {
+        if (status === 'success') {
+          completeSignup(storedData.signupData, storedData.planId);
+        } else {
+          toast.error("Payment was not completed", {
+            description: "You can try again or choose a different plan"
+          });
+          setFormDataFromStored(storedData.signupData);
+          setSignupStage("plan_selection");
         }
+        clearStoredSignupData();
       }
-    };
-
-    checkPaymentStatus();
+    }
   }, []);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -83,35 +80,20 @@ export const useSignupForm = () => {
     setErrorMessage(null);
 
     try {
-      const selectedPlan = StripeService.getPlanById(planId);
-      if (!selectedPlan) throw new Error("Invalid plan selected");
-
-      const signupData = {
-        firstName,
-        lastName,
-        companyName,
-        email,
-        subdomain,
-        password
-      };
-
-      console.log('Selected plan:', selectedPlan);
-
-      if (selectedPlan.priceValue === 0 || selectedPlan.trial) {
-        await completeSignup(signupData, planId);
-        return;
-      }
-
-      const checkoutUrl = await StripeService.createCheckoutSession(signupData, selectedPlan);
-
-      if (checkoutUrl) {
-        StripeService.storeSignupData(signupData, planId);
-        window.location.href = checkoutUrl;
-      } else if (selectedPlan.trial) {
-        // If there's a trial but no checkout URL (which means we're handling it locally)
-        await completeSignup(signupData, planId);
-      } else {
-        throw new Error("Could not create checkout session");
+      const signupData = getFormData();
+      
+      const result = await handlePlanSelection(signupData, planId);
+      
+      if (result.success) {
+        if (result.redirectUrl) {
+          // Redirect to Stripe checkout
+          window.location.href = result.redirectUrl;
+          return;
+        }
+        // If successful without redirect, plan was a free trial
+        setSignupStage("processing");
+      } else if (result.error) {
+        throw result.error;
       }
     } catch (error: any) {
       console.error("Plan selection error:", error);
@@ -124,7 +106,7 @@ export const useSignupForm = () => {
     }
   };
 
-  const completeSignup = async (signupData: SignUpData, planId: string) => {
+  const completeSignup = async (signupData: any, planId: string) => {
     setSignupStage("processing");
     setIsLoading(true);
     setErrorMessage(null);
@@ -139,49 +121,6 @@ export const useSignupForm = () => {
         ...signupData,
         planId
       };
-
-      // For the starter plan (free trial), we'll bypass the external API and use Supabase directly
-      const selectedPlan = StripeService.getPlanById(planId);
-      if (selectedPlan?.trial) {
-        // Store trial information
-        const trialInfo = {
-          planId,
-          productId: selectedPlan.productId,
-          trialStartDate: new Date().toISOString(),
-          trialEndDate: new Date(Date.now() + (selectedPlan.trialDays || 14) * 24 * 60 * 60 * 1000).toISOString()
-        };
-        localStorage.setItem('trial_info', JSON.stringify(trialInfo));
-
-        // Implement direct Supabase registration here
-        try {
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: finalSignupData.email,
-            password: finalSignupData.password,
-            options: {
-              data: {
-                first_name: finalSignupData.firstName,
-                last_name: finalSignupData.lastName,
-                company_name: finalSignupData.companyName,
-                subdomain: finalSignupData.subdomain,
-                plan_id: planId
-              }
-            }
-          });
-
-          if (authError) throw authError;
-
-          toast.success("Account created successfully!");
-
-          // Redirect to dashboard or home page
-          setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 1500);
-          return;
-        } catch (supabaseError: any) {
-          console.error("Supabase auth error:", supabaseError);
-          throw supabaseError;
-        }
-      }
 
       // If not using Supabase directly for signup, continue with external API
       const result: AuthResult = await signUp(finalSignupData);

@@ -1,6 +1,5 @@
 
-import React from "react";
-import { CircleCheck, CircleIcon, LocateIcon } from "lucide-react";
+import { Check } from "lucide-react";
 
 export type SignupStep = "form" | "plan_selection" | "processing";
 
@@ -8,70 +7,84 @@ interface StepIndicatorProps {
   currentStep: SignupStep;
 }
 
-const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
+const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
   const steps = [
-    { id: "form", label: "Your Information" },
-    { id: "plan_selection", label: "Select Plan" },
-    { id: "processing", label: "Complete Setup" }
+    { id: "form", name: "Account Details" },
+    { id: "plan_selection", name: "Select Plan" },
+    { id: "processing", name: "Complete" },
   ];
 
   return (
-    <div className="mb-8">
-      <div className="flex justify-between items-center">
-        {steps.map((step, index) => {
-          const isActive = step.id === currentStep;
-          const isCompleted = getStepValue(step.id) < getStepValue(currentStep);
-          
-          return (
-            <React.Fragment key={step.id}>
-              {/* Step indicator */}
-              <div className="flex flex-col items-center">
-                <div className={`
-                  flex items-center justify-center w-10 h-10 rounded-full border-2 
-                  ${isActive ? 'border-primary bg-primary/10' : 
-                    isCompleted ? 'border-primary bg-primary text-white' : 
-                    'border-gray-200 bg-gray-50'}
-                  mb-1
-                `}>
-                  {isCompleted ? (
-                    <CircleCheck className="w-5 h-5 text-white" />
-                  ) : isActive ? (
-                    <LocateIcon className="w-5 h-5 text-primary" />
-                  ) : (
-                    <CircleIcon className="w-5 h-5 text-gray-400" />
-                  )}
-                </div>
-                <div className={`text-xs font-medium text-center 
-                  ${isActive ? 'text-primary' : 
-                    isCompleted ? 'text-primary' : 
-                    'text-muted-foreground'}`}>
-                  {step.label}
-                </div>
+    <nav aria-label="Progress" className="mb-8">
+      <ol role="list" className="flex items-center">
+        {steps.map((step, stepIdx) => (
+          <li
+            key={step.id}
+            className={`relative ${
+              stepIdx !== steps.length - 1 ? "flex-1" : ""
+            }`}
+          >
+            {step.id === currentStep ? (
+              <div className="flex items-center" aria-current="step">
+                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary">
+                  <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+                </span>
+                <span className="ml-8 text-sm font-medium text-primary">
+                  {step.name}
+                </span>
               </div>
-              
-              {/* Connection line between steps */}
-              {index < steps.length - 1 && (
-                <div className={`flex-grow h-0.5 mx-2 
-                  ${getStepValue(step.id) < getStepValue(currentStep) ? 
-                  'bg-primary' : 'bg-gray-200'}`}>
-                </div>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
-    </div>
+            ) : step.id === "form" && currentStep === "plan_selection" ? (
+              <div className="group flex items-center">
+                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                  <Check className="h-3 w-3 text-white" />
+                </span>
+                <span className="ml-8 text-sm font-medium text-muted-foreground">
+                  {step.name}
+                </span>
+              </div>
+            ) : step.id === "form" && currentStep === "processing" ? (
+              <div className="group flex items-center">
+                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                  <Check className="h-3 w-3 text-white" />
+                </span>
+                <span className="ml-8 text-sm font-medium text-muted-foreground">
+                  {step.name}
+                </span>
+              </div>
+            ) : step.id === "plan_selection" && currentStep === "processing" ? (
+              <div className="group flex items-center">
+                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                  <Check className="h-3 w-3 text-white" />
+                </span>
+                <span className="ml-8 text-sm font-medium text-muted-foreground">
+                  {step.name}
+                </span>
+              </div>
+            ) : (
+              <div className="group flex items-center">
+                <span className="absolute left-0 top-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-gray-300">
+                  <span className="h-2.5 w-2.5 rounded-full bg-transparent" />
+                </span>
+                <span className="ml-8 text-sm font-medium text-muted-foreground">
+                  {step.name}
+                </span>
+              </div>
+            )}
+            {stepIdx !== steps.length - 1 ? (
+              <div
+                className={`absolute left-3.5 top-3 -ml-px h-0.5 w-full ${
+                  (stepIdx === 0 && currentStep !== "form") ||
+                  (stepIdx === 1 && currentStep === "processing")
+                    ? "bg-primary"
+                    : "bg-gray-300"
+                }`}
+              />
+            ) : null}
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 };
-
-// Helper function to convert step ID to numeric value for comparison
-function getStepValue(step: string): number {
-  switch (step) {
-    case "form": return 1;
-    case "plan_selection": return 2;
-    case "processing": return 3;
-    default: return 0;
-  }
-}
 
 export default StepIndicator;
