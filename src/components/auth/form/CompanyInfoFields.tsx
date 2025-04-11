@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InfoCircle } from "lucide-react";
+import { Info } from "lucide-react";
 
 interface CompanyInfoFieldsProps {
   companyName: string;
