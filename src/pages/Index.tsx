@@ -1,9 +1,10 @@
 
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
-import Testimonials from "@/components/Testimonials";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import SalesStatistics from "@/components/SalesStatistics";
+import CallToAction from "@/components/CallToAction";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 
@@ -31,8 +32,9 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
+      <SalesStatistics />
       <Features />
-      <Testimonials />
+      <CallToAction />
       <Footer />
     </div>
   );
