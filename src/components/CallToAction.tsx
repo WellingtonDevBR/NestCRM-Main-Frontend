@@ -1,7 +1,6 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Badge, ShieldCheck, Zap, Sparkles, Clock } from "lucide-react";
+import { ArrowRight, Badge, ShieldCheck, Zap, Sparkles, Clock, LineChart } from "lucide-react";
 
 const CallToAction = () => {
   return (
