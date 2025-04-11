@@ -83,13 +83,20 @@ export function useLoginForm() {
       console.log('Redirect info:', { tenant });
       
       if (tenant && tenant.domain) {
-        // Use direct navigation instead of redirectToTenantDomain
+        // For consistent redirection, always use dashboard path
         console.log('Tenant is ready, redirecting to:', tenant.domain);
         const protocol = window.location.protocol;
         const url = `${protocol}//${tenant.domain}/dashboard`;
         
-        // Use window.location.replace for a cleaner redirect
-        window.location.replace(url);
+        // Show a loading toast before redirect
+        toast.loading("Connecting to your dashboard...");
+        
+        // Use setTimeout to ensure cookies are properly set before redirecting
+        setTimeout(() => {
+          console.log('Executing delayed redirect to:', url);
+          // Use window.location.replace for a cleaner redirect
+          window.location.replace(url);
+        }, 500);
       } else {
         console.error('Invalid tenant in response', response.session);
         throw new Error('Invalid authentication response');

@@ -1,3 +1,4 @@
+
 import { LoginCredentials, SignUpData, AuthenticatedSession } from "@/domain/auth/types";
 
 /**
@@ -11,6 +12,11 @@ export class AuthApi {
    */
   async login(credentials: LoginCredentials): Promise<AuthenticatedSession> {
     try {
+      console.log('Login API call - Payload:', JSON.stringify({
+        email: credentials.email,
+        // Omitting password for security
+      }));
+      
       const response = await fetch(`${this.baseUrl}/tenants/login`, {
         method: 'POST',
         headers: {
@@ -19,6 +25,13 @@ export class AuthApi {
         body: JSON.stringify(credentials),
         credentials: 'include', // This is crucial for cookies to be sent and received
       });
+      
+      console.log('Login API call - Response status:', response.status);
+      console.log('Login API call - Response headers:', 
+        [...response.headers.entries()]
+          .filter(h => !h[0].toLowerCase().includes('cookie'))
+          .map(h => `${h[0]}: ${h[1]}`)
+      );
 
       if (!response.ok) {
         // Check if response is JSON
@@ -38,6 +51,12 @@ export class AuthApi {
       try {
         const responseData = await response.json();
         console.log('Login API response:', responseData);
+
+        // Ensure we have a tenant domain
+        if (!responseData.tenant || !responseData.tenant.domain) {
+          console.error('Missing tenant domain in response:', responseData);
+          throw new Error('Invalid response: Missing tenant domain');
+        }
 
         // Return the tenant information from the response
         return {
@@ -76,7 +95,10 @@ export class AuthApi {
         planId: data.planId
       };
 
-      console.log('Signup API call - Payload:', JSON.stringify(signupPayload));
+      console.log('Signup API call - Payload:', JSON.stringify({
+        ...signupPayload,
+        password: '[REDACTED]' // Redact password in logs
+      }));
 
       const response = await fetch(`${this.baseUrl}/tenants/signup`, {
         method: 'POST',
@@ -84,10 +106,15 @@ export class AuthApi {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(signupPayload),
-        credentials: 'include',
+        credentials: 'include', // Crucial for cookies
       });
 
       console.log('Signup API call - Response status:', response.status);
+      console.log('Signup API call - Response headers:', 
+        [...response.headers.entries()]
+          .filter(h => !h[0].toLowerCase().includes('cookie'))
+          .map(h => `${h[0]}: ${h[1]}`)
+      );
 
       if (!response.ok) {
         // Check if response is JSON
@@ -137,6 +164,7 @@ export class AuthApi {
    */
   async validateAuth(): Promise<boolean> {
     try {
+      console.log('Validating auth cookie with API call');
       // Attempt a lightweight request to the validation endpoint
       const response = await fetch(`${this.baseUrl}/validate`, {
         method: 'GET',
@@ -146,6 +174,8 @@ export class AuthApi {
         },
       });
 
+      console.log('Auth cookie validation - Response status:', response.status);
+      
       // Consider 2xx status codes as successful validation
       return response.ok;
     } catch (error) {

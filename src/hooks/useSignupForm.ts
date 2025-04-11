@@ -116,7 +116,11 @@ export const useSignupForm = () => {
       setSetupStage("Creating your account...");
       startProgressSimulation();
 
-      console.log('Completing signup with data:', { signupData, planId });
+      console.log('Completing signup with data:', { 
+        ...signupData, 
+        password: '[REDACTED]',
+        planId 
+      });
 
       const finalSignupData = {
         ...signupData,
@@ -139,8 +143,16 @@ export const useSignupForm = () => {
           const url = `${protocol}//${result.session.tenant.domain}/dashboard`;
           console.log('Redirecting to tenant URL:', url);
           
-          // Use window.location.replace for a cleaner redirect
-          window.location.replace(url);
+          // Show a loading toast before redirect
+          toast.loading("Setting up your workspace...");
+          
+          // Use setTimeout to ensure cookies are properly set before redirecting
+          setTimeout(() => {
+            console.log('Executing delayed redirect to:', url);
+            // Use window.location.replace for a cleaner redirect
+            window.location.replace(url);
+          }, 1000);
+          
           return;
         } else {
           console.error('Missing tenant domain in auth response', result.session);
