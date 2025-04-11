@@ -10,6 +10,7 @@ import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Suspense } from "react";
 
@@ -42,6 +43,7 @@ function App() {
                 <Route path="/signup" element={<SignUp />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </AuthProvider>
