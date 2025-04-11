@@ -2,6 +2,7 @@
 import { toast } from "sonner";
 import { Plan } from "@/components/auth/form/PlanSelection";
 import { SignUpData } from "@/domain/auth/types";
+import { supabase } from "@/integrations/supabase/client";
 
 export class StripeService {
   /**
@@ -9,27 +10,19 @@ export class StripeService {
    */
   static async createCheckoutSession(signupData: SignUpData, plan: Plan): Promise<string | null> {
     try {
-      // In the future, this should be a call to your Supabase Edge Function
-      // For now, we'll mock this behavior and just return a success
+      // Call our Supabase Edge Function to create a checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { signupData, planId: plan.id }
+      });
       
-      // This would be the real implementation once you have an edge function:
-      // const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      //   body: { signupData, planId: plan.id }
-      // });
-      //
-      // if (error) throw new Error(error.message);
-      // return data.url;
+      if (error) throw new Error(error.message);
       
-      console.log('Creating checkout session for:', { signupData, plan });
-      
-      // For free plan, no need to go to Stripe, just return null
-      if (plan.priceValue === 0) {
+      // For free plan, no need to go to Stripe
+      if (data.free) {
         return null;
       }
       
-      // Mock a successful checkout URL for paid plans
-      // In reality, this would be the URL returned from Stripe
-      return "https://checkout.stripe.com/pay/mock";
+      return data.url;
     } catch (error: any) {
       console.error('Error creating checkout session:', error);
       toast.error('Failed to create checkout session', {
