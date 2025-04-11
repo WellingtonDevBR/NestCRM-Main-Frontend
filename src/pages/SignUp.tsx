@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react";
 
 const SignUp: React.FC = () => {
   return (
-    <div className="min-h-screen flex bg-secondary/20">
+    <div className="min-h-screen flex bg-white">
       {/* Left side - Form */}
       <div className="flex flex-1 flex-col justify-center py-10 px-4 sm:px-6 lg:px-20 xl:px-24 overflow-y-auto">
         <div className="mx-auto w-full max-w-md">

@@ -30,16 +30,16 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
             >
               {/* Step circle with number or check */}
               <div
-                className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center z-10 transition-all duration-200
+                className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center z-10 transition-all duration-200
                   ${isCompleted 
-                    ? "bg-gradient-to-r from-primary to-accent text-white shadow-md" 
+                    ? "bg-primary text-white" 
                     : isActive 
                       ? "border-2 border-primary bg-white shadow-sm" 
                       : "border-2 border-gray-200 bg-white"
                   }`}
               >
                 {isCompleted ? (
-                  <Check className="h-5 w-5 text-white" />
+                  <Check className="h-4 w-4 text-white" />
                 ) : (
                   <span className={`text-sm font-medium ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                     {stepIdx + 1}
@@ -49,7 +49,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               
               {/* Step name */}
               <span 
-                className={`ml-3 text-sm font-medium
+                className={`ml-2 text-sm font-medium
                   ${isActive ? "text-primary font-semibold" : isCompleted ? "text-foreground" : "text-muted-foreground"}`}
               >
                 {step.name}
@@ -59,7 +59,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               {stepIdx < steps.length - 1 && (
                 <div className="flex-1 mx-4">
                   <div 
-                    className={`h-0.5 ${isCompleted ? "bg-gradient-to-r from-primary to-accent" : "bg-gray-200"}`}
+                    className={`h-0.5 ${isCompleted ? "bg-primary" : "bg-gray-200"}`}
                   />
                 </div>
               )}

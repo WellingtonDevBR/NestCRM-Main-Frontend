@@ -20,7 +20,7 @@ const SubmitButton = ({
     <Button
       type="submit"
       className={cn(
-        "w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all h-12 font-medium",
+        "w-full bg-primary hover:opacity-90 transition-all h-11 font-medium",
         className
       )}
       disabled={isLoading}
