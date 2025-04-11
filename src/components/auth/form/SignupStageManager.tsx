@@ -1,6 +1,7 @@
 
-import React, { useState } from "react";
-import { Alert, AlertCircle, AlertDescription } from "@/components/ui/alert";
+import React from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import PersonalInfoFields from "@/components/auth/form/PersonalInfoFields";
 import CompanyInfoFields from "@/components/auth/form/CompanyInfoFields";
 import PasswordField from "@/components/auth/form/PasswordField";
