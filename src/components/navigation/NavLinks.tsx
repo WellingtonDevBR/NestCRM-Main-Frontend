@@ -50,13 +50,6 @@ const NavLinks = ({ isMobile = false, onClick = () => {} }: NavLinksProps) => {
       >
         Pricing
       </a>
-      <a
-        href="#testimonials"
-        className={`${baseClasses} ${mobileClasses}`}
-        onClick={(e) => handleSectionClick(e, 'testimonials')}
-      >
-        Testimonials
-      </a>
     </>
   );
 };

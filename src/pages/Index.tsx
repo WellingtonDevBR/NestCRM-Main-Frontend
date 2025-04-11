@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import SalesStatistics from "@/components/SalesStatistics";
 import CallToAction from "@/components/CallToAction";
-import Testimonials from "@/components/Testimonials"; 
+// import Testimonials from "@/components/Testimonials"; 
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
 
@@ -37,7 +37,7 @@ const Index = () => {
       <SalesStatistics />
       <Features />
       <HomePricing />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <CallToAction />
       <Footer />
     </div>
