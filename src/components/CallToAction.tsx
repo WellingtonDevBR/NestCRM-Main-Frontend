@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Badge, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Badge, ShieldCheck, Zap, Sparkles, Clock } from "lucide-react";
 
 const CallToAction = () => {
   return (
@@ -21,7 +21,7 @@ const CallToAction = () => {
               <div>
                 <h2 className="heading-lg mb-6">Ready to transform your customer retention strategy?</h2>
                 <p className="text-lg mb-8 text-foreground/70">
-                  Join thousands of forward-thinking businesses that use NestCRM to predict and prevent customer churn before it happens.
+                  Be among the first to experience how NestCRM can predict and prevent customer churn before it happens.
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -60,42 +60,56 @@ const CallToAction = () => {
                 </div>
               </div>
               
-              <div className="relative">
-                <div className="bg-white p-6 rounded-lg shadow-lg">
-                  <h3 className="text-lg font-semibold mb-4">What our customers are saying</h3>
-                  <blockquote className="text-foreground/80 italic mb-6">
-                    "Within just 3 months of implementing NestCRM, we reduced customer churn by 37% and increased our MRR by 22%. The ROI was immediate and substantial."
-                  </blockquote>
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                      <span className="font-semibold text-purple-600">SJ</span>
+              <div className="bg-white p-8 rounded-lg shadow-lg">
+                <h3 className="text-xl font-semibold mb-4">Why Choose NestCRM?</h3>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1">
+                      <Sparkles className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium">Sarah Johnson</p>
-                      <p className="text-sm text-foreground/60">Head of Customer Success, TechFlow</p>
+                      <h4 className="font-medium text-lg">AI-Powered Predictions</h4>
+                      <p className="text-foreground/70">Anticipate customer behavior before it happens with our advanced prediction models.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1">
+                      <LineChart className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-lg">Actionable Insights</h4>
+                      <p className="text-foreground/70">Convert data into clear action plans that increase retention and revenue.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-4 mt-1">
+                      <Clock className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-lg">Early Access Benefits</h4>
+                      <p className="text-foreground/70">Join now to lock in founding member pricing and shape product development.</p>
                     </div>
                   </div>
                 </div>
-                <div className="absolute -bottom-4 -right-4 w-64 h-28 bg-gradient-to-br from-purple-400/20 to-purple-600/20 rounded-lg blur-xl -z-10"></div>
               </div>
             </div>
           </div>
           
           <div className="mt-20 text-center">
-            <p className="text-lg font-medium mb-8">Trusted by innovative companies worldwide</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div className="bg-white/60 p-4 rounded-lg flex items-center justify-center h-16">
-                <span className="font-bold text-lg text-gray-400">COMPANY A</span>
-              </div>
-              <div className="bg-white/60 p-4 rounded-lg flex items-center justify-center h-16">
-                <span className="font-bold text-lg text-gray-400">COMPANY B</span>
-              </div>
-              <div className="bg-white/60 p-4 rounded-lg flex items-center justify-center h-16">
-                <span className="font-bold text-lg text-gray-400">COMPANY C</span>
-              </div>
-              <div className="bg-white/60 p-4 rounded-lg flex items-center justify-center h-16">
-                <span className="font-bold text-lg text-gray-400">COMPANY D</span>
-              </div>
+            <p className="text-lg font-medium mb-6">Launch Promotion</p>
+            <div className="bg-white/60 p-6 rounded-lg max-w-2xl mx-auto">
+              <h3 className="text-xl font-bold text-primary mb-2">Early Adopter Discount</h3>
+              <p className="text-foreground/80 mb-4">
+                Sign up during our beta period and receive 30% off any plan for the first 12 months!
+              </p>
+              <Link to="/signup">
+                <Button className="bg-accent hover:bg-accent/90 text-white">
+                  Claim Discount
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
