@@ -1,6 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InfoCircle } from "lucide-react";
 
 interface CompanyInfoFieldsProps {
   companyName: string;
@@ -40,15 +41,17 @@ const CompanyInfoFields = ({
             value={subdomain}
             onChange={(e) => setSubdomain(e.target.value)}
             required
-            className="bg-white"
+            className="bg-gray-100 border-gray-300 text-gray-600"
             readOnly
             aria-readonly="true"
           />
           <span className="ml-2 text-foreground/70">.nestcrm.com.au</span>
         </div>
-        <p className="text-xs text-foreground/70">
-          Your subdomain is automatically generated from your email domain
-        </p>
+        <div className="flex items-start gap-1.5 mt-1">
+          <p className="text-xs text-foreground/70">
+            Your subdomain is automatically generated from your email domain. This will need to be verified after signup or a random subdomain may be assigned.
+          </p>
+        </div>
       </div>
     </>
   );
