@@ -14,6 +14,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import DataProtection from "./pages/DataProtection";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Suspense } from "react";
+import CookieBanner from "./components/CookieBanner";
 
 // Configure query client with better error handling
 const queryClient = new QueryClient({
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/data-protection" element={<DataProtection />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <CookieBanner />
             </AuthProvider>
           </BrowserRouter>
         </Suspense>
