@@ -96,7 +96,7 @@ export const useSignupForm = () => {
       
       console.log('Selected plan:', selectedPlan);
       
-      if (selectedPlan.priceValue === 0) {
+      if (selectedPlan.priceValue === 0 || selectedPlan.trial) {
         await completeSignup(signupData, planId);
         return;
       }
@@ -106,6 +106,9 @@ export const useSignupForm = () => {
       if (checkoutUrl) {
         StripeService.storeSignupData(signupData, planId);
         window.location.href = checkoutUrl;
+      } else if (selectedPlan.trial) {
+        // If there's a trial but no checkout URL (which means we're handling it locally)
+        await completeSignup(signupData, planId);
       } else {
         throw new Error("Could not create checkout session");
       }
@@ -136,6 +139,50 @@ export const useSignupForm = () => {
         planId
       };
       
+      // For the starter plan (free trial), we'll bypass the external API and use Supabase directly
+      const selectedPlan = StripeService.getPlanById(planId);
+      if (selectedPlan?.trial) {
+        // Store trial information
+        const trialInfo = {
+          planId,
+          productId: selectedPlan.productId,
+          trialStartDate: new Date().toISOString(),
+          trialEndDate: new Date(Date.now() + (selectedPlan.trialDays || 14) * 24 * 60 * 60 * 1000).toISOString()
+        };
+        localStorage.setItem('trial_info', JSON.stringify(trialInfo));
+        
+        // Implement direct Supabase registration here
+        try {
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: finalSignupData.email,
+            password: finalSignupData.password,
+            options: {
+              data: {
+                first_name: finalSignupData.firstName,
+                last_name: finalSignupData.lastName,
+                company_name: finalSignupData.companyName,
+                subdomain: finalSignupData.subdomain,
+                plan_id: planId
+              }
+            }
+          });
+          
+          if (authError) throw authError;
+          
+          toast.success("Account created successfully!");
+          
+          // Redirect to dashboard or home page
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1500);
+          return;
+        } catch (supabaseError: any) {
+          console.error("Supabase auth error:", supabaseError);
+          throw supabaseError;
+        }
+      }
+      
+      // If not using Supabase directly for signup, continue with external API
       const result: AuthResult = await signUp(finalSignupData);
       
       if (result.success && result.session) {
@@ -153,7 +200,7 @@ export const useSignupForm = () => {
     } catch (error: any) {
       console.error("Signup error:", error);
       setShowSetupProgress(false);
-      const errorMsg = "Our services are currently unavailable. Please try again later.";
+      const errorMsg = error.message || "Our services are currently unavailable. Please try again later.";
       setErrorMessage(errorMsg);
       toast.error("Failed to create account", {
         description: errorMsg
