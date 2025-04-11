@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -85,7 +84,11 @@ const Footer = () => {
                   Data Protection
                 </Link>
               </li>
-              <li><a href="#" className="text-foreground/70 hover:text-primary transition-colors">GDPR Compliance</a></li>
+              <li>
+                <Link to="/gdpr-compliance" className="text-foreground/70 hover:text-primary transition-colors">
+                  GDPR Compliance
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -99,6 +102,7 @@ const Footer = () => {
             <Link to="/terms-of-service" className="text-foreground/60 hover:text-primary transition-colors text-sm">Terms</Link>
             <Link to="/cookie-policy" className="text-foreground/60 hover:text-primary transition-colors text-sm">Cookies</Link>
             <Link to="/data-protection" className="text-foreground/60 hover:text-primary transition-colors text-sm">Data Protection</Link>
+            <Link to="/gdpr-compliance" className="text-foreground/60 hover:text-primary transition-colors text-sm">GDPR</Link>
           </div>
         </div>
       </div>
