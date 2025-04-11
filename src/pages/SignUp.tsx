@@ -9,13 +9,13 @@ import { ArrowLeft } from "lucide-react";
 
 const SignUp: React.FC = () => {
   return (
-    <div className="min-h-screen flex bg-secondary/30">
+    <div className="min-h-screen flex bg-secondary/20">
       {/* Left side - Form */}
-      <div className="flex flex-1 flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24">
+      <div className="flex flex-1 flex-col justify-center py-10 px-4 sm:px-6 lg:px-20 xl:px-24 overflow-y-auto">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-6">
             <Link to="/">
-              <Button variant="ghost" size="sm" className="flex items-center gap-2 -ml-2">
+              <Button variant="ghost" size="sm" className="flex items-center gap-2 -ml-2 text-foreground/70 hover:text-foreground">
                 <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Button>

@@ -44,8 +44,8 @@ const SignUpForm = () => {
   };
 
   return (
-    <Card className="shadow-md border-slate-200/60 p-6">
-      <div className="space-y-6 w-full">
+    <Card className="shadow-lg border-slate-200/60 p-6 rounded-xl">
+      <div className="w-full">
         <StepIndicator currentStep={signupStage} />
         <SignupStageManager
           signupStage={signupStage}

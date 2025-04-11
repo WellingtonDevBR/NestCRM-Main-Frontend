@@ -14,8 +14,8 @@ export const PlanFeatures = ({ features, color }: PlanFeaturesProps) => {
       {features.map((feature, i) => (
         <li key={i} className="flex items-start gap-3 group">
           <div className={cn(
-            "rounded-full p-1 mt-0.5 flex-shrink-0 transition-colors",
-            color, "text-white"
+            "rounded-full p-1.5 mt-0.5 flex-shrink-0 transition-colors",
+            color, "text-white shadow-sm"
           )}>
             <Check className="h-3 w-3" />
           </div>

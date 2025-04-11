@@ -20,7 +20,7 @@ const SubmitButton = ({
     <Button
       type="submit"
       className={cn(
-        "w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all h-11",
+        "w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-all h-12 font-medium",
         className
       )}
       disabled={isLoading}
@@ -28,11 +28,11 @@ const SubmitButton = ({
       {isLoading ? (
         <div className="flex items-center justify-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
-          {loadingText}
+          <span>{loadingText}</span>
         </div>
       ) : (
         <div className="flex items-center justify-center gap-2">
-          {children || "Create account"}
+          <span>{children || "Create account"}</span>
           <ArrowRight className="h-4 w-4" />
         </div>
       )}
