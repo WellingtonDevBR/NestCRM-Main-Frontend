@@ -1,10 +1,17 @@
 
 import { toast } from "sonner";
-import { Plan } from "@/components/auth/form/PlanSelection";
+import { Plan, plans } from "@/components/auth/form/PlanSelection";
 import { SignUpData } from "@/domain/auth/types";
 import { supabase } from "@/integrations/supabase/client";
 
 export class StripeService {
+  /**
+   * Get a plan by ID
+   */
+  static getPlanById(planId: string): Plan | undefined {
+    return plans.find(p => p.id === planId);
+  }
+  
   /**
    * Creates a checkout session for the selected plan
    */
