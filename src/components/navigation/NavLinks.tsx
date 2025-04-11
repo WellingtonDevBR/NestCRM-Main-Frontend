@@ -10,12 +10,17 @@ const NavLinks = ({ isMobile = false, onClick = () => {} }: NavLinksProps) => {
   const baseClasses = "text-foreground/80 hover:text-purple-600 transition-colors";
   const mobileClasses = isMobile ? "py-2" : "";
   
+  const scrollToTop = (e: React.MouseEvent) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    onClick();
+  };
+  
   return (
     <>
       <Link
         to="/"
         className={`${baseClasses} ${mobileClasses}`}
-        onClick={onClick}
+        onClick={scrollToTop}
       >
         Home
       </Link>
