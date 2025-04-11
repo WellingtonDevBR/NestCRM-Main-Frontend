@@ -6,13 +6,14 @@ import { SignUpData, AuthResult } from "@/domain/auth/types";
 import { StripeService } from "@/services/stripeService";
 import { SignupStep } from "@/components/auth/form/StepIndicator";
 import { useSignupProgress } from "./useSignupProgress";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useSignupForm = () => {
   const { signUp, redirectToTenantDomain } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [signupStage, setSignupStage] = useState<SignupStep>("form");
-  
+
   const {
     setupProgress,
     setupStage,
@@ -21,7 +22,7 @@ export const useSignupForm = () => {
     startProgressSimulation,
     setSetupStage
   } = useSignupProgress();
-  
+
   // Form state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -36,7 +37,7 @@ export const useSignupForm = () => {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('payment_status')) {
         const status = urlParams.get('payment_status');
-        
+
         const storedData = StripeService.getStoredSignupData();
         if (storedData) {
           if (status === 'success') {
@@ -57,14 +58,14 @@ export const useSignupForm = () => {
         }
       }
     };
-    
+
     checkPaymentStatus();
   }, []);
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMessage(null);
-    
+
     try {
       setSignupStage("plan_selection");
     } catch (error: any) {
@@ -76,15 +77,15 @@ export const useSignupForm = () => {
       });
     }
   };
-  
+
   const handlePlanSelected = async (planId: string) => {
     setIsLoading(true);
     setErrorMessage(null);
-    
+
     try {
       const selectedPlan = StripeService.getPlanById(planId);
       if (!selectedPlan) throw new Error("Invalid plan selected");
-      
+
       const signupData = {
         firstName,
         lastName,
@@ -93,16 +94,16 @@ export const useSignupForm = () => {
         subdomain,
         password
       };
-      
+
       console.log('Selected plan:', selectedPlan);
-      
+
       if (selectedPlan.priceValue === 0 || selectedPlan.trial) {
         await completeSignup(signupData, planId);
         return;
       }
-      
+
       const checkoutUrl = await StripeService.createCheckoutSession(signupData, selectedPlan);
-      
+
       if (checkoutUrl) {
         StripeService.storeSignupData(signupData, planId);
         window.location.href = checkoutUrl;
@@ -122,23 +123,23 @@ export const useSignupForm = () => {
       setIsLoading(false);
     }
   };
-  
+
   const completeSignup = async (signupData: SignUpData, planId: string) => {
     setSignupStage("processing");
     setIsLoading(true);
     setErrorMessage(null);
-    
+
     try {
       setSetupStage("Creating your account...");
       startProgressSimulation();
-      
+
       console.log('Completing signup with data:', { signupData, planId });
-      
+
       const finalSignupData = {
         ...signupData,
         planId
       };
-      
+
       // For the starter plan (free trial), we'll bypass the external API and use Supabase directly
       const selectedPlan = StripeService.getPlanById(planId);
       if (selectedPlan?.trial) {
@@ -150,7 +151,7 @@ export const useSignupForm = () => {
           trialEndDate: new Date(Date.now() + (selectedPlan.trialDays || 14) * 24 * 60 * 60 * 1000).toISOString()
         };
         localStorage.setItem('trial_info', JSON.stringify(trialInfo));
-        
+
         // Implement direct Supabase registration here
         try {
           const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -166,11 +167,11 @@ export const useSignupForm = () => {
               }
             }
           });
-          
+
           if (authError) throw authError;
-          
+
           toast.success("Account created successfully!");
-          
+
           // Redirect to dashboard or home page
           setTimeout(() => {
             window.location.href = '/dashboard';
@@ -181,10 +182,10 @@ export const useSignupForm = () => {
           throw supabaseError;
         }
       }
-      
+
       // If not using Supabase directly for signup, continue with external API
       const result: AuthResult = await signUp(finalSignupData);
-      
+
       if (result.success && result.session) {
         toast.success("Account created successfully!");
         redirectToTenantDomain(result.session.tenant);
@@ -217,7 +218,7 @@ export const useSignupForm = () => {
     setupProgress,
     setupStage,
     showSetupProgress,
-    
+
     // Form data
     firstName,
     setFirstName,
@@ -231,7 +232,7 @@ export const useSignupForm = () => {
     setCompanyName,
     subdomain,
     setSubdomain,
-    
+
     // Event handlers
     handleFormSubmit,
     handlePlanSelected,
