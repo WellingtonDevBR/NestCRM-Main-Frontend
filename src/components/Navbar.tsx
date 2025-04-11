@@ -27,7 +27,6 @@ const Navbar = () => {
   }, []);
 
   const handleDashboardClick = (e: React.MouseEvent) => {
-    e.preventDefault();
     console.log('Dashboard button clicked, redirecting to tenant domain');
     
     if (tenant && tenant.domain) {
@@ -82,17 +81,11 @@ const Navbar = () => {
             >
               Features
             </a>
-            <Link
-              to="/pricing"
+            <a
+              href="/#pricing"
               className="text-foreground/80 hover:text-purple-600 transition-colors"
             >
               Pricing
-            </Link>
-            <a
-              href="#testimonials"
-              className="text-foreground/80 hover:text-purple-600 transition-colors"
-            >
-              Testimonials
             </a>
           </nav>
 
@@ -149,19 +142,12 @@ const Navbar = () => {
             >
               Features
             </a>
-            <Link
-              to="/pricing"
+            <a
+              href="/#pricing"
               className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Pricing
-            </Link>
-            <a
-              href="#testimonials"
-              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Testimonials
             </a>
             {showAuthButtons && (
               isAuthenticated && tenant ? (
