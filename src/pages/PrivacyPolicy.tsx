@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Shield, ArrowLeft, FileText, GlobeAustralia, Globe } from "lucide-react";
+import { Shield, ArrowLeft, FileText, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const PrivacyPolicy = () => {
@@ -30,7 +30,7 @@ const PrivacyPolicy = () => {
             
             <div className="bg-secondary/40 p-6 rounded-lg my-8 border border-border">
               <div className="flex items-center mb-4">
-                <GlobeAustralia className="h-5 w-5 mr-2 text-primary" />
+                <Globe className="h-5 w-5 mr-2 text-primary" />
                 <h2 className="text-xl font-semibold m-0">Australian Privacy Compliance</h2>
               </div>
               <p>
