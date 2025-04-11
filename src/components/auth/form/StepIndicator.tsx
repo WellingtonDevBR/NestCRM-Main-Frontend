@@ -30,8 +30,17 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
               key={step.id}
               className={`relative ${stepIdx !== steps.length - 1 ? "pr-8 flex-1" : ""}`}
             >
-              <div className="flex items-center">
-                {/* Step circle */}
+              {/* Connecting line - Now positioned correctly behind the step circle */}
+              {stepIdx < steps.length - 1 && (
+                <div 
+                  className={`absolute top-1/2 left-10 right-0 h-0.5 -translate-y-1/2 ${
+                    isCompleted ? "bg-gradient-to-r from-primary to-accent" : "bg-gray-200"
+                  }`}
+                />
+              )}
+              
+              <div className="flex items-center relative z-10">
+                {/* Step circle - higher z-index to appear above line */}
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                     isCompleted 
@@ -50,25 +59,15 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
                   )}
                 </div>
                 
-                {/* Step name */}
+                {/* Step name - now with proper z-index */}
                 <span 
-                  className={`ml-3 text-sm font-medium transition-all duration-300 ${
+                  className={`ml-3 text-sm font-medium transition-all duration-300 relative z-10 ${
                     isActive ? "text-primary font-semibold" : isCompleted ? "text-foreground" : "text-muted-foreground"
                   }`}
                 >
                   {step.name}
                 </span>
               </div>
-              
-              {/* Connecting line */}
-              {stepIdx < steps.length - 1 && (
-                <div 
-                  className={`absolute left-5 top-5 -ml-px h-0.5 w-full transition-all duration-300 ${
-                    isCompleted ? "bg-gradient-to-r from-primary to-accent" : "bg-gray-200"
-                  }`}
-                  style={{ transform: "translateY(-50%)" }}
-                />
-              )}
             </li>
           );
         })}

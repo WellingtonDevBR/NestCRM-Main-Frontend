@@ -21,19 +21,19 @@ export const useSubdomainSuggestion = ({
   useEffect(() => {
     if (email && email.includes('@')) {
       const domain = email.split('@')[1];
-      const suggestedSubdomain = domain.split('.')[0].toLowerCase();
+      const domainName = domain.split('.')[0].toLowerCase();
       
       // Auto-populate company name if empty
       if (!companyName) {
         // Capitalize first letter of domain for company name suggestion
-        const suggestedCompany = suggestedSubdomain.charAt(0).toUpperCase() + suggestedSubdomain.slice(1);
+        const suggestedCompany = domainName.charAt(0).toUpperCase() + domainName.slice(1);
         setCompanyName(suggestedCompany);
       }
       
       // Auto-suggest subdomain (but don't force it)
       if (!subdomain) {
-        setSubdomain(suggestedSubdomain);
+        setSubdomain(domainName);
       }
     }
-  }, [email]);
+  }, [email, companyName, subdomain, setCompanyName, setSubdomain]);
 };

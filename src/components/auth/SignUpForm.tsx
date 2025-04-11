@@ -43,7 +43,7 @@ const SignUpForm = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-sm mx-auto w-full">
       <StepIndicator currentStep={signupStage} />
       <SignupStageManager
         signupStage={signupStage}

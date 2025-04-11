@@ -28,10 +28,10 @@ const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps
   const selectedPlan = plans.find(plan => plan.id === selectedPlanId);
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
+    <div className="space-y-8 mx-auto">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">Choose Your Plan</h2>
-        <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+        <p className="text-muted-foreground mt-2 mx-auto">
           Select the plan that best fits your business needs. All plans include a {plans[0].trialDays}-day trial.
         </p>
       </div>
