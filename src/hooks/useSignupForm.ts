@@ -8,6 +8,7 @@ import { useSubdomainSuggestion } from "@/hooks/signup/useSubdomainSuggestion";
 import { useSignupFormSubmission } from "@/hooks/signup/useSignupFormSubmission";
 import { useSignupCompletion } from "@/hooks/signup/useSignupCompletion";
 import { usePaymentStatusCheck } from "@/hooks/signup/usePaymentStatusCheck";
+import { toast } from "sonner";
 
 export const useSignupForm = () => {
   const { signUp } = useAuth();
