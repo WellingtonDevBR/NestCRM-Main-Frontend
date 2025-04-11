@@ -21,6 +21,7 @@ export const useSubdomainSuggestion = ({
   useEffect(() => {
     if (email && email.includes('@')) {
       const domain = email.split('@')[1];
+      // Get the part before the first dot in the domain
       const domainName = domain.split('.')[0].toLowerCase();
       
       // Auto-populate company name if empty
@@ -30,10 +31,8 @@ export const useSubdomainSuggestion = ({
         setCompanyName(suggestedCompany);
       }
       
-      // Auto-suggest subdomain (but don't force it)
-      if (!subdomain) {
-        setSubdomain(domainName);
-      }
+      // Always set subdomain (overriding any manual input)
+      setSubdomain(domainName);
     }
-  }, [email, companyName, subdomain, setCompanyName, setSubdomain]);
+  }, [email, companyName, setCompanyName, setSubdomain]);
 };
