@@ -28,7 +28,7 @@ const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps
   const selectedPlan = plans.find(plan => plan.id === selectedPlanId);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-5xl mx-auto px-4">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-primary">Choose Your Plan</h2>
         <p className="text-muted-foreground mt-2 max-w-lg mx-auto">
@@ -38,8 +38,8 @@ const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps
 
       <RadioGroup 
         value={selectedPlanId} 
-        onValueChange={handlePlanSelect} 
-        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+        onValueChange={handlePlanSelect}
+        className="grid grid-cols-1 md:grid-cols-3 gap-8"
       >
         {plans.map((plan) => (
           <PlanCard 
@@ -50,7 +50,7 @@ const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps
         ))}
       </RadioGroup>
 
-      <div className="flex justify-center mt-8">
+      <div className="flex justify-center mt-10">
         <Button 
           size="lg"
           onClick={handleContinue}

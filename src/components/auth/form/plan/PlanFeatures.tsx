@@ -10,9 +10,9 @@ interface PlanFeaturesProps {
 
 export const PlanFeatures = ({ features, color }: PlanFeaturesProps) => {
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-3.5">
       {features.map((feature, i) => (
-        <li key={i} className="flex items-start gap-2.5 group">
+        <li key={i} className="flex items-start gap-2.5">
           <div className={cn(
             "rounded-full p-1 mt-0.5 flex-shrink-0 shadow-sm",
             color, "text-white"

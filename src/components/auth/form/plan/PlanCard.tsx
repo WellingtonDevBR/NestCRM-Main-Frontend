@@ -26,7 +26,7 @@ export const PlanCard = ({ plan, isSelected }: PlanCardProps) => {
   return (
     <div className={cn(
       "relative transition-all",
-      isSelected ? "scale-[1.02]" : ""
+      isSelected ? "scale-[1.03]" : ""
     )}>
       <RadioGroupItem 
         value={plan.id} 
@@ -39,14 +39,14 @@ export const PlanCard = ({ plan, isSelected }: PlanCardProps) => {
       >
         <Card 
           className={cn(
-            "border h-full transition-all rounded-xl shadow-sm overflow-hidden",
+            "border h-full transition-all rounded-xl shadow-md overflow-hidden",
             isSelected 
               ? 'border-primary/60 ring-2 ring-primary/30' 
               : 'border-border hover:border-primary/40'
           )}
         >
           <CardHeader className={cn(
-            "px-6 py-4",
+            "px-6 py-5",
             plan.popular ? `bg-primary text-white` : ''
           )}>
             {badgeText && (
@@ -77,8 +77,8 @@ export const PlanCard = ({ plan, isSelected }: PlanCardProps) => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="pt-4">
-            <PlanFeatures features={plan.features} color={plan.id === "starter" ? "bg-green-500" : plan.popular ? "bg-primary" : "bg-purple-700"} />
+          <CardContent className="pt-5 px-6">
+            <PlanFeatures features={plan.features} color={plan.id === "starter" ? "bg-green-600" : plan.popular ? "bg-primary" : "bg-purple-800"} />
           </CardContent>
         </Card>
       </Label>

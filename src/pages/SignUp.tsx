@@ -12,7 +12,7 @@ const SignUp: React.FC = () => {
     <div className="min-h-screen flex bg-white">
       {/* Left side - Form */}
       <div className="flex flex-1 flex-col justify-center py-8 px-4 sm:px-6 lg:px-20 xl:px-24 overflow-y-auto">
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-4xl">
           <div className="mb-4">
             <Link to="/">
               <Button variant="ghost" size="sm" className="flex items-center gap-2 -ml-2 text-foreground/70 hover:text-foreground">
