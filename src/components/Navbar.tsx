@@ -9,7 +9,7 @@ import { toast } from "sonner";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, loading, tenant, redirectToTenantDomain } = useAuth();
+  const { isAuthenticated, loading, tenant } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,11 +26,19 @@ const Navbar = () => {
     };
   }, []);
 
-  const handleDashboardClick = () => {
+  const handleDashboardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     console.log('Dashboard button clicked, redirecting to tenant domain');
-    if (tenant) {
+    
+    if (tenant && tenant.domain) {
       toast.loading("Connecting to your dashboard...");
-      redirectToTenantDomain(tenant);
+      
+      // Direct navigation to tenant domain/dashboard
+      const protocol = window.location.protocol;
+      const url = `${protocol}//${tenant.domain}/dashboard`;
+      window.location.replace(url);
+    } else {
+      toast.error("Could not determine your workspace");
     }
   };
 
@@ -91,12 +99,13 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {showAuthButtons && (
               isAuthenticated && tenant ? (
-                <Button 
+                <a 
+                  href="#"
                   onClick={handleDashboardClick} 
-                  className="button-gradient"
+                  className="button-gradient inline-flex h-9 items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                 >
                   Dashboard
-                </Button>
+                </a>
               ) : (
                 <>
                   <Link to="/login">
@@ -157,12 +166,16 @@ const Navbar = () => {
             {showAuthButtons && (
               isAuthenticated && tenant ? (
                 <div className="pt-2">
-                  <Button 
-                    onClick={handleDashboardClick} 
-                    className="w-full button-gradient"
+                  <a
+                    href="#" 
+                    onClick={(e) => {
+                      setIsMobileMenuOpen(false);
+                      handleDashboardClick(e);
+                    }}
+                    className="w-full button-gradient inline-block text-center rounded-md px-4 py-2 text-sm font-medium text-white shadow"
                   >
                     Dashboard
-                  </Button>
+                  </a>
                 </div>
               ) : (
                 <div className="flex flex-col space-y-2 pt-2">

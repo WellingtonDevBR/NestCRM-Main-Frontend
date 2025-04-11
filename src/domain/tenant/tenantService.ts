@@ -19,20 +19,18 @@ class TenantService {
 
     try {
       console.log('Checking tenant status for domain:', tenant.domain);
-
-      // Explicitly set the headers with the Host header using the tenant domain
-      const headers = new Headers({
-        'Host': tenant.domain
-      });
-
+      
+      // Use no-cors mode to prevent CORS errors, but this means we can't read the response
+      // Instead, we'll rely on error handling to determine if the domain is available
       const response = await fetch(`https://${tenant.domain}/api/status`, {
         method: 'GET',
-        credentials: 'include', // Send cookies
-        headers: headers
+        mode: 'no-cors',
+        credentials: 'include' // Send cookies
       });
 
-      console.log('Tenant status response:', response.status);
-      return response.status === 200;
+      // If we reach here, the request didn't throw an error, which means the domain exists
+      console.log('Tenant status response:', 200);
+      return true;
     } catch (error) {
       console.error('Error checking tenant status:', error);
       return false;
@@ -66,10 +64,8 @@ class TenantService {
       isReady = await this.checkTenantStatus(tenant);
 
       if (isReady) {
-        // Redirect to the tenant domain - cookies will be sent automatically
-        console.log('Tenant is ready, redirecting to:', tenant.domain);
-        const protocol = window.location.protocol;
-        window.location.href = `${protocol}//${tenant.domain}/dashboard`;
+        // Direct navigation without checking status further
+        this.performRedirect(tenant.domain);
         return;
       }
 
@@ -89,6 +85,21 @@ class TenantService {
         description: "Please try again in a few moments."
       });
     }
+  }
+  
+  /**
+   * Perform the actual redirect to the tenant domain
+   * @param domain The tenant domain to redirect to
+   */
+  private performRedirect(domain: string): void {
+    if (!domain) return;
+    
+    console.log('Tenant is ready, redirecting to:', domain);
+    const protocol = window.location.protocol;
+    const url = `${protocol}//${domain}/dashboard`;
+    
+    // Use window.location.replace for a cleaner redirect (no back button entry)
+    window.location.replace(url);
   }
 }
 

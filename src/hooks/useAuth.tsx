@@ -33,16 +33,7 @@ export function useAuth() {
         console.error('signOut method not available');
         return Promise.resolve();
       }),
-    redirectToTenantDomain: authService?.redirectToTenantDomain?.bind(authService) || 
-      ((tenant) => {
-        console.error('redirectToTenantDomain method not available');
-        // Fallback implementation of redirect if authService is not available
-        if (tenant && tenant.domain) {
-          console.log('Fallback redirection to tenant domain:', tenant.domain);
-          const protocol = window.location.protocol;
-          window.location.href = `${protocol}//${tenant.domain}/dashboard`;
-        }
-      })
+    // Removed redirectToTenantDomain from the returned object to use direct navigation instead
   };
   
   return {

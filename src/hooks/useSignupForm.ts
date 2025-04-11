@@ -6,9 +6,10 @@ import { AuthResult } from "@/domain/auth/types";
 import { useSignupFormState } from "@/hooks/useSignupFormState";
 import { useSignupProgress } from "@/hooks/useSignupProgress";
 import { useSignupPayment } from "@/hooks/useSignupPayment";
+import { tenantService } from "@/domain/tenant/tenantService";
 
 export const useSignupForm = () => {
-  const { signUp, redirectToTenantDomain } = useAuth();
+  const { signUp } = useAuth();
   const formState = useSignupFormState();
   const {
     setupProgress,
@@ -127,7 +128,14 @@ export const useSignupForm = () => {
 
       if (result.success && result.session) {
         toast.success("Account created successfully!");
-        redirectToTenantDomain(result.session.tenant);
+        
+        // Direct navigation to tenant domain instead of using redirectToTenantDomain
+        if (result.session.tenant && result.session.tenant.domain) {
+          // Use window.location.replace for cleaner redirect
+          const protocol = window.location.protocol;
+          window.location.replace(`${protocol}//${result.session.tenant.domain}/dashboard`);
+          return;
+        }
       } else {
         setShowSetupProgress(false);
         const errorMsg = result.error?.message || "Please try again later.";
