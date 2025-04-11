@@ -41,10 +41,10 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
                     <CircleIcon className="w-5 h-5 text-gray-400" />
                   )}
                 </div>
-                <div className="text-xs font-medium text-center 
+                <div className={`text-xs font-medium text-center 
                   ${isActive ? 'text-primary' : 
                     isCompleted ? 'text-primary' : 
-                    'text-muted-foreground'}">
+                    'text-muted-foreground'}`}>
                   {step.label}
                 </div>
               </div>
