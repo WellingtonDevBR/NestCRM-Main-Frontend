@@ -1,10 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { Logo, NavLinks, AuthButtons, MobileMenu } from "@/components/navigation";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -26,21 +24,6 @@ const Navbar = () => {
     };
   }, []);
 
-  const handleDashboardClick = (e: React.MouseEvent) => {
-    console.log('Dashboard button clicked, redirecting to tenant domain');
-    
-    if (tenant && tenant.domain) {
-      toast.loading("Connecting to your dashboard...");
-      
-      // Direct navigation to tenant domain/dashboard
-      const protocol = window.location.protocol;
-      const url = `${protocol}//${tenant.domain}/dashboard`;
-      window.location.replace(url);
-    } else {
-      toast.error("Could not determine your workspace");
-    }
-  };
-
   // Get current auth state when rendering, don't just rely on context
   // This ensures we always have the most up-to-date auth state
   const showAuthButtons = !loading;
@@ -56,59 +39,15 @@ const Navbar = () => {
     >
       <div className="container-custom">
         <div className="flex items-center justify-between">
-          <Link
-            to="/"
-            className="flex items-center"
-          >
-            <img 
-              src="/lovable-uploads/f331213a-aeba-40ff-a2df-5d1da1bc386f.png" 
-              alt="NestCRM Logo" 
-              className="h-8 w-8 mr-2" 
-            />
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-purple-400">NESTCRM</span>
-          </Link>
+          <Logo />
 
           <nav className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
-              className="text-foreground/80 hover:text-purple-600 transition-colors"
-            >
-              Home
-            </Link>
-            <a
-              href="#features"
-              className="text-foreground/80 hover:text-purple-600 transition-colors"
-            >
-              Features
-            </a>
-            <a
-              href="/#pricing"
-              className="text-foreground/80 hover:text-purple-600 transition-colors"
-            >
-              Pricing
-            </a>
+            <NavLinks />
           </nav>
 
           <div className="hidden md:flex items-center space-x-4">
             {showAuthButtons && (
-              isAuthenticated && tenant ? (
-                <a 
-                  href="#"
-                  onClick={handleDashboardClick} 
-                  className="button-gradient inline-flex h-9 items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-white shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-                >
-                  Dashboard
-                </a>
-              ) : (
-                <>
-                  <Link to="/login">
-                    <Button variant="outline" className="border-purple-300 hover:bg-purple-50">Log in</Button>
-                  </Link>
-                  <Link to="/signup">
-                    <Button className="button-gradient">Sign up</Button>
-                  </Link>
-                </>
-              )
+              <AuthButtons isAuthenticated={isAuthenticated} tenant={tenant} />
             )}
           </div>
 
@@ -125,60 +64,12 @@ const Navbar = () => {
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-md animate-fade-in">
-          <div className="container-custom py-4 flex flex-col space-y-4">
-            <Link
-              to="/"
-              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <a
-              href="#features"
-              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Features
-            </a>
-            <a
-              href="/#pricing"
-              className="text-foreground/80 hover:text-purple-600 transition-colors py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Pricing
-            </a>
-            {showAuthButtons && (
-              isAuthenticated && tenant ? (
-                <div className="pt-2">
-                  <a
-                    href="#" 
-                    onClick={(e) => {
-                      setIsMobileMenuOpen(false);
-                      handleDashboardClick(e);
-                    }}
-                    className="w-full button-gradient inline-block text-center rounded-md px-4 py-2 text-sm font-medium text-white shadow"
-                  >
-                    Dashboard
-                  </a>
-                </div>
-              ) : (
-                <div className="flex flex-col space-y-2 pt-2">
-                  <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button variant="outline" className="w-full border-purple-300 hover:bg-purple-50">
-                      Log in
-                    </Button>
-                  </Link>
-                  <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
-                    <Button className="w-full button-gradient">Sign up</Button>
-                  </Link>
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      )}
+      <MobileMenu 
+        isOpen={isMobileMenuOpen}
+        isAuthenticated={isAuthenticated}
+        tenant={tenant}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
     </header>
   );
 };
