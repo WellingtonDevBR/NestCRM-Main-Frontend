@@ -1,30 +1,44 @@
 
-import { Plan, plans } from "@/components/auth/form/plan/planData";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { SignUpData } from "@/domain/auth/types";
+import { Plan, plans } from "@/components/auth/form/plan/planData";
 
-export class StripeService {
+export class PaymentService {
   /**
-   * Get a plan by ID
+   * Create a checkout session for a paid plan subscription
    */
-  static getPlanById(planId: string): Plan | undefined {
-    return plans.find(p => p.id === planId);
+  static async createCheckoutSession(
+    signupData: SignUpData, 
+    selectedPlan: Plan
+  ): Promise<string | null> {
+    try {
+      console.log('Creating checkout session for plan:', selectedPlan);
+      
+      // Call our Supabase Edge Function to create a checkout session
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { planId: selectedPlan.id, signupData }
+      });
+      
+      if (error) {
+        console.error('Error invoking create-checkout-session:', error);
+        throw new Error(error.message);
+      }
+      
+      return data.url;
+    } catch (error: any) {
+      console.error('Error creating checkout session:', error);
+      toast.error('Failed to create checkout session', {
+        description: error.message || 'Please try again later',
+      });
+      throw error;
+    }
   }
-  
+
   /**
-   * Creates a checkout session for the selected plan
-   * @deprecated Use PaymentService.createCheckoutSession instead
-   */
-  static async createCheckoutSession(signupData: SignUpData, plan: Plan): Promise<string | null> {
-    console.warn('StripeService.createCheckoutSession is deprecated, use PaymentService.createCheckoutSession instead');
-    return null;
-  }
-  
-  /**
-   * Stores the signup and subscription data before redirecting to Stripe
-   * @deprecated Use PaymentService.storeSignupData instead
+   * Store signup data in local storage for retrieval after payment flow
    */
   static storeSignupData(signupData: SignUpData, planId: string): void {
-    console.warn('StripeService.storeSignupData is deprecated, use PaymentService.storeSignupData instead');
     localStorage.setItem('pending_signup', JSON.stringify({
       signupData,
       planId,
@@ -33,11 +47,9 @@ export class StripeService {
   }
   
   /**
-   * Retrieves stored signup data after returning from Stripe
-   * @deprecated Use PaymentService.getStoredSignupData instead
+   * Retrieve stored signup data after returning from payment flow
    */
   static getStoredSignupData(): { signupData: SignUpData; planId: string } | null {
-    console.warn('StripeService.getStoredSignupData is deprecated, use PaymentService.getStoredSignupData instead');
     const data = localStorage.getItem('pending_signup');
     
     if (!data) return null;
@@ -66,17 +78,14 @@ export class StripeService {
   }
   
   /**
-   * Clears stored signup data
-   * @deprecated Use PaymentService.clearStoredSignupData instead
+   * Clear stored signup data
    */
   static clearStoredSignupData(): void {
-    console.warn('StripeService.clearStoredSignupData is deprecated, use PaymentService.clearStoredSignupData instead');
     localStorage.removeItem('pending_signup');
   }
 
   /**
-   * Get trial information for the user
-   * @deprecated Use PaymentService.getTrialInfo instead
+   * Get trial information
    */
   static getTrialInfo(): {
     planId: string;
@@ -85,7 +94,6 @@ export class StripeService {
     trialEndDate: string;
     daysRemaining: number;
   } | null {
-    console.warn('StripeService.getTrialInfo is deprecated, use PaymentService.getTrialInfo instead');
     const trialData = localStorage.getItem('trial_info');
     
     if (!trialData) return null;
@@ -107,11 +115,9 @@ export class StripeService {
   }
 
   /**
-   * Check if the trial period has ended
-   * @deprecated Use PaymentService.isTrialExpired instead
+   * Check if the trial has expired
    */
   static isTrialExpired(): boolean {
-    console.warn('StripeService.isTrialExpired is deprecated, use PaymentService.isTrialExpired instead');
     const trial = this.getTrialInfo();
     if (!trial) return true;
     
@@ -119,5 +125,26 @@ export class StripeService {
     const endDate = new Date(trial.trialEndDate);
     
     return now > endDate;
+  }
+  
+  /**
+   * Store trial information
+   */
+  static storeTrialInfo(planId: string, productId: string, trialDays: number): void {
+    const trialInfo = {
+      planId,
+      productId,
+      trialStartDate: new Date().toISOString(),
+      trialEndDate: new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString()
+    };
+    
+    localStorage.setItem('trial_info', JSON.stringify(trialInfo));
+  }
+  
+  /**
+   * Get a plan by ID
+   */
+  static getPlanById(planId: string): Plan | undefined {
+    return plans.find(p => p.id === planId);
   }
 }

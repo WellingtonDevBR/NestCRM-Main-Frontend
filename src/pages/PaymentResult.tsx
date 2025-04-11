@@ -1,10 +1,8 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StripeService } from "@/services/stripeService";
-import { supabase } from "@/integrations/supabase/client";
+import { PaymentService } from "@/services/paymentService";
 
 const PaymentResult = () => {
   const navigate = useNavigate();
@@ -23,7 +21,7 @@ const PaymentResult = () => {
         const sessionId = urlParams.get('session_id');
         
         // Get stored signup data
-        const pendingData = StripeService.getStoredSignupData();
+        const pendingData = PaymentService.getStoredSignupData();
         if (pendingData) {
           try {
             if (sessionId) {

@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { StripeService } from "@/services/stripeService";
+import { PaymentService } from "@/services/paymentService";
 import { SignUpData } from "@/domain/auth/types";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -8,16 +8,14 @@ export const useSignupPayment = () => {
   const createTrialAccount = async (signupData: SignUpData, planId: string): Promise<boolean> => {
     try {
       // For the starter plan (free trial), we'll bypass the external API and use Supabase directly
-      const selectedPlan = StripeService.getPlanById(planId);
+      const selectedPlan = PaymentService.getPlanById(planId);
       if (selectedPlan?.trial) {
         // Store trial information
-        const trialInfo = {
-          planId,
-          productId: selectedPlan.productId,
-          trialStartDate: new Date().toISOString(),
-          trialEndDate: new Date(Date.now() + (selectedPlan.trialDays || 14) * 24 * 60 * 60 * 1000).toISOString()
-        };
-        localStorage.setItem('trial_info', JSON.stringify(trialInfo));
+        PaymentService.storeTrialInfo(
+          planId, 
+          selectedPlan.productId, 
+          selectedPlan.trialDays || 14
+        );
 
         // Implement direct Supabase registration
         const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -58,7 +56,7 @@ export const useSignupPayment = () => {
     planId: string
   ): Promise<{success: boolean, redirectUrl?: string, error?: Error}> => {
     try {
-      const selectedPlan = StripeService.getPlanById(planId);
+      const selectedPlan = PaymentService.getPlanById(planId);
       if (!selectedPlan) {
         throw new Error("Invalid plan selected");
       }
@@ -72,11 +70,11 @@ export const useSignupPayment = () => {
       }
 
       // For paid plans, create a checkout session
-      const checkoutUrl = await StripeService.createCheckoutSession(signupData, selectedPlan);
+      const checkoutUrl = await PaymentService.createCheckoutSession(signupData, selectedPlan);
 
       if (checkoutUrl) {
         // Store signup data for retrieval after payment
-        StripeService.storeSignupData(signupData, planId);
+        PaymentService.storeSignupData(signupData, planId);
         return { success: true, redirectUrl: checkoutUrl };
       } else {
         throw new Error("Could not create checkout session");
@@ -99,11 +97,11 @@ export const useSignupPayment = () => {
   };
 
   const getStoredSignupData = () => {
-    return StripeService.getStoredSignupData();
+    return PaymentService.getStoredSignupData();
   };
 
   const clearStoredSignupData = () => {
-    StripeService.clearStoredSignupData();
+    PaymentService.clearStoredSignupData();
   };
 
   return {

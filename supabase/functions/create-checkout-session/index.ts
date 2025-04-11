@@ -23,7 +23,6 @@ serve(async (req) => {
     });
     
     // Map plan IDs to Stripe product IDs and price IDs
-    // These are example values - replace with your actual Stripe price IDs
     let priceId = "";
     let productId = "";
     
