@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { SignUpData } from "@/domain/auth/types";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,22 @@ interface PlanSelectionProps {
 }
 
 const PlanSelection = ({ signupData, onContinue, isLoading }: PlanSelectionProps) => {
+  // Get the plan from URL parameters if available
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const urlPlanId = searchParams.get('plan');
+  
   const [selectedPlanId, setSelectedPlanId] = useState(plans[0].id);
+  
+  // Effect to set the selected plan from URL if available
+  useEffect(() => {
+    if (urlPlanId) {
+      const planExists = plans.some(plan => plan.id === urlPlanId);
+      if (planExists) {
+        setSelectedPlanId(urlPlanId);
+      }
+    }
+  }, [urlPlanId]);
   
   const handlePlanSelect = (planId: string) => {
     setSelectedPlanId(planId);

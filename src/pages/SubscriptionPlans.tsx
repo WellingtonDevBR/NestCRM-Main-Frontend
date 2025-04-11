@@ -1,5 +1,6 @@
 
 import { Check } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import Navbar from "@/components/Navbar";
@@ -52,8 +53,9 @@ const SubscriptionPlans = () => {
                   <Button
                     variant={plan.id === "enterprise" ? "outline" : "default"} 
                     className={`w-full ${plan.popular ? 'button-gradient' : ''}`}
+                    asChild
                   >
-                    {plan.buttonText}
+                    <Link to={`/signup?plan=${plan.id}`}>{plan.buttonText}</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -68,7 +70,9 @@ const SubscriptionPlans = () => {
             <p className="mb-6 text-muted-foreground">
               Contact our team to discuss your specific requirements and get a personalized quote.
             </p>
-            <Button size="lg" className="button-gradient">Contact Sales Team</Button>
+            <Button size="lg" className="button-gradient" asChild>
+              <Link to="/signup">Contact Sales Team</Link>
+            </Button>
           </div>
         </div>
       </div>
