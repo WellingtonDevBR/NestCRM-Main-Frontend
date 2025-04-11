@@ -12,6 +12,7 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import PlanSelection, { plans } from "@/components/auth/form/PlanSelection";
 import { StripeService } from "@/services/stripeService";
+import StepIndicator, { SignupStep } from "@/components/auth/form/StepIndicator";
 
 // Signup stages
 type SignupStage = "form" | "plan_selection" | "processing";
@@ -23,7 +24,7 @@ const SignUpForm = () => {
   const [setupStage, setSetupStage] = useState("");
   const [showSetupProgress, setShowSetupProgress] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [signupStage, setSignupStage] = useState<SignupStage>("form");
+  const [signupStage, setSignupStage] = useState<SignupStep>("form");
   
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -283,6 +284,7 @@ const SignUpForm = () => {
 
   return (
     <div className="space-y-6">
+      <StepIndicator currentStep={signupStage} />
       {renderContentByStage()}
     </div>
   );
