@@ -35,21 +35,26 @@ export const usePaymentStatusCheck = ({
           const urlParams = new URLSearchParams(window.location.search);
           const sessionId = urlParams.get('session_id');
           
-          if (sessionId && storedData.signupData.subscription) {
-            // Ensure we have a valid subscription object with all required fields
-            const subscription = storedData.signupData.subscription as SubscriptionData;
+          if (sessionId && storedData.signupData) {
+            // Get the current subscription data or create a new one
+            const existingSubscription = storedData.signupData.subscription || {} as Partial<SubscriptionData>;
             
-            // Update the subscription with the session ID if not already set
-            if (!subscription.stripeSessionId) {
-              subscription.stripeSessionId = sessionId;
-            }
+            // Create a valid subscription object with all required fields
+            const subscription: SubscriptionData = {
+              planId: existingSubscription.planId || storedData.planId,
+              currency: existingSubscription.currency || 'AUD',
+              interval: existingSubscription.interval || 'month',
+              amount: existingSubscription.amount || 0,
+              trialDays: existingSubscription.trialDays || 0,
+              status: existingSubscription.status || 'trialing',
+              stripeSessionId: sessionId,
+              stripeSubscriptionId: existingSubscription.stripeSubscriptionId,
+              stripeCustomerId: existingSubscription.stripeCustomerId,
+              stripePriceId: existingSubscription.stripePriceId, 
+              stripeProductId: existingSubscription.stripeProductId
+            };
             
-            // Ensure other required fields are present
-            if (!subscription.planId) {
-              subscription.planId = storedData.planId;
-            }
-            
-            // Update the signup data
+            // Update the signup data with the complete subscription object
             storedData.signupData.subscription = subscription;
           }
           

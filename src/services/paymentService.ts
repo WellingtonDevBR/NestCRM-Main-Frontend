@@ -44,10 +44,10 @@ export class PaymentService {
           planId: selectedPlan.id,
           currency: selectedPlan.currency || 'AUD',
           interval: selectedPlan.interval || 'month',
-          amount: selectedPlan.priceValue,
+          amount: selectedPlan.priceValue || 0,
           trialDays: selectedPlan.trialDays || 0,
           status: 'trialing',
-          stripeSessionId: data.sessionId,
+          stripeSessionId: data.sessionId || '',
           stripePriceId: data.priceId,
           stripeProductId: data.productId
         };
