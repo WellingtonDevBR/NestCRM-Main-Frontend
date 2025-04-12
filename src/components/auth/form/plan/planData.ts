@@ -17,6 +17,8 @@ export interface Plan {
   buttonText: string;
   trial: boolean;
   trialDays: number;
+  trialPrice?: string;
+  trialPriceValue?: number;
 }
 
 // Plans data structure
@@ -24,28 +26,30 @@ export const plans: Plan[] = [
   {
     id: "starter",
     name: "Starter",
-    price: "$0",
-    priceValue: 0,
+    price: "$19.90",
+    priceValue: 19.90,
     priceId: "price_starter", // Will be mapped in the edge function
     productId: "prod_S6teQSASB4q3me", // Starter product ID
     currency: "AUD",
+    interval: "month",
     tagline: "Small teams exploring AI-powered churn prevention",
     color: "bg-emerald-500",
     colorClass: "from-emerald-500 to-emerald-400",
     features: [
-      "14-day full feature trial",
+      "14-day free trial",
       "Up to 100 customers tracked",
       "Basic Churn Prediction Model (V1)",
       "Customer Health Scoring",
       "Real-time Risk Alerts (Limited to 10/month)",
       "Access to Retention Dashboard (basic view)",
       "Email support (response in 48h)",
-      "Credit card required"
     ],
     popular: false,
     buttonText: "Start Free Trial",
     trial: true,
-    trialDays: 14
+    trialDays: 14,
+    trialPrice: "$0",
+    trialPriceValue: 0
   },
   {
     id: "growth",

@@ -35,27 +35,26 @@ serve(async (req) => {
     switch (planId) {
       case "starter":
         productId = "prod_S6teQSASB4q3me"; // Starter product ID
-        // For the free plan, we'll still create a Stripe subscription with a $0 price
-        // and a trial period
         
-        // Find or create a $0 price for the starter plan
+        // For the starter plan, we'll create a subscription with the post-trial price
+        // and add a trial period
         const starterPrices = await stripe.prices.list({
           product: productId,
           active: true,
-          unit_amount: 0, // $0
+          unit_amount: 1990, // $19.90
           currency: currency.toLowerCase(),
           limit: 1
         });
         
         if (starterPrices.data.length > 0) {
           priceId = starterPrices.data[0].id;
-          console.log("Found existing free price for starter plan:", priceId);
+          console.log("Found existing $19.90 price for starter plan:", priceId);
         } else {
-          // If no price exists, create a new $0 price
+          // If no price exists, create a new $19.90 price
           console.log("No existing price found for starter plan, creating a new one");
           const newPrice = await stripe.prices.create({
             product: productId,
-            unit_amount: 0, // $0.00
+            unit_amount: 1990, // $19.90
             currency: currency.toLowerCase(),
             recurring: { interval: 'month' }
           });
@@ -150,7 +149,11 @@ serve(async (req) => {
         },
       ],
       subscription_data: {
-        trial_period_days: trialDays
+        trial_period_days: trialDays,
+        // Add metadata that can be used for email notifications
+        metadata: {
+          trial_end_notification_sent: "false"
+        }
       },
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,

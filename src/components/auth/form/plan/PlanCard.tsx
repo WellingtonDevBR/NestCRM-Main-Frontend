@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Check, Circle } from "lucide-react";
 import { Plan } from "./planData";
@@ -35,6 +36,8 @@ export const PlanCard: React.FC<PlanCardProps> = ({ plan, isSelected }) => {
               currency={plan.currency}
               interval={plan.interval}
               className="text-2xl font-bold"
+              trialDays={plan.id === "starter" ? plan.trialDays : undefined}
+              trialAmount={plan.trialPriceValue}
             />
           </div>
           <p className="text-sm text-muted-foreground">{plan.tagline}</p>

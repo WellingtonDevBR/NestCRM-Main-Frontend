@@ -7,6 +7,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { PlanFeatures } from "@/components/auth/form/plan/PlanFeatures";
 import { plans } from "@/components/auth/form/plan/planData";
+import PriceDisplay from "@/components/common/PriceDisplay";
 
 const SubscriptionPlans = () => {
   return (
@@ -39,8 +40,14 @@ const SubscriptionPlans = () => {
                   )}
                   <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
                   <div className="mt-1">
-                    <span className="text-3xl font-bold">{plan.price}</span>
-                    {plan.interval && <span className="text-sm ml-1">/{plan.interval}</span>}
+                    <PriceDisplay
+                      amount={plan.priceValue}
+                      currency={plan.currency}
+                      interval={plan.interval}
+                      trialDays={plan.id === "starter" ? plan.trialDays : undefined}
+                      trialAmount={plan.trialPriceValue}
+                      className={`text-3xl font-bold ${plan.popular ? "text-white" : ""}`}
+                    />
                   </div>
                   <CardDescription className={`${plan.popular ? 'text-white/90' : 'text-muted-foreground'}`}>
                     {plan.tagline}

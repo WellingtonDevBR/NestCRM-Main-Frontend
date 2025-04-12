@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { plans } from "@/components/auth/form/plan/planData";
+import PriceDisplay from "@/components/common/PriceDisplay";
 
 const HomePricing = () => {
   return (
@@ -45,8 +46,14 @@ const HomePricing = () => {
                 )}
                 <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
                 <div className="mt-2">
-                  <span className="text-3xl font-bold">{plan.price}</span>
-                  {plan.interval && <span className="text-sm ml-1 opacity-90">/{plan.interval}</span>}
+                  <PriceDisplay
+                    amount={plan.priceValue}
+                    currency={plan.currency}
+                    interval={plan.interval}
+                    trialDays={plan.id === "starter" ? plan.trialDays : undefined}
+                    trialAmount={plan.trialPriceValue}
+                    className={`text-3xl font-bold ${plan.popular ? "text-white" : ""}`}
+                  />
                 </div>
                 <CardDescription className={`${plan.popular ? "text-white/90" : "text-muted-foreground"}`}>
                   {plan.tagline}
@@ -82,7 +89,7 @@ const HomePricing = () => {
 
         <div className="text-center mt-10">
           <p className="text-sm text-muted-foreground">
-            All plans include a {plans[0].trialDays}-day free trial. No credit card required to start.
+            All plans include a {plans[0].trialDays}-day free trial. No credit card required for the trial period.
           </p>
           <Button variant="link" asChild className="mt-2">
             <Link to="/pricing">Compare all features</Link>
