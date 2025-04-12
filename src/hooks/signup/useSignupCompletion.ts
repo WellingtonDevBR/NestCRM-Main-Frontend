@@ -43,7 +43,16 @@ export const useSignupCompletion = ({
       console.log('Completing signup with data:', { 
         ...signupData, 
         password: '[REDACTED]',
-        planId 
+        planId,
+        subscription: signupData.subscription ? {
+          ...signupData.subscription,
+          planId: signupData.subscription.planId,
+          stripeSessionId: signupData.subscription.stripeSessionId || '',
+          stripeSubscriptionId: signupData.subscription.stripeSubscriptionId || '',
+          stripeCustomerId: signupData.subscription.stripeCustomerId || '',
+          stripePriceId: signupData.subscription.stripePriceId || '',
+          stripeProductId: signupData.subscription.stripeProductId || ''
+        } : null
       });
 
       // Find the selected plan
@@ -52,23 +61,49 @@ export const useSignupCompletion = ({
         throw new Error(`Plan with ID ${planId} not found`);
       }
 
-      // Prepare subscription data
-      const subscriptionData: SubscriptionData = {
-        planId: planId,
-        currency: selectedPlan.currency || 'AUD',
-        interval: selectedPlan.interval || 'month',
-        amount: selectedPlan.priceValue || 0,
-        trialDays: selectedPlan.trialDays || 0,
-        status: 'trialing',
-        trialEndsAt: new Date(Date.now() + (selectedPlan.trialDays || 0) * 24 * 60 * 60 * 1000).toISOString()
-      };
-      
       // Create final signup data with subscription information
-      const finalSignupData = {
-        ...signupData,
-        planId,
-        subscription: subscriptionData
-      };
+      let finalSignupData = signupData;
+      
+      // If we don't already have a subscription object, create one
+      if (!finalSignupData.subscription) {
+        // Prepare subscription data
+        const subscriptionData: SubscriptionData = {
+          planId: planId,
+          currency: selectedPlan.currency || 'AUD',
+          interval: selectedPlan.interval || 'month',
+          amount: selectedPlan.priceValue || 0,
+          trialDays: selectedPlan.trialDays || 0,
+          status: 'trialing',
+          trialEndsAt: new Date(Date.now() + (selectedPlan.trialDays || 0) * 24 * 60 * 60 * 1000).toISOString(),
+          // Initialize Stripe IDs as empty strings since we don't have them yet
+          stripeSessionId: '',
+          stripeSubscriptionId: '',
+          stripeCustomerId: '',
+          stripePriceId: '',
+          stripeProductId: ''
+        };
+        
+        finalSignupData = {
+          ...signupData,
+          planId,
+          subscription: subscriptionData
+        };
+      } else {
+        // Ensure all required fields exist in the subscription
+        finalSignupData = {
+          ...signupData,
+          planId,
+          subscription: {
+            ...signupData.subscription,
+            planId: signupData.subscription.planId || planId,
+            stripeSessionId: signupData.subscription.stripeSessionId || '',
+            stripeSubscriptionId: signupData.subscription.stripeSubscriptionId || '',
+            stripeCustomerId: signupData.subscription.stripeCustomerId || '',
+            stripePriceId: signupData.subscription.stripePriceId || '',
+            stripeProductId: signupData.subscription.stripeProductId || ''
+          }
+        };
+      }
 
       console.log('Final signup data with subscription:', {
         ...finalSignupData,

@@ -40,11 +40,11 @@ export interface SubscriptionData {
   trialDays: number;
   trialEndsAt?: string;
   status: 'trialing' | 'active' | 'canceled' | 'incomplete';
-  stripeSubscriptionId?: string;
-  stripeCustomerId?: string;
-  stripePriceId?: string;
-  stripeProductId?: string;
-  stripeSessionId?: string;
+  stripeSubscriptionId: string;
+  stripeCustomerId: string;
+  stripePriceId: string;
+  stripeProductId: string;
+  stripeSessionId: string;
 }
 
 export interface SignUpData {
@@ -54,9 +54,9 @@ export interface SignUpData {
   email: string;
   subdomain: string;
   password: string;
-  planId?: string; // Add planId for subscription information
-  currency?: string; // Add currency code
-  subscription?: SubscriptionData; // Add subscription data
+  planId?: string; 
+  currency?: string;
+  subscription?: SubscriptionData;
 }
 
 export interface AuthResult {

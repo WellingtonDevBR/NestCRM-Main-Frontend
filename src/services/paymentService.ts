@@ -37,8 +37,15 @@ export class PaymentService {
         throw new Error('Invalid response from checkout session');
       }
       
+      console.log('Checkout session created successfully:', {
+        sessionUrl: data.url,
+        sessionId: data.sessionId,
+        priceId: data.priceId,
+        productId: data.productId
+      });
+      
       // Store the stripe session ID and other IDs
-      if (data.sessionId || data.priceId || data.productId) {
+      if (data.sessionId) {
         // Create a valid subscription object with required fields
         const subscriptionData: SubscriptionData = {
           planId: selectedPlan.id,
@@ -48,8 +55,10 @@ export class PaymentService {
           trialDays: selectedPlan.trialDays || 0,
           status: 'trialing',
           stripeSessionId: data.sessionId || '',
-          stripePriceId: data.priceId,
-          stripeProductId: data.productId
+          stripePriceId: data.priceId || '',
+          stripeProductId: data.productId || '',
+          stripeSubscriptionId: '',
+          stripeCustomerId: ''
         };
         
         const enhancedSignupData = {
@@ -76,6 +85,8 @@ export class PaymentService {
    */
   static async verifyCheckoutSession(sessionId: string): Promise<SubscriptionData | null> {
     try {
+      console.log('Verifying checkout session:', sessionId);
+      
       const { data, error } = await supabase.functions.invoke('check-trial-status', {
         body: { session_id: sessionId }
       });
@@ -85,7 +96,10 @@ export class PaymentService {
         return null;
       }
       
+      console.log('Received verification data:', data);
+      
       if (!data.active) {
+        console.warn('Subscription is not active');
         return null;
       }
       
@@ -100,8 +114,11 @@ export class PaymentService {
           0,
         trialEndsAt: data.trial_end,
         status: data.status || 'trialing',
-        stripeSubscriptionId: data.subscription_id,
-        stripeCustomerId: data.customer_id
+        stripeSubscriptionId: data.subscription_id || '',
+        stripeCustomerId: data.customer_id || '',
+        stripePriceId: data.price_id || '',
+        stripeProductId: data.product_id || '',
+        stripeSessionId: sessionId
       };
     } catch (error) {
       console.error('Error verifying subscription:', error);

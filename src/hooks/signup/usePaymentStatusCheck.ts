@@ -36,6 +36,8 @@ export const usePaymentStatusCheck = ({
           const sessionId = urlParams.get('session_id');
           
           if (sessionId && storedData.signupData) {
+            console.log('Processing successful payment with session ID:', sessionId);
+            
             // Get the current subscription data or create a new one
             const existingSubscription = storedData.signupData.subscription || {} as Partial<SubscriptionData>;
             
@@ -46,13 +48,15 @@ export const usePaymentStatusCheck = ({
               interval: existingSubscription.interval || 'month',
               amount: existingSubscription.amount || 0,
               trialDays: existingSubscription.trialDays || 0,
-              status: existingSubscription.status || 'trialing',
+              status: 'trialing',
               stripeSessionId: sessionId,
-              stripeSubscriptionId: existingSubscription.stripeSubscriptionId,
-              stripeCustomerId: existingSubscription.stripeCustomerId,
-              stripePriceId: existingSubscription.stripePriceId, 
-              stripeProductId: existingSubscription.stripeProductId
+              stripeSubscriptionId: existingSubscription.stripeSubscriptionId || '',
+              stripeCustomerId: existingSubscription.stripeCustomerId || '',
+              stripePriceId: existingSubscription.stripePriceId || '',
+              stripeProductId: existingSubscription.stripeProductId || ''
             };
+            
+            console.log('Completed subscription object:', subscription);
             
             // Update the signup data with the complete subscription object
             storedData.signupData.subscription = subscription;
@@ -67,6 +71,11 @@ export const usePaymentStatusCheck = ({
           completeSignup(storedData.signupData, storedData.planId).then(() => {
             // Clear stored data after successful signup
             clearStoredSignupData();
+          }).catch(error => {
+            console.error('Error completing signup:', error);
+            toast.error('Error completing signup', {
+              description: error.message || 'Please try again or contact support'
+            });
           });
         } else if (paymentStatus === 'cancelled') {
           // Show cancellation message

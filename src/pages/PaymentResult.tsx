@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Check, X, Loader2 } from "lucide-react";
@@ -28,39 +27,62 @@ const PaymentResult = () => {
         if (pendingData) {
           try {
             if (sessionId) {
+              console.log('Verifying checkout session:', sessionId);
+              
               // Verify session with Stripe
               const subscriptionData = await PaymentService.verifyCheckoutSession(sessionId);
               
-              // Create a valid enhanced signup data with required subscription fields
-              let enhancedSubscription: SubscriptionData;
-              
-              if (subscriptionData) {
-                // If we got valid subscription data from Stripe, use it
-                enhancedSubscription = subscriptionData;
-              } else {
-                // If no data from Stripe, ensure we have a valid subscription object
-                // with all required fields
-                const plan = PaymentService.getPlanById(pendingData.planId);
-                enhancedSubscription = {
-                  planId: pendingData.planId,
-                  currency: plan?.currency || 'AUD',
-                  interval: plan?.interval || 'month',
-                  amount: plan?.priceValue || 0,
-                  trialDays: plan?.trialDays || 0,
-                  status: 'trialing',
-                  stripeSessionId: sessionId,
-                  ...(pendingData.signupData.subscription || {})
+              // If we got valid data from Stripe
+              if (subscriptionData && subscriptionData.stripeSubscriptionId) {
+                console.log('Retrieved subscription data from Stripe:', subscriptionData);
+
+                // Update stored data with the Stripe details
+                const enhancedSignupData = {
+                  ...pendingData.signupData,
+                  subscription: {
+                    ...pendingData.signupData.subscription,
+                    stripeSessionId: sessionId,
+                    stripeSubscriptionId: subscriptionData.stripeSubscriptionId,
+                    stripeCustomerId: subscriptionData.stripeCustomerId,
+                    stripePriceId: subscriptionData.stripePriceId,
+                    stripeProductId: subscriptionData.stripeProductId,
+                    currency: subscriptionData.currency || pendingData.signupData.subscription?.currency || 'AUD',
+                    interval: subscriptionData.interval || pendingData.signupData.subscription?.interval || 'month',
+                    amount: subscriptionData.amount || pendingData.signupData.subscription?.amount || 0
+                  }
                 };
+                
+                // Store the enhanced signup data
+                PaymentService.storeSignupData(enhancedSignupData, pendingData.planId);
+              } else {
+                console.warn('No subscription data retrieved from Stripe, using fallback data');
+                
+                // Create a fallback subscription object with at least the session ID
+                const existingSubscription = pendingData.signupData.subscription || {};
+                const plan = PaymentService.getPlanById(pendingData.planId);
+                
+                const enhancedSignupData = {
+                  ...pendingData.signupData,
+                  subscription: {
+                    ...existingSubscription,
+                    planId: pendingData.planId,
+                    currency: plan?.currency || 'AUD',
+                    interval: plan?.interval || 'month',
+                    amount: plan?.priceValue || 0,
+                    trialDays: plan?.trialDays || 0,
+                    status: 'trialing',
+                    stripeSessionId: sessionId,
+                    // Keep any existing IDs if available
+                    stripeSubscriptionId: existingSubscription.stripeSubscriptionId || '',
+                    stripeCustomerId: existingSubscription.stripeCustomerId || '',
+                    stripePriceId: existingSubscription.stripePriceId || '',
+                    stripeProductId: existingSubscription.stripeProductId || ''
+                  }
+                };
+                
+                // Store the enhanced data
+                PaymentService.storeSignupData(enhancedSignupData, pendingData.planId);
               }
-              
-              // Create the enhanced signup data with valid subscription
-              const enhancedSignupData = {
-                ...pendingData.signupData,
-                subscription: enhancedSubscription
-              };
-              
-              // Update stored data with enhanced data
-              PaymentService.storeSignupData(enhancedSignupData, pendingData.planId);
             }
             
             setStatus('success');

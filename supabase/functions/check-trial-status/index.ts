@@ -31,57 +31,82 @@ serve(async (req) => {
     let plan;
     let price;
     
+    console.log(`Checking status with session_id: ${session_id || 'not provided'}, customer_email: ${customer_email || 'not provided'}`);
+    
     // If we have a session ID, get the subscription from it
     if (session_id) {
-      const session = await stripe.checkout.sessions.retrieve(session_id);
-      if (!session.subscription) {
+      try {
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+        console.log('Retrieved session:', {
+          id: session.id,
+          customer: session.customer,
+          subscription: session.subscription
+        });
+        
+        if (!session.subscription) {
+          return new Response(
+            JSON.stringify({ 
+              active: false,
+              message: "No subscription found for this session" 
+            }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        
+        subscription = await stripe.subscriptions.retrieve(
+          session.subscription as string
+        );
+        
+        customerId = subscription.customer;
+        
+        // Get price and product details
+        if (subscription.items.data.length > 0) {
+          const priceId = subscription.items.data[0].price.id;
+          price = await stripe.prices.retrieve(priceId);
+          
+          if (price.product) {
+            plan = await stripe.products.retrieve(price.product as string);
+          }
+        }
+        
+        console.log('Subscription details:', {
+          id: subscription.id,
+          status: subscription.status,
+          customer: customerId,
+          price_id: subscription.items.data[0]?.price.id,
+          product_id: plan?.id
+        });
+        
         return new Response(
-          JSON.stringify({ 
-            active: false,
-            message: "No subscription found for this session" 
+          JSON.stringify({
+            active: subscription.status === 'active' || subscription.status === 'trialing',
+            status: subscription.status,
+            trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+            trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
+            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            planId: plan?.metadata?.plan_id || '',
+            subscription_id: subscription.id,
+            customer_id: subscription.customer,
+            price_id: subscription.items.data[0]?.price.id,
+            product_id: plan?.id || '',
+            amount: price?.unit_amount || 0,
+            currency: price?.currency || 'aud',
+            interval: price?.recurring?.interval || 'month'
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
-      }
-      
-      subscription = await stripe.subscriptions.retrieve(
-        session.subscription as string
-      );
-      
-      customerId = subscription.customer;
-      
-      // Get price and product details
-      if (subscription.items.data.length > 0) {
-        const priceId = subscription.items.data[0].price.id;
-        price = await stripe.prices.retrieve(priceId);
-        
-        if (price.product) {
-          plan = await stripe.products.retrieve(price.product as string);
+      } catch (error) {
+        console.error('Error retrieving session or subscription:', error);
+        // If session retrieval fails, we'll continue to check by email if available
+        if (!customer_email) {
+          throw error;
         }
       }
-      
-      return new Response(
-        JSON.stringify({
-          active: subscription.status === 'active' || subscription.status === 'trialing',
-          status: subscription.status,
-          trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
-          trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
-          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          planId: plan?.metadata?.plan_id || '',
-          subscription_id: subscription.id,
-          customer_id: subscription.customer,
-          price_id: subscription.items.data[0]?.price.id,
-          product_id: plan?.id || '',
-          amount: price?.unit_amount || 0,
-          currency: price?.currency || 'aud',
-          interval: price?.recurring?.interval || 'month'
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
     
     // If we have an email, find the customer and all subscriptions
     if (customer_email) {
+      console.log(`Searching for customer with email: ${customer_email}`);
       const customers = await stripe.customers.list({
         email: customer_email,
         limit: 1
