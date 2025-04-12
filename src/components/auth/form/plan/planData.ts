@@ -8,6 +8,7 @@ export interface Plan {
   priceId: string; // Stripe price ID
   productId: string; // Stripe product ID
   interval?: string;
+  currency: string; // Currency code
   tagline: string;
   color: string;
   colorClass: string;
@@ -27,6 +28,7 @@ export const plans: Plan[] = [
     priceValue: 0,
     priceId: "price_starter", // Will be mapped in the edge function
     productId: "prod_S6teQSASB4q3me", // Starter product ID
+    currency: "AUD",
     tagline: "Small teams exploring AI-powered churn prevention",
     color: "bg-emerald-500",
     colorClass: "from-emerald-500 to-emerald-400",
@@ -49,10 +51,11 @@ export const plans: Plan[] = [
     id: "growth",
     name: "Growth",
     price: "$49",
-    priceValue: 4900,
+    priceValue: 49,
     priceId: "price_growth", // Changed to a simple identifier that will be mapped in the edge function
     productId: "prod_S6tf3FcTLazhdW", // Growth product ID
     interval: "month",
+    currency: "AUD",
     tagline: "Growing businesses needing automation and deeper insights",
     color: "bg-blue-500",
     colorClass: "from-blue-500 to-blue-400",
@@ -75,10 +78,11 @@ export const plans: Plan[] = [
     id: "pro",
     name: "Pro",
     price: "$149",
-    priceValue: 14900, 
+    priceValue: 149,
     priceId: "price_pro", // Changed to a simple identifier that will be mapped in the edge function
     productId: "prod_S6tflZPV1ei1dL", // Pro product ID
     interval: "month",
+    currency: "AUD",
     tagline: "Customer success teams and scaling SaaS businesses",
     color: "bg-purple-600",
     colorClass: "from-purple-600 to-purple-500",

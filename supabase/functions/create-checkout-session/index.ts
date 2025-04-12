@@ -30,6 +30,7 @@ serve(async (req) => {
     let priceId = "";
     let productId = "";
     let trialDays = 0;
+    let currency = signupData.currency || "AUD"; // Default to AUD if not specified
     
     switch (planId) {
       case "starter":
@@ -42,6 +43,7 @@ serve(async (req) => {
           product: productId,
           active: true,
           unit_amount: 0, // $0
+          currency: currency.toLowerCase(),
           limit: 1
         });
         
@@ -54,7 +56,7 @@ serve(async (req) => {
           const newPrice = await stripe.prices.create({
             product: productId,
             unit_amount: 0, // $0.00
-            currency: 'usd',
+            currency: currency.toLowerCase(),
             recurring: { interval: 'month' }
           });
           priceId = newPrice.id;
@@ -69,6 +71,7 @@ serve(async (req) => {
         const growthPrices = await stripe.prices.list({
           product: productId,
           active: true,
+          currency: currency.toLowerCase(),
           limit: 1
         });
         
@@ -76,12 +79,12 @@ serve(async (req) => {
           priceId = growthPrices.data[0].id;
           console.log("Found existing price for growth plan:", priceId);
         } else {
-          // If no price exists, create a new test price
+          // If no price exists, create a new price
           console.log("No existing price found for growth plan, creating a new one");
           const newPrice = await stripe.prices.create({
             product: productId,
             unit_amount: 4900, // $49.00
-            currency: 'usd',
+            currency: currency.toLowerCase(),
             recurring: { interval: 'month' }
           });
           priceId = newPrice.id;
@@ -96,6 +99,7 @@ serve(async (req) => {
         const proPrices = await stripe.prices.list({
           product: productId,
           active: true,
+          currency: currency.toLowerCase(),
           limit: 1
         });
         
@@ -103,12 +107,12 @@ serve(async (req) => {
           priceId = proPrices.data[0].id;
           console.log("Found existing price for pro plan:", priceId);
         } else {
-          // If no price exists, create a new test price
+          // If no price exists, create a new price
           console.log("No existing price found for pro plan, creating a new one");
           const newPrice = await stripe.prices.create({
             product: productId,
             unit_amount: 14900, // $149.00
-            currency: 'usd',
+            currency: currency.toLowerCase(),
             recurring: { interval: 'month' }
           });
           priceId = newPrice.id;
@@ -121,7 +125,7 @@ serve(async (req) => {
     }
     
     // Add extra logging for debugging
-    console.log("Creating checkout session with:", { planId, priceId, productId, trialDays });
+    console.log("Creating checkout session with:", { planId, priceId, productId, trialDays, currency });
     
     // Create metadata to identify the user after successful payment
     const metadata = {
@@ -131,7 +135,8 @@ serve(async (req) => {
       companyName: signupData.companyName,
       subdomain: signupData.subdomain,
       planId: planId,
-      productId: productId
+      productId: productId,
+      currency: currency
     };
     
     // Create a checkout session with trial period
@@ -150,6 +155,7 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/payment-canceled`,
       metadata: metadata,
+      currency: currency.toLowerCase(),
     });
 
     console.log("Checkout session created:", { sessionId: session.id, url: session.url });

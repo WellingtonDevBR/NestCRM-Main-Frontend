@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData } from "@/domain/auth/types";
 import { Plan, plans } from "@/components/auth/form/plan/planData";
+import { priceToCents } from "@/utils/currencyUtils";
 
 export class PaymentService {
   /**
@@ -17,7 +18,13 @@ export class PaymentService {
       
       // Call our Supabase Edge Function to create a checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { planId: selectedPlan.id, signupData }
+        body: { 
+          planId: selectedPlan.id, 
+          signupData: {
+            ...signupData,
+            currency: selectedPlan.currency // Pass the currency to the edge function
+          }
+        }
       });
       
       if (error) {

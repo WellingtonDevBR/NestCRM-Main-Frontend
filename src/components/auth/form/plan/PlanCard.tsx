@@ -1,93 +1,74 @@
-
 import React from "react";
-import { Check } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Check, Circle } from "lucide-react";
 import { Plan } from "./planData";
-import { PlanFeatures } from "./PlanFeatures";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { RadioGroupItem } from "@/components/ui/radio-group";
+import PriceDisplay from "@/components/common/PriceDisplay";
 
 interface PlanCardProps {
   plan: Plan;
   isSelected: boolean;
 }
 
-export const PlanCard = ({ plan, isSelected }: PlanCardProps) => {
-  const getPlanBadgeText = () => {
-    if (plan.id === "starter") return "14-DAY FREE TRIAL";
-    if (plan.popular) return "MOST POPULAR";
-    return null;
-  };
-
-  const badgeText = getPlanBadgeText();
-  
+export const PlanCard: React.FC<PlanCardProps> = ({ plan, isSelected }) => {
   return (
-    <div className={cn(
-      "relative transition-all",
-      isSelected ? "scale-[1.03]" : ""
-    )}>
-      <RadioGroupItem 
-        value={plan.id} 
-        id={`plan-${plan.id}`}
-        className="peer sr-only"
-      />
-      <Label 
-        htmlFor={`plan-${plan.id}`} 
-        className="cursor-pointer block h-full"
-      >
-        <Card 
-          className={cn(
-            "border h-full transition-all rounded-xl shadow-md overflow-hidden",
-            isSelected 
-              ? 'border-primary/60 ring-2 ring-primary/30' 
-              : 'border-border hover:border-primary/40'
-          )}
-        >
-          <CardHeader className={cn(
-            "px-6 py-5",
-            plan.popular ? `bg-primary text-white` : ''
-          )}>
-            {badgeText && (
-              <Badge className={cn(
-                "mb-2",
-                plan.popular 
-                  ? "bg-white/20 text-white hover:bg-white/30" 
-                  : "bg-amber-500/10 text-amber-600 border-amber-200"
-              )}>
-                {badgeText}
-              </Badge>
-            )}
-            
-            <CardTitle className="text-xl font-bold">
-              {plan.name}
-            </CardTitle>
-            
-            <div className="mt-2">
-              <span className="text-3xl font-bold">{plan.price}</span>
-              {plan.interval && <span className="text-sm ml-1 opacity-90">/{plan.interval}</span>}
-            </div>
-            
-            <CardDescription className={cn(
-              "mt-2 text-sm",
-              plan.popular ? "text-white/90" : "text-muted-foreground"
-            )}>
-              {plan.tagline}
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent className="pt-5 px-6">
-            <PlanFeatures features={plan.features} color={plan.id === "starter" ? "bg-green-600" : plan.popular ? "bg-primary" : "bg-purple-800"} />
-          </CardContent>
-        </Card>
-      </Label>
-      
-      {isSelected && (
-        <div className="absolute -top-2 -right-2 bg-primary text-white p-1 rounded-full shadow-lg z-10">
-          <Check className="h-4 w-4" />
+    <Label
+      htmlFor={`plan-${plan.id}`}
+      className={`relative flex flex-col h-full border rounded-lg p-6 transition-all cursor-pointer ${
+        isSelected 
+          ? `ring-2 ring-primary bg-primary/5 border-primary/50` 
+          : "border-muted hover:border-primary/30 hover:bg-primary/[0.02]"
+      }`}
+    >
+      {plan.popular && (
+        <div className={`absolute -top-3 right-4 px-3 py-1 text-xs font-medium rounded-full bg-gradient-to-r ${plan.colorClass} text-white`}>
+          Most Popular
         </div>
       )}
-    </div>
+
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col">
+          <h3 className="text-lg font-medium">{plan.name}</h3>
+          <div className="mt-1 mb-2 flex items-baseline">
+            <PriceDisplay 
+              amount={plan.priceValue} 
+              currency={plan.currency}
+              interval={plan.interval}
+              className="text-2xl font-bold"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">{plan.tagline}</p>
+        </div>
+
+        <RadioGroupItem 
+          value={plan.id} 
+          id={`plan-${plan.id}`}
+          className="mt-1"
+        />
+      </div>
+
+      <ul className="space-y-3 mb-6 flex-grow">
+        {plan.features.map((feature, i) => (
+          <li key={i} className="flex items-start gap-2 text-sm">
+            <div className={`rounded-full p-1 ${plan.color} text-white mt-0.5 flex-shrink-0`}>
+              <Check className="h-3 w-3" />
+            </div>
+            <span>{feature}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="flex-shrink-0">
+        {isSelected ? (
+          <div className={`w-full py-2 px-4 rounded bg-primary/10 text-primary text-center text-sm font-medium`}>
+            Selected
+          </div>
+        ) : (
+          <div className="w-full py-2 px-4 rounded border border-muted text-center text-sm text-muted-foreground">
+            Select Plan
+          </div>
+        )}
+      </div>
+    </Label>
   );
 };

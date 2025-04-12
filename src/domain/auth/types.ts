@@ -32,6 +32,18 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface SubscriptionData {
+  planId: string;
+  currency: string;
+  interval: string;
+  amount: number;
+  trialDays: number;
+  trialEndsAt?: string;
+  status: 'trialing' | 'active' | 'canceled' | 'incomplete';
+  stripeSubscriptionId?: string;
+  stripeCustomerId?: string;
+}
+
 export interface SignUpData {
   firstName: string;
   lastName: string;
@@ -40,6 +52,8 @@ export interface SignUpData {
   subdomain: string;
   password: string;
   planId?: string; // Add planId for subscription information
+  currency?: string; // Add currency code
+  subscription?: SubscriptionData; // Add subscription data
 }
 
 export interface AuthResult {

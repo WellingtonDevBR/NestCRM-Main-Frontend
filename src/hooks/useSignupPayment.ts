@@ -1,8 +1,9 @@
 
 import { toast } from "sonner";
 import { PaymentService } from "@/services/paymentService";
-import { SignUpData } from "@/domain/auth/types";
+import { SignUpData, SubscriptionData } from "@/domain/auth/types";
 import { authService } from "@/services/authService";
+import { currencies, DEFAULT_CURRENCY } from "@/utils/currencyUtils";
 
 export const useSignupPayment = () => {
   const handlePlanSelection = async (
@@ -17,12 +18,33 @@ export const useSignupPayment = () => {
 
       console.log('Selected plan:', selectedPlan);
 
+      // Get currency from plan or use default
+      const currency = selectedPlan.currency || DEFAULT_CURRENCY;
+      
+      // Create subscription data to send to backend
+      const subscriptionData: SubscriptionData = {
+        planId: selectedPlan.id,
+        currency: currency,
+        interval: selectedPlan.interval || 'month',
+        amount: selectedPlan.priceValue,
+        trialDays: selectedPlan.trialDays,
+        status: 'trialing'
+      };
+      
+      // Add subscription data to signup data
+      const enhancedSignupData = {
+        ...signupData,
+        planId,
+        currency,
+        subscription: subscriptionData
+      };
+
       // For all plans (including trials), create a checkout session
-      const checkoutUrl = await PaymentService.createCheckoutSession(signupData, selectedPlan);
+      const checkoutUrl = await PaymentService.createCheckoutSession(enhancedSignupData, selectedPlan);
 
       if (checkoutUrl) {
         // Store signup data for retrieval after payment
-        PaymentService.storeSignupData(signupData, planId);
+        PaymentService.storeSignupData(enhancedSignupData, planId);
         return { success: true, redirectUrl: checkoutUrl };
       } else {
         throw new Error("Could not create checkout session");

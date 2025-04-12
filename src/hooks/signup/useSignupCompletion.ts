@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { useTenantStatusPolling } from "./useTenantStatusPolling";
-import { AuthResult } from "@/domain/auth/types";
+import { AuthResult, SubscriptionData } from "@/domain/auth/types";
 import { SignupStep } from "@/components/auth/form/StepIndicator";
 
 interface UseSignupCompletionProps {
@@ -44,6 +44,21 @@ export const useSignupCompletion = ({
         password: '[REDACTED]',
         planId 
       });
+
+      // Prepare subscription data if not already present
+      if (!signupData.subscription && signupData.planId) {
+        const subscriptionData: SubscriptionData = {
+          planId: signupData.planId,
+          currency: signupData.currency || 'AUD',
+          interval: 'month',
+          amount: signupData.priceValue || 0,
+          trialDays: 14,
+          status: 'trialing',
+          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        };
+        
+        signupData.subscription = subscriptionData;
+      }
 
       const finalSignupData = {
         ...signupData,
