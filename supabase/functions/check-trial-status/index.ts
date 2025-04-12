@@ -27,6 +27,9 @@ serve(async (req) => {
 
     let subscriptions;
     let customerId;
+    let subscription;
+    let plan;
+    let price;
     
     // If we have a session ID, get the subscription from it
     if (session_id) {
@@ -41,9 +44,21 @@ serve(async (req) => {
         );
       }
       
-      const subscription = await stripe.subscriptions.retrieve(
+      subscription = await stripe.subscriptions.retrieve(
         session.subscription as string
       );
+      
+      customerId = subscription.customer;
+      
+      // Get price and product details
+      if (subscription.items.data.length > 0) {
+        const priceId = subscription.items.data[0].price.id;
+        price = await stripe.prices.retrieve(priceId);
+        
+        if (price.product) {
+          plan = await stripe.products.retrieve(price.product as string);
+        }
+      }
       
       return new Response(
         JSON.stringify({
@@ -52,7 +67,14 @@ serve(async (req) => {
           trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
           trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
           current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-          plan: subscription.items.data[0].price.product
+          planId: plan?.metadata?.plan_id || '',
+          subscription_id: subscription.id,
+          customer_id: subscription.customer,
+          price_id: subscription.items.data[0]?.price.id,
+          product_id: plan?.id || '',
+          amount: price?.unit_amount || 0,
+          currency: price?.currency || 'aud',
+          interval: price?.recurring?.interval || 'month'
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -92,17 +114,34 @@ serve(async (req) => {
         );
       }
       
-      // Return the most recent subscription
-      const latestSubscription = subscriptions.data[0];
+      // Get the most recent subscription
+      subscription = subscriptions.data[0];
+      
+      // Get price and product details
+      if (subscription.items.data.length > 0) {
+        const priceId = subscription.items.data[0].price.id;
+        price = await stripe.prices.retrieve(priceId);
+        
+        if (price.product) {
+          plan = await stripe.products.retrieve(price.product as string);
+        }
+      }
       
       return new Response(
         JSON.stringify({
-          active: latestSubscription.status === 'active' || latestSubscription.status === 'trialing',
-          status: latestSubscription.status,
-          trial_end: latestSubscription.trial_end ? new Date(latestSubscription.trial_end * 1000).toISOString() : null,
-          trial_start: latestSubscription.trial_start ? new Date(latestSubscription.trial_start * 1000).toISOString() : null,
-          current_period_end: new Date(latestSubscription.current_period_end * 1000).toISOString(),
-          plan: latestSubscription.items.data[0].price.product
+          active: subscription.status === 'active' || subscription.status === 'trialing',
+          status: subscription.status,
+          trial_end: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : null,
+          trial_start: subscription.trial_start ? new Date(subscription.trial_start * 1000).toISOString() : null,
+          current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+          planId: plan?.metadata?.plan_id || '',
+          subscription_id: subscription.id,
+          customer_id: subscription.customer,
+          price_id: subscription.items.data[0]?.price.id,
+          product_id: plan?.id || '',
+          amount: price?.unit_amount || 0,
+          currency: price?.currency || 'aud',
+          interval: price?.recurring?.interval || 'month'
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

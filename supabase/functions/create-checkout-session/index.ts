@@ -135,6 +135,7 @@ serve(async (req) => {
       subdomain: signupData.subdomain,
       planId: planId,
       productId: productId,
+      priceId: priceId,
       currency: currency
     };
     
@@ -152,7 +153,9 @@ serve(async (req) => {
         trial_period_days: trialDays,
         // Add metadata that can be used for email notifications
         metadata: {
-          trial_end_notification_sent: "false"
+          trial_end_notification_sent: "false",
+          subdomain: signupData.subdomain,
+          domain: `${signupData.subdomain}.nestcrm.com.au`
         }
       },
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
@@ -164,7 +167,12 @@ serve(async (req) => {
     console.log("Checkout session created:", { sessionId: session.id, url: session.url });
 
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ 
+        url: session.url, 
+        sessionId: session.id,
+        priceId: priceId,
+        productId: productId
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

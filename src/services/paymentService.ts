@@ -1,7 +1,7 @@
 
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { SignUpData } from "@/domain/auth/types";
+import { SignUpData, SubscriptionData } from "@/domain/auth/types";
 import { Plan, plans } from "@/components/auth/form/plan/planData";
 import { priceToCents } from "@/utils/currencyUtils";
 
@@ -37,6 +37,22 @@ export class PaymentService {
         throw new Error('Invalid response from checkout session');
       }
       
+      // Store the stripe session ID and other IDs
+      if (data.sessionId || data.priceId || data.productId) {
+        const enhancedSignupData = {
+          ...signupData,
+          subscription: {
+            ...(signupData.subscription || {}),
+            stripeSessionId: data.sessionId,
+            stripePriceId: data.priceId, 
+            stripeProductId: data.productId
+          }
+        };
+        
+        // Store the enhanced data
+        this.storeSignupData(enhancedSignupData, selectedPlan.id);
+      }
+      
       return data.url;
     } catch (error: any) {
       console.error('Error creating checkout session:', error);
@@ -44,6 +60,44 @@ export class PaymentService {
         description: error.message || 'Please try again later',
       });
       throw error;
+    }
+  }
+
+  /**
+   * Verify subscription details from a successful checkout
+   */
+  static async verifyCheckoutSession(sessionId: string): Promise<SubscriptionData | null> {
+    try {
+      const { data, error } = await supabase.functions.invoke('check-trial-status', {
+        body: { session_id: sessionId }
+      });
+      
+      if (error) {
+        console.error('Error verifying checkout session:', error);
+        return null;
+      }
+      
+      if (!data.active) {
+        return null;
+      }
+      
+      // Return subscription data with Stripe IDs
+      return {
+        planId: data.planId || '',
+        currency: data.currency || 'AUD',
+        interval: data.interval || 'month',
+        amount: data.amount || 0,
+        trialDays: data.trial_end ? 
+          Math.round((new Date(data.trial_end).getTime() - new Date(data.trial_start).getTime()) / (24*60*60*1000)) : 
+          0,
+        trialEndsAt: data.trial_end,
+        status: data.status || 'trialing',
+        stripeSubscriptionId: data.subscription_id,
+        stripeCustomerId: data.customer_id
+      };
+    } catch (error) {
+      console.error('Error verifying subscription:', error);
+      return null;
     }
   }
 

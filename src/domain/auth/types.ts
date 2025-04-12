@@ -42,6 +42,9 @@ export interface SubscriptionData {
   status: 'trialing' | 'active' | 'canceled' | 'incomplete';
   stripeSubscriptionId?: string;
   stripeCustomerId?: string;
+  stripePriceId?: string;
+  stripeProductId?: string;
+  stripeSessionId?: string;
 }
 
 export interface SignUpData {

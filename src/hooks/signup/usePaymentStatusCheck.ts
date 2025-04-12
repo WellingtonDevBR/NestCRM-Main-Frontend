@@ -19,24 +19,71 @@ export const usePaymentStatusCheck = ({
   setFormDataFromStored,
   setSignupStage
 }: UsePaymentStatusCheckProps) => {
-  
   useEffect(() => {
-    // Check payment status when component mounts
-    const status = checkPaymentStatus();
-    if (status) {
+    const paymentStatus = checkPaymentStatus();
+    
+    if (paymentStatus) {
       const storedData = getStoredSignupData();
+      
       if (storedData) {
-        if (status === 'success') {
-          completeSignup(storedData.signupData, storedData.planId);
-        } else {
-          toast.error("Payment was not completed", {
-            description: "You can try again or choose a different plan"
+        // Set the form data from stored data
+        setFormDataFromStored(storedData.signupData);
+        
+        if (paymentStatus === 'success') {
+          // Get the session ID from URL if available
+          const urlParams = new URLSearchParams(window.location.search);
+          const sessionId = urlParams.get('session_id');
+          
+          if (sessionId && storedData.signupData.subscription) {
+            // Update the subscription with the session ID if not already set
+            if (!storedData.signupData.subscription.stripeSessionId) {
+              storedData.signupData.subscription.stripeSessionId = sessionId;
+            }
+          }
+          
+          // Show success message
+          toast.success('Payment processed successfully!', {
+            description: 'Completing your account setup...'
           });
-          setFormDataFromStored(storedData.signupData);
-          setSignupStage("plan_selection");
+          
+          // Complete signup with the stored data
+          completeSignup(storedData.signupData, storedData.planId).then(() => {
+            // Clear stored data after successful signup
+            clearStoredSignupData();
+          });
+        } else if (paymentStatus === 'cancelled') {
+          // Show cancellation message
+          toast.info('Payment was cancelled', {
+            description: 'Please try again or select a different plan'
+          });
+          
+          // Set the signup stage back to plan selection
+          setSignupStage('plan_selection');
+        } else if (paymentStatus === 'error') {
+          // Show error message
+          toast.error('There was a problem processing your payment', {
+            description: 'Please try again or contact support'
+          });
+          
+          // Set the signup stage back to plan selection
+          setSignupStage('plan_selection');
         }
-        clearStoredSignupData();
+        
+        // Clear payment status from URL to prevent processing again on refresh
+        const url = new URL(window.location.href);
+        url.searchParams.delete('payment_status');
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, '', url.toString());
       }
     }
-  }, []);
+  }, [
+    checkPaymentStatus,
+    getStoredSignupData,
+    clearStoredSignupData,
+    completeSignup,
+    setFormDataFromStored,
+    setSignupStage
+  ]);
+  
+  return null;
 };

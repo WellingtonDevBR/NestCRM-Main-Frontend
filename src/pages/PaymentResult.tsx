@@ -27,8 +27,28 @@ const PaymentResult = () => {
         if (pendingData) {
           try {
             if (sessionId) {
-              // Verify payment status with edge function if needed
-              // This could be added in the future
+              // Store session ID in the pending data
+              const enhancedSignupData = {
+                ...pendingData.signupData,
+                subscription: {
+                  ...(pendingData.signupData.subscription || {}),
+                  stripeSessionId: sessionId
+                }
+              };
+              
+              // Verify session with Stripe
+              const subscriptionData = await PaymentService.verifyCheckoutSession(sessionId);
+              
+              // If we got valid subscription data from Stripe, enhance the signup data with it
+              if (subscriptionData) {
+                enhancedSignupData.subscription = {
+                  ...enhancedSignupData.subscription,
+                  ...subscriptionData
+                };
+              }
+              
+              // Update stored data with enhanced data
+              PaymentService.storeSignupData(enhancedSignupData, pendingData.planId);
             }
             
             setStatus('success');
