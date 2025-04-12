@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useTenantStatusPolling } from "./useTenantStatusPolling";
 import { AuthResult, SubscriptionData } from "@/domain/auth/types";
 import { SignupStep } from "@/components/auth/form/StepIndicator";
+import { plans } from "@/components/auth/form/plan/planData";
 
 interface UseSignupCompletionProps {
   signUp: (data: any) => Promise<AuthResult>;
@@ -45,25 +46,34 @@ export const useSignupCompletion = ({
         planId 
       });
 
-      // Prepare subscription data if not already present
-      if (!signupData.subscription && signupData.planId) {
-        const subscriptionData: SubscriptionData = {
-          planId: signupData.planId,
-          currency: signupData.currency || 'AUD',
-          interval: 'month',
-          amount: signupData.priceValue || 0,
-          trialDays: 14,
-          status: 'trialing',
-          trialEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-        };
-        
-        signupData.subscription = subscriptionData;
+      // Find the selected plan
+      const selectedPlan = plans.find(plan => plan.id === planId);
+      if (!selectedPlan) {
+        throw new Error(`Plan with ID ${planId} not found`);
       }
 
+      // Prepare subscription data
+      const subscriptionData: SubscriptionData = {
+        planId: planId,
+        currency: selectedPlan.currency || 'AUD',
+        interval: selectedPlan.interval || 'month',
+        amount: selectedPlan.priceValue || 0,
+        trialDays: selectedPlan.trialDays || 0,
+        status: 'trialing',
+        trialEndsAt: new Date(Date.now() + (selectedPlan.trialDays || 0) * 24 * 60 * 60 * 1000).toISOString()
+      };
+      
+      // Create final signup data with subscription information
       const finalSignupData = {
         ...signupData,
-        planId
+        planId,
+        subscription: subscriptionData
       };
+
+      console.log('Final signup data with subscription:', {
+        ...finalSignupData,
+        password: '[REDACTED]'
+      });
 
       // Use the external API for consistent tenant provisioning
       const result: AuthResult = await signUp(finalSignupData);

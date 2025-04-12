@@ -1,4 +1,3 @@
-
 import { LoginCredentials, SignUpData, AuthenticatedSession } from "@/domain/auth/types";
 
 /**
@@ -14,7 +13,6 @@ export class AuthApi {
     try {
       console.log('Login API call - Payload:', JSON.stringify({
         email: credentials.email,
-        // Omitting password for security
       }));
       
       const response = await fetch(`${this.baseUrl}/tenants/login`, {
@@ -92,12 +90,15 @@ export class AuthApi {
         domain: domain,
         password: data.password,
         // Include plan ID if available
-        planId: data.planId
+        planId: data.planId,
+        // Include subscription data
+        subscription: data.subscription
       };
 
       console.log('Signup API call - Payload:', JSON.stringify({
         ...signupPayload,
-        password: '[REDACTED]' // Redact password in logs
+        password: '[REDACTED]', // Redact password in logs
+        subscription: data.subscription // Make sure subscription data is logged
       }));
 
       const response = await fetch(`${this.baseUrl}/tenants/signup`, {
