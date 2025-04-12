@@ -39,14 +39,22 @@ export class PaymentService {
       
       // Store the stripe session ID and other IDs
       if (data.sessionId || data.priceId || data.productId) {
+        // Create a valid subscription object with required fields
+        const subscriptionData: SubscriptionData = {
+          planId: selectedPlan.id,
+          currency: selectedPlan.currency || 'AUD',
+          interval: selectedPlan.interval || 'month',
+          amount: selectedPlan.priceValue,
+          trialDays: selectedPlan.trialDays || 0,
+          status: 'trialing',
+          stripeSessionId: data.sessionId,
+          stripePriceId: data.priceId,
+          stripeProductId: data.productId
+        };
+        
         const enhancedSignupData = {
           ...signupData,
-          subscription: {
-            ...(signupData.subscription || {}),
-            stripeSessionId: data.sessionId,
-            stripePriceId: data.priceId, 
-            stripeProductId: data.productId
-          }
+          subscription: subscriptionData
         };
         
         // Store the enhanced data

@@ -5,6 +5,7 @@ import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaymentService } from "@/services/paymentService";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SubscriptionData } from "@/domain/auth/types";
 
 const PaymentResult = () => {
   const navigate = useNavigate();
@@ -27,25 +28,36 @@ const PaymentResult = () => {
         if (pendingData) {
           try {
             if (sessionId) {
-              // Store session ID in the pending data
-              const enhancedSignupData = {
-                ...pendingData.signupData,
-                subscription: {
-                  ...(pendingData.signupData.subscription || {}),
-                  stripeSessionId: sessionId
-                }
-              };
-              
               // Verify session with Stripe
               const subscriptionData = await PaymentService.verifyCheckoutSession(sessionId);
               
-              // If we got valid subscription data from Stripe, enhance the signup data with it
+              // Create a valid enhanced signup data with required subscription fields
+              let enhancedSubscription: SubscriptionData;
+              
               if (subscriptionData) {
-                enhancedSignupData.subscription = {
-                  ...enhancedSignupData.subscription,
-                  ...subscriptionData
+                // If we got valid subscription data from Stripe, use it
+                enhancedSubscription = subscriptionData;
+              } else {
+                // If no data from Stripe, ensure we have a valid subscription object
+                // with all required fields
+                const plan = PaymentService.getPlanById(pendingData.planId);
+                enhancedSubscription = {
+                  planId: pendingData.planId,
+                  currency: plan?.currency || 'AUD',
+                  interval: plan?.interval || 'month',
+                  amount: plan?.priceValue || 0,
+                  trialDays: plan?.trialDays || 0,
+                  status: 'trialing',
+                  stripeSessionId: sessionId,
+                  ...(pendingData.signupData.subscription || {})
                 };
               }
+              
+              // Create the enhanced signup data with valid subscription
+              const enhancedSignupData = {
+                ...pendingData.signupData,
+                subscription: enhancedSubscription
+              };
               
               // Update stored data with enhanced data
               PaymentService.storeSignupData(enhancedSignupData, pendingData.planId);

@@ -1,6 +1,7 @@
 
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { SubscriptionData, SignUpData } from "@/domain/auth/types";
 
 interface UsePaymentStatusCheckProps {
   checkPaymentStatus: () => string | null;
@@ -35,10 +36,21 @@ export const usePaymentStatusCheck = ({
           const sessionId = urlParams.get('session_id');
           
           if (sessionId && storedData.signupData.subscription) {
+            // Ensure we have a valid subscription object with all required fields
+            const subscription = storedData.signupData.subscription as SubscriptionData;
+            
             // Update the subscription with the session ID if not already set
-            if (!storedData.signupData.subscription.stripeSessionId) {
-              storedData.signupData.subscription.stripeSessionId = sessionId;
+            if (!subscription.stripeSessionId) {
+              subscription.stripeSessionId = sessionId;
             }
+            
+            // Ensure other required fields are present
+            if (!subscription.planId) {
+              subscription.planId = storedData.planId;
+            }
+            
+            // Update the signup data
+            storedData.signupData.subscription = subscription;
           }
           
           // Show success message
