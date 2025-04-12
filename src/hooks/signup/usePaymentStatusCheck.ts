@@ -48,7 +48,7 @@ export const usePaymentStatusCheck = ({
               interval: existingSubscription.interval || 'month',
               amount: existingSubscription.amount || 0,
               trialDays: existingSubscription.trialDays || 0,
-              status: 'trialing',
+              status: existingSubscription.status || 'trialing',
               stripeSessionId: sessionId,
               stripeSubscriptionId: existingSubscription.stripeSubscriptionId || '',
               stripeCustomerId: existingSubscription.stripeCustomerId || '',

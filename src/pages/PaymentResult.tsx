@@ -57,7 +57,7 @@ const PaymentResult = () => {
               } else {
                 console.warn('No subscription data retrieved from Stripe, using fallback data');
                 
-                // Create a fallback subscription object with at least the session ID
+                // Make sure we have a valid subscription object with default values for required fields
                 const existingSubscription = pendingData.signupData.subscription || {};
                 const plan = PaymentService.getPlanById(pendingData.planId);
                 
@@ -70,9 +70,9 @@ const PaymentResult = () => {
                     interval: plan?.interval || 'month',
                     amount: plan?.priceValue || 0,
                     trialDays: plan?.trialDays || 0,
-                    status: 'trialing',
-                    stripeSessionId: sessionId,
-                    // Keep any existing IDs if available
+                    status: 'trialing' as 'trialing',
+                    stripeSessionId: sessionId || '',
+                    // Keep any existing IDs if available or set as empty strings
                     stripeSubscriptionId: existingSubscription.stripeSubscriptionId || '',
                     stripeCustomerId: existingSubscription.stripeCustomerId || '',
                     stripePriceId: existingSubscription.stripePriceId || '',

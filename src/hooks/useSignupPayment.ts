@@ -28,7 +28,13 @@ export const useSignupPayment = () => {
         interval: selectedPlan.interval || 'month',
         amount: selectedPlan.priceValue,
         trialDays: selectedPlan.trialDays,
-        status: 'trialing'
+        status: 'trialing',
+        // Initialize Stripe IDs as empty strings since we don't have them yet
+        stripeSessionId: '',
+        stripeSubscriptionId: '',
+        stripeCustomerId: '',
+        stripePriceId: '',
+        stripeProductId: ''
       };
       
       // Add subscription data to signup data

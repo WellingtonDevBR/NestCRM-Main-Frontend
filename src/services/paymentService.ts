@@ -113,7 +113,7 @@ export class PaymentService {
           Math.round((new Date(data.trial_end).getTime() - new Date(data.trial_start).getTime()) / (24*60*60*1000)) : 
           0,
         trialEndsAt: data.trial_end,
-        status: data.status || 'trialing',
+        status: data.status as 'trialing' | 'active' | 'canceled' | 'incomplete',
         stripeSubscriptionId: data.subscription_id || '',
         stripeCustomerId: data.customer_id || '',
         stripePriceId: data.price_id || '',
